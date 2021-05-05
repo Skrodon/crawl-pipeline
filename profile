@@ -28,13 +28,16 @@ umask ug=rwx
 : ${TMP_DAY:=$BIGTMP/cache-day}
 [ -d "$TMP_DAY" ] || mkdir "$TMP_DAY"
 
+: ${TMP_WEEK:=$BIGTMP/cache-week}
+[ -d "$TMP_WEEK" ] || mkdir "$TMP_WEEK"
+
 : ${TMP_MONTH:=$BIGTMP/cache-month}
 [ -d "$TMP_MONTH" ] || mkdir "$TMP_MONTH"
 
 : ${LOGS:=$TMP_MONTH/logs}
 [ -d "$LOGS" ] || mkdir "$LOGS"
 
-export BIGTMP TMP_HOUR TMP_DAY TMP_MONTH LOGS
+export BIGTMP TMP_HOUR TMP_DAY TMP_WEEK TMP_MONTH LOGS
 
 #
 ### Modules
