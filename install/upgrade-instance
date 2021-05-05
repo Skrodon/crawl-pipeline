@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -e
+
+ETC="$HOME/etc"
+[ -d "$ETC" ] || mkdir $ETC
+
+BIN="$HOME/bin"
+[ -d "$BIN" ] || mkdir $BIN
+
+SCRIPT="$PWD/$0"
+REPO="${SCRIPT%/*/*}"
+
+#
+### Install the configurable profile
+#
+
+PROFILE="$ETC/crawl-profile"
+
+if [ ! -f "$PROFILE" ]
+then TEMPLATE="$REPO/install/crawl-profile.template"
+
+     perl -wpe <"$TEMPLATE" >"$PROFILE" "
+       s!\\[% SCRIPT %\\]!$0!;
+       s!\\[% DATE %\\]!$(date)!;
+       s!\\[% REPO %\\]!$REPO!;
+     "
+
+     cat <<__CONFIGURE
+*
+*** now configure $PROFILE
+*** then rerun 'make'
+*
+__CONFIGURE
+
+fi
+
+#
+### The "run" wrapper to be used for cron
+#
+
+[ -f $BIN/run ] && chmod u+w $BIN/run
+cp $REPO/install/run $BIN/run
+chmod u=rx $BIN/run
+
+#
+### Update all plugins
+#
+
+

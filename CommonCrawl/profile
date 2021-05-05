@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# CommonCrawl specific profile
+
+set -e
+
+export CC_RELEASE="2021-10"    # YYYYY-WW
+
+export AWS_CP="aws --no-sign-request s3 cp"
+export S3_BUCKET="s3://commoncrawl"
+
+export CACHE_DAY="$TMP_DAY/CommonCrawl"
+[ -d "$CACHE_DAY" ] || mkdir $CACHE_DAY
+
+export CRAWL_FILES_CACHE="$CACHE_DAY/crawl-files"
+export CRAWL_FILES_CACHE_SIZE=10
+
+export WAT_FILES_CACHE="$TMP_DAY/$CRAWL_SET-wat-files"
+export WAT_FILES_CACHE_SIZE=10
+
+export WET_FILES_CACHE="$TMP_DAY/$CRAWL_SET-wet-files"
+export WET_FILES_CACHE_SIZE=10
+
+export PROCESS_DIRS="$TMP_DAY/cc-processing"
+export MAX_WARC_BATCHES=1

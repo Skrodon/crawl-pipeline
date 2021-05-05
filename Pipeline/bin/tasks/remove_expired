@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+#
+# (Cron) script which removes files which are older than a certain
+# age.  Empty directories are removed as well, but only when they
+# have not been used either.
+
+use warnings;
+use strict;
+
+use File::Find  qw(find);
+
+use constant GB => 1024 * 1024 * 1024;
+
+@ARGV >= 2 or die "Usage: $0 <age> <directories>\n";
+my ($age, @dirs) = @ARGV;
+
+my $days
+   = $age =~ m/^(\d+)h$/ ? $1/24
+   : $age =~ m/^(\d+)d$/ ? $1
+   : $age =~ m/^(\d+)m$/ ? $1*30
+   : $age =~ m/^(\d+)y$/ ? $1*365.25
+   : die "ERROR: age must match \\d+[hdmy]";
+
+# We first scan for long-unused directories, because removing old
+# files from them will change their time-stamps.  Bluntly removing
+# empty directories may remove directories which are just created.
+
+my @old_dirs;
+find { wanted => sub { push @old_dirs, $_ if -d && -M > $days; 1 }
+     , no_chdir => 1,
+     }, @dirs;
+
+# Now remove old files
+my ($nr_files, $size_files) = (0, 0);
+find { wanted => sub
+         { -f && -M > $days or return 1;
+           $size_files += -s $_;
+           $nr_files++;
+           print "removing ", qx(ls -lh "$_");
+           1;
+          }
+     , no_chdir => 1,
+     }, @dirs;
+
+printf "Removed %d files, totalling %.1f GB\n", $nr_files, $size_files/GB;
+

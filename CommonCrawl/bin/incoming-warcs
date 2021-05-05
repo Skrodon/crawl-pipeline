@@ -1,0 +1,84 @@
+#!/bin/bash
+#
+# Keep a few warc files in cache.  You may need to run multiple
+# of these processed in parallel to keep-up with the next stages
+# of production.
+
+set -e
+
+function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
+
+if [ $# -ne 1 ]
+then echo "Required: $0 <CRAWL|WAT|WET>" >&2
+     exit 1
+fi
+QUEUE="$1"
+
+PLAN="$TMP_MONTH/CommonCrawl-todo"
+
+case "$QUEUE" in
+CRAWL) CACHE_SIZE="$CRAWL_FILES_CACHE_SIZE";;
+WAT)   CACHE_SIZE="$WAT_FILES_CACHE_SIZE";;
+WET)   CACHE_SIZE="$WET_FILES_CACHE_SIZE" ;;
+*)  echo "ERROR: unknown queue '$QUEUE'" >&2
+    exit 1
+    ;;
+esac
+
+# Get WARCs to process.  If there are still directories with old
+# months, we will ignore those (cleaned-up automatically)
+
+PATHS_TODO=$(ls -d "$PLAN"/*-$QUEUE-paths | tail -1)
+if [ -z "$PATHS_TODO" ]
+then echo "ERROR: no plan for $QUEUE in $PLAN" >&2
+     exit 1
+fi
+
+CACHE_DIR="$CACHE_DAY/incoming-$QUEUE"
+[ -d "$CACHE_DIR" ] || mkdir "$CACHE_DIR"
+
+log "** CommonCrawl downloader for $QUEUE into $CACHE_DIR, max $CACHE_SIZE"
+
+
+CACHED=$(ls "$CACHE_DIR" | wc -l)
+if [ $CACHED -ge $CACHE_SIZE ]
+then log "Cache is full (size $CACHED, max $CACHE_SIZE)"
+     exit 0
+fi
+
+LOCK_DEST="$TMP_HOUR/CommonCrawl-$QUEUE-$$-locker"
+touch "$LOCK_DEST"
+
+ls "$PATHS_TODO" | while read BATCH_LABEL
+    do TODO="$PATHS_TODO/$BATCH_LABEL"
+
+       LOCK="$TMP_HOUR/$BATCH_LABEL.lock"
+       if ! ln -s "$LOCK_DEST" "$LOCK" 2>/dev/null
+       then log "$BATCH_LABEL is currently locked.  Next..."
+            continue
+       fi
+
+       AWS_PATH=$(cat "$TODO")
+       DEST="$CACHE_DIR/$BATCH_LABEL-$QUEUE.warc.gz"
+
+       DOWNLOAD="$TMP_HOUR/$CC_RELEASE-$QUEUE-$BATCH_LABEL.warc.gz"
+
+       log "Collecting $AWS_PATH into $DOWNLOAD"
+       $AWS_CP "$AWS_PATH" "$DOWNLOAD" >/dev/null
+
+       SIZE=$(ls -lhk "$DOWNLOAD" | perl -ane 'print $F[4]')
+       log "Got $BATCH_LABEL, size $SIZE"
+
+       log "$BATCH_LABEL-$QUEUE available in $DEST"
+       mv "$DOWNLOAD" "$DEST"
+
+       rm "$TODO"
+       rm "$LOCK"
+
+       # Downloaded enough?
+       CACHED=$(ls "$CACHE_DIR" | wc -l)
+       [ $CACHED -lt $CACHE_SIZE ] || break
+
+    done
+
+rm $LOCK_DEST

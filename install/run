@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# Start programs, mainly from cron.  The environment may not be
+# loaded.
+
+# Everything what is started via crontab should be wrapped in this
+# script, like this:
+#  * * * * * $RUN label command parameters
+
+
+set -e
+
+LABEL="$1"
+shift
+
+COMMAND="$1"
+
+source $HOME/etc/crawl-profile
+source $PIPELINE_REPO/profile
+source $PIPELINE_REPO/$LABEL/profile
+
+if [ -t 0 ]
+then : # Running from the command-line
+else
+    LOGDIR="$LOGS/$LABEL"
+    [ -d "$LOGDIR" ] || mkdir $LOGDIR
+
+    LOG="$LOGDIR/$(date +%F)-$COMMAND.log"
+    exec >>$LOG 2>&1
+fi
+
+PATH="$PIPELINE_REPO/$LABEL/bin:$PATH"
+log "Starting $LABEL: $@"
+
+if "$@"      ### RUN!
+then log "Ending $LABEL $COMMAND: success"
+else log "Ending $LABEL $COMMAND: FAILED"
+
+     # No flooding of emails to ops when something goes wrong
+     MAILBLOCK="$TMP_HOUR/$LABEL.$COMMAND.mail-lock"
+
+     if [ ! -f "$MAILBLOCK" ]
+     then touch "$MAILBLOCK"
+          mail -t <<__WARNING
+To: $MAILTO
+Subject: crawl-pipeline fail $LABEL
+
+Please have a look at $LOG to see what went wrong.
+__WARNING
+     fi
+fi
+

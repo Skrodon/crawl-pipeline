@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+#
+# Feed all related warcs files per source through a set of filters.
+#
+
+use warnings;
+use strict;
+
+use OSF::CommonCrawl::WarcSet  ();
+
+@ARGV==1
+   or die "Usage: $0 <dir>\n";
+
+my $workdir = $ARGV[0];
+-d $workdir or die "ERROR: workdir '$workdir' does not exist\n";
+
+my $cc = OSF::CommonCrawl::WarcSet->new(dir => $workdir);
+
+while(my $product = $cc->getProduct)
+{   print $product->part('request')->uri, "\n";
+}

@@ -1,0 +1,3 @@
+
+upgrade::
+	install/upgrade-instance

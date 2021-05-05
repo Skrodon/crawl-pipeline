@@ -1,0 +1,69 @@
+#!/bin/bash
+#
+# Only one instance of this script is running.  It sees whether
+# for each of the QUEUES, the batch warc has arrived.  If so, it
+# starts a task to process the set.
+#
+# The crawl warcs are about 1.1GB compressed each, containing 150k records
+# The wat warcs are about 310MB compressed each
+# The wet warcs are about 140MB compressed each
+
+set -e
+set -x
+
+function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
+
+CACHE_DAY="$TMP_DAY/CommonCrawl"
+[ -d "$CACHE_DAY" ] || mkdir "$CACHE_DAY"
+
+PROCESS_DIRS="$CACHE_DAY/processing"
+[ -d "$PROCESS_DIRS" ] || mkdir "$PROCESS_DIRS"
+
+CRAWL_FILES_CACHE="$CACHE_DAY/incoming-CRAWL"
+WAT_FILES_CACHE="$CACHE_DAY/incoming-WAT"
+WET_FILES_CACHE="$CACHE_DAY/incoming-WET"
+
+SHORT_SLEEP=1   # relax the system
+LONG_SLEEP=10   # nothing to do: either empty or full
+
+while :
+do
+    PREPARED=$(ls "$PROCESS_DIRS" | wc -l)
+    if [ $PREPARED -ge $MAX_WARC_BATCHES ]
+    then sleep $LONG_SLEEP
+         continue
+    fi
+
+    for BATCH_CRAWL in $(ls "$CRAWL_FILES_CACHE")
+    do  BATCH_LABEL=${BATCH_CRAWL%-CRAWL.warc.gz}
+
+        BATCH_WAT="$WAT_FILES_CACHE/$BATCH_LABEL-WAT.warc.gz"
+        BATCH_WET="$WET_FILES_CACHE/$BATCH_LABEL-WET.warc.gz"
+
+        # all input arrived?
+        [ -f "$BATCH_WAT" ] || continue
+        [ -f "$BATCH_WET" ] || continue
+
+        # All components available
+        BATCH_DIR="$PROCESS_DIRS/$BATCH_LABEL"
+        [ -d "$BATCH_DIR" ] || mkdir "$BATCH_DIR"
+
+        log "Preparing new batch in $BATCH_DIR"
+        mv "$CRAWL_FILES_CACHE/$BATCH_CRAWL" "$BATCH_DIR/"
+        mv "$BATCH_WAT" "$BATCH_DIR/"
+        mv "$BATCH_WET" "$BATCH_DIR/"
+
+        process-batch "$BATCH_DIR" &
+        echo $! >"$BATCH_DIR/processing.pid"
+        log "Started processing $BATCH_LABEL in $BATCH_DIR, process $!"
+exit
+
+        sleep $SHORT_SLEEP    # some time to get the processes started
+
+        PREPARED=$(ls "$PROCESS_DIRS" | wc -l)
+        [ $PREPARED -ge $MAX_WARC_BATCHES ] && break
+
+    done
+
+    sleep $LONG_SLEEP       # all busy or nothing to do
+done

@@ -1,0 +1,32 @@
+# Created by [% SCRIPT %] on [% DATE %]
+# which runs your crawl pipeline.
+# Defaults are commented-out
+
+# Where is the large disk for storage?
+export BIGDISK=/data
+
+# Where is the fast disk for temporary files
+# export BIGTMP="$BIGDISK/tmp"
+
+# Short-lived temporary files.  File are removed when not
+# used for one hour (read/write/change date)
+# export TMP_HOUR="$BIGTMP/cache-hour"
+
+# Longer lived temporary files.  File are removed when not
+# used for one day.
+# export TMP_DAY="$BIGTMP/cache-day"
+
+# Long lived temporary files.  File are removed when not
+# used for one month.  Do not use this for huge files: it
+# is still on the fast (hence more expensive) BIGTMP disk.
+# export TMP_MONTH="$BIGTMP/cache-month"
+
+# Where do we put the logs?  There will be a lot of logs,
+# so usually they are only kept for a month.
+# export LOGS="$TMP_MONTH/logs"
+
+# Where is your git-pull of https://github.com/markov2/warc-pipeline?
+export PIPELINE_REPO="[% REPO %]"
+
+# Who to email when something is wrong
+export MAILTO="info@example.com"

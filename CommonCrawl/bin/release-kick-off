@@ -1,0 +1,107 @@
+#!/bin/bash
+
+set -e
+
+function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
+
+if [ $# -ne 1 ]
+then echo "ERROR: requires (new) CommonCrawl release label" >&2
+     exit 1
+fi
+
+case "$1" in
+"CC-MAIN-20[0-9][0-9]-[0-5][0-9]")
+    CC_RELEASE="$1";;
+20[0-9][0-9]-[0-5][0-9])
+    CC_RELEASE="CC-MAIN-$1";;
+*)  echo "ERROR: wrong release label: expect YYYY-WW" >&2
+    exit 1;;
+esac
+
+log "*** CommonCrawl Kick-off release $CC_RELEASE"
+
+S3_ROOT="$S3_BUCKET/crawl-data/$CC_RELEASE"
+PLAN="$TMP_MONTH/CommonCrawl-todo"
+
+[ -d "$PLAN" ] || mkdir $PLAN
+
+CRAWL_PATHS_TODO="$PLAN/$CC_RELEASE-CRAWL-paths"
+log "** collecting CRAWL files TODO in $CRAWL_PATHS_TODO"
+
+if [ ! -d "$CRAWL_PATHS_TODO" ]
+then
+    OUT="$TMP_HOUR/cc-crawl.paths.gz"
+    if [ ! -f "$OUT" ]
+    then log "Collecting crawl path index from AWS"
+         $AWS_CP "$S3_ROOT/warc.paths.gz" "$OUT"
+    fi
+
+    log "Initiating crawl file download TODO list"
+
+    TODO="$CRAWL_PATHS_TODO.tmp"
+    [ -d "$TODO" ] && rm -r "$TODO"
+    mkdir "$TODO"
+
+    zcat "$OUT" | while read F
+       do   LABEL="${F##*/}"
+            LABEL="${LABEL%.warc.gz}"
+            echo "$S3_BUCKET/$F" > "$TODO/$LABEL"
+       done
+
+    mv "$TODO" "$CRAWL_PATHS_TODO"
+fi
+
+
+WAT_PATHS_TODO="$PLAN/$CC_RELEASE-WAT-paths"
+log "** collecting WAT files TODO in $WAT_PATHS_TODO"
+
+if [ ! -d "$WAT_PATHS_TODO" ]
+then
+    OUT="$TMP_HOUR/cc-wat.paths.gz"
+    if [ ! -f "$OUT" ]
+    then log "Collecting WAT path index from AWS"
+         $AWS_CP "$S3_ROOT/wat.paths.gz" "$OUT"
+    fi
+
+    log "Initiating WAT file download TODO list"
+
+    TODO="$WAT_PATHS_TODO.tmp"
+    [ -d "$TODO" ] && rm -r "$TODO"
+    mkdir "$TODO"
+
+    zcat "$OUT" | while read F
+       do   LABEL="${F##*/}"
+            LABEL="${LABEL%.warc.wat.gz}"
+            echo "$S3_BUCKET/$F" > "$TODO/$LABEL"
+       done
+
+    mv "$TODO" "$WAT_PATHS_TODO"
+fi
+
+WET_PATHS_TODO="$PLAN/$CC_RELEASE-WET-paths"
+log "** collecting WET files TODO in $WET_PATHS_TODO"
+
+if [ ! -d "$WET_PATHS_TODO" ]
+then
+    OUT="$TMP_HOUR/cc-wet.paths.gz"
+    if [ ! -f "$OUT" ]
+    then log "Collecting WET path index from AWS"
+         $AWS_CP "$S3_ROOT/wet.paths.gz" "$OUT"
+    fi
+
+    log "Initiating WET file download TODO list"
+
+    TODO="$WET_PATHS_TODO.tmp"
+    [ -d "$TODO" ] && rm -r "$TODO"
+    mkdir "$TODO"
+
+    zcat "$OUT" | while read F
+       do   LABEL="${F##*/}"
+            LABEL="${LABEL%.warc.wet.gz}"
+            echo "$S3_BUCKET/$F" > "$TODO/$LABEL"
+       done
+
+    mv "$TODO" "$WET_PATHS_TODO"
+fi
+
+log "Release $CC_RELEASE initialized"
