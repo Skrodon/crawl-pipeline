@@ -3,30 +3,44 @@
 CommonCrawl produces about 320TB of WARC files per month, in 64000+ separate
 files.  These are downloaded one after the other.
 
-## Start processing a new dataset
+## Maintenance
+
+### Start processing a new dataset
 
 In the current state of this software, we start the processing by
 hand.  The next collects the various path names of resource files.
 
 ```bash
-run CommonCrawl release-kick-off 2021-17
+run CommonCrawl release-kickoff 2021-17
 ```
 
 The week number (17) is the week their crawling was started.  Ideally, we get
 the files on the moment they are produced, not all at the same time at the
 end of the collection.
 
-## Feeding the pipeline
+### Feeding the pipeline
 
-Every few minutes, cron will call `incoming-warcs` on each of the CRAWL, WAT
-and WET set, so see whether the "incoming" directories are filled sufficiently.
-They have to be processed within an hour, otherwise are lost.
+Every few minutes, cron will use `incoming-queue` on each of the CRAWL,
+WAT and WET set, to see whether the "incoming" directories are filled
+sufficiently.  They have to be processed within an hour, otherwise
+are lost.
 
-## Parallel processing
+### Parallel processing
 
 The `warc-pipeline` starts the batch-processing for sets of collected
-WARCs, with a configurable number of processes in parallel.  Earch set
+WARCs, with a configurable number of processes in parallel.  Each set
 is handled by a separate `process-batch` command.
+
+## Directories
+
+- `CommonCrawl/CRAWL-paths-todo` file per WARC to be downloaded
+- `CommonCrawl/WAT-paths-todo`
+- `CommonCrawl/WET-paths-todo`
+- `CommonCrawl/CRAWL-warcs-incoming` cached loaded WARCs
+- `CommonCrawl/WAT-warcs-incoming`
+- `CommonCrawl/WET-warcs-incoming`
+- `CommonCrawl/locks` locks to avoid processes to disturb each other
+- `CommonCrawl/processing` active pipe-lines
 
 ## Some timing
 
