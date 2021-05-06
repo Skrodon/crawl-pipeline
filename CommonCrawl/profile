@@ -1,32 +1,32 @@
 #!/bin/bash
 #
-# CommonCrawl specific profile
+# $MODULE specific profile
 # All variable are overrulable in your own ~/etc/crawl-profile
 
 set -e
 
 : ${AWS_CP:=aws --no-sign-request s3 cp}
 : ${S3_BUCKET:=s3://commoncrawl}
-: ${LOCKS:=$FASTDISK/CommonCrawl/locks}
-: ${LOGS:=$FASTDISK/CommonCrawl/logs}
+: ${LOCKS:=$FASTDISK/$MODULE/locks}
+: ${LOGS:=$FASTDISK/$MODULE/logs}
 export AWS_CP S3_BUCKET LOCKS LOGS
 
-: ${CRAWL_PATHS_TODO:=$BIGDISK/CommonCrawl/CRAWL-paths-todo}
-: ${CRAWL_WARC_CACHE:=$FASTDISK/CommonCrawl/CRAWL-warcs-incoming}
+: ${CRAWL_PATHS_TODO:=$BIGDISK/$MODULE/CRAWL-paths-todo}
+: ${CRAWL_WARC_CACHE:=$FASTDISK/$MODULE/CRAWL-warcs-incoming}
 : ${CRAWL_WARC_CACHE_SIZE:=10}
 export CRAWL_PATHS_TODO CRAWL_WARC_CACHE CRAWL_WARC_CACHE_SIZE
 
-: ${WAT_PATHS_TODO:=$BIGDISK/CommonCrawl/WAT-paths-todo}
-: ${WAT_WARC_CACHE:=$FASTDISK/CommonCrawl/WAT-warcs-incoming}
+: ${WAT_PATHS_TODO:=$BIGDISK/$MODULE/WAT-paths-todo}
+: ${WAT_WARC_CACHE:=$FASTDISK/$MODULE/WAT-warcs-incoming}
 : ${WAT_WARC_CACHE_SIZE:=10}
 export WAT_PATHS_TODO WAT_WARC_CACHE WAT_WARC_CACHE_SIZE
 
-: ${WET_PATHS_TODO:=$BIGDISK/CommonCrawl/WET-paths-todo}
-: ${WET_WARC_CACHE:=$FASTDISK/CommonCrawl/WET-warcs-incoming}
+: ${WET_PATHS_TODO:=$BIGDISK/$MODULE/WET-paths-todo}
+: ${WET_WARC_CACHE:=$FASTDISK/$MODULE/WET-warcs-incoming}
 : ${WET_WARC_CACHE_SIZE:=10}
 export WET_PATHS_TODO WET_WARC_CACHE WET_WARC_CACHE_SIZE
 
-: ${PROCESS_DIRS:=$FASTDISK/CommonCrawl/processing}
+: ${PROCESS_DIRS:=$FASTDISK/$MODULE/processing}
 : ${MAX_PROCESSES_PARALLEL:=1}
 export PROCESS_DIRS MAX_PROCESSES_PARALLEL
 

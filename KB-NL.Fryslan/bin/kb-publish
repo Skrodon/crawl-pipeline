@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+set -x
+
+if [ $# -ne 2 ]
+then echo "ERROR: $0 <in-dir> <out-file>" >&2
+     exit 1
+fi
+
+IN="$1"
+if [ ! -d "$IN" ]
+then echo "ERROR: no input directory '$IN'" >&2
+     exit 2
+fi
+OUT="$2"
+
+#
+### Create a single full index
+#
+
+INDEX="$IN/index.json"
+rm -f "$INDEX"
+
+# The number of files to compose can be huge.  And we need to glue a comma
+# between them, excluding the last :-(
+
+join-json "$INDEX" "$IN" '\bmeta.json$';
+
+7z a $KB_7ZIP_OPTIONS -r -stl -- "$OUT" "$IN"

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
+
+#
+### publish the pipeline output
+#
+
+TODAY=$(date +%Y%m%d)
+
+[ -d "$KB_COLLECT" ] || mkdir -p "$KB_COLLECT"
+[ -d "$KB_PUBLISH" ] || mkdir -p "$KB_PUBLISH"
+
+for DATE in $(ls "$KB_COLLECT")
+do
+    [ "$DATE" -ne "$TODAY" ] || continue
+
+    IN="$KB_COLLECT/$DATE"
+    OUT="$KB_PUBLISH/$DATE.7z"
+
+    log "** Packaging $IN to $OUT"
+    kb-publish "$IN" "$OUT"
+
+done
+
+     

@@ -10,40 +10,40 @@
 
 set -e
 
-LABEL="$1"
+export MODULE="$1"
 shift
 
 COMMAND="$1"
 
 source $HOME/etc/crawl-profile
 source $PIPELINE_REPO/profile
-source $PIPELINE_REPO/$LABEL/profile
+source $PIPELINE_REPO/$MODULE/profile
 
 if [ -t 0 ]
 then : # Running from the command-line
 else
-    LOGDIR="$LOGS/$LABEL"
+    LOGDIR="$LOGS/$MODULE"
     [ -d "$LOGDIR" ] || mkdir $LOGDIR
 
     LOG="$LOGDIR/$(date +%F)-$COMMAND.log"
     exec >>$LOG 2>&1
 fi
 
-PATH="$PIPELINE_REPO/$LABEL/bin:$PATH"
-log "Starting $LABEL: $@"
+PATH="$PIPELINE_REPO/$MODULE/bin:$PATH"
+log "Starting $MODULE: $@"
 
 if "$@"      ### RUN!
-then log "Ending $LABEL $COMMAND: success"
-else log "Ending $LABEL $COMMAND: FAILED"
+then log "Ending $MODULE $COMMAND: success"
+else log "Ending $MODULE $COMMAND: FAILED"
 
      # No flooding of emails to ops when something goes wrong
-     MAILBLOCK="$LOCKS/$LABEL.$COMMAND.mail-lock"
+     MAILBLOCK="$LOCKS/$MODULE.$COMMAND.mail-lock"
 
      if [ ! -f "$MAILBLOCK" ]
      then touch "$MAILBLOCK"
           mail -t <<__WARNING
 To: $MAILTO
-Subject: crawl-pipeline fail $LABEL
+Subject: crawl-pipeline fail $MODULE
 
 Please have a look at $LOG to see what went wrong.
 __WARNING

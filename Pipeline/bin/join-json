@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+#
+# Find all json files which match a certain pattern, into a new
+# json file.
+#
+# It is not much more than "[" . cat */*.json "]", but the potentially
+# large number of files adds a compilation.  Also, the last included
+# HASH cannot have a trailing ','.  Sorted by filename.
+#
+
+use warnings;
+use strict;
+
+use File::Find    qw(find);
+use File::Slurper qw(read_binary);
+
+@ARGV==3 or die "Usage: $0 <out> <dir> <regex>";
+
+my ($out, $dir, $regex) = @_;
+
+# Get the filenames (many!)  File will not return them sorted, so
+# we cannot read the json now (for efficiency)
+
+my @files;
+
+find { wanted   => sub { push @files, $_ if m/$regex/ },
+       no_chdir => 1,
+     }, $dir;
+
+open my $outfh, ">:raw", $out
+    or die "ERROR: failed to create mega json in $out: $!\n";
+
+$outfh->print("[\n");
+my $first = 1;
+foreach my $fn (sort @files)
+{   print ",\n" unless $first;
+    $first = 0;
+    $outfh->print(read_binary $fn);
+}
+$outfh->print("]\n");
+$outfh->close
+     or die "ERROR: errors while writing $out: $!\n";
+
+exit 0;
