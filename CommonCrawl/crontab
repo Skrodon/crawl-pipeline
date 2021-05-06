@@ -1,5 +1,1 @@
-CC = run CommonCrawl
-
-0,5,10,15,20,25,30,35,40,45,50,55 * * * * $CC incoming-warcs CRAWL
-1,6,11,16,21,26,31,36,41,46,51,56 * * * * $CC incoming-warcs WAT
-2,7,12,17,22,27,32,37,42,47,52,57 * * * * $CC incoming-warcs WET
+*/5 * * * * run CommonCrawl cc-cron.often

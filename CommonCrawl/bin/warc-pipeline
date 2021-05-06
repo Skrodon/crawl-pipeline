@@ -9,19 +9,10 @@
 # The wet warcs are about 140MB compressed each
 
 set -e
-set -x
 
 function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
 
-CACHE_DAY="$TMP_DAY/CommonCrawl"
-[ -d "$CACHE_DAY" ] || mkdir "$CACHE_DAY"
-
-PROCESS_DIRS="$CACHE_DAY/processing"
-[ -d "$PROCESS_DIRS" ] || mkdir "$PROCESS_DIRS"
-
-CRAWL_FILES_CACHE="$CACHE_DAY/incoming-CRAWL"
-WAT_FILES_CACHE="$CACHE_DAY/incoming-WAT"
-WET_FILES_CACHE="$CACHE_DAY/incoming-WET"
+[ -d "$PROCESS_DIRS" ] || mkdir -p "$PROCESS_DIRS"
 
 SHORT_SLEEP=1   # relax the system
 LONG_SLEEP=10   # nothing to do: either empty or full
@@ -29,16 +20,16 @@ LONG_SLEEP=10   # nothing to do: either empty or full
 while :
 do
     PREPARED=$(ls "$PROCESS_DIRS" | wc -l)
-    if [ $PREPARED -ge $MAX_WARC_BATCHES ]
+    if [ $PREPARED -ge $MAX_PROCESSES_PARALLEL ]
     then sleep $LONG_SLEEP
          continue
     fi
 
-    for BATCH_CRAWL in $(ls "$CRAWL_FILES_CACHE")
+    for BATCH_CRAWL in $(ls "$CRAWL_WARC_CACHE")
     do  BATCH_LABEL=${BATCH_CRAWL%-CRAWL.warc.gz}
 
-        BATCH_WAT="$WAT_FILES_CACHE/$BATCH_LABEL-WAT.warc.gz"
-        BATCH_WET="$WET_FILES_CACHE/$BATCH_LABEL-WET.warc.gz"
+        BATCH_WAT="$WAT_WARC_CACHE/$BATCH_LABEL-WAT.warc.gz"
+        BATCH_WET="$WET_WARC_CACHE/$BATCH_LABEL-WET.warc.gz"
 
         # all input arrived?
         [ -f "$BATCH_WAT" ] || continue
@@ -49,7 +40,7 @@ do
         [ -d "$BATCH_DIR" ] || mkdir "$BATCH_DIR"
 
         log "Preparing new batch in $BATCH_DIR"
-        mv "$CRAWL_FILES_CACHE/$BATCH_CRAWL" "$BATCH_DIR/"
+        mv "$CRAWL_WARC_CACHE/$BATCH_CRAWL" "$BATCH_DIR/"
         mv "$BATCH_WAT" "$BATCH_DIR/"
         mv "$BATCH_WET" "$BATCH_DIR/"
 
@@ -61,7 +52,7 @@ exit
         sleep $SHORT_SLEEP    # some time to get the processes started
 
         PREPARED=$(ls "$PROCESS_DIRS" | wc -l)
-        [ $PREPARED -ge $MAX_WARC_BATCHES ] && break
+        [ $PREPARED -ge $MAX_PROCESSES_PARALLEL ] && break
 
     done
 

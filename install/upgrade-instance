@@ -35,6 +35,8 @@ __CONFIGURE
 
 fi
 
+source "$PROFILE"
+
 #
 ### The "run" wrapper to be used for cron
 #
@@ -42,6 +44,31 @@ fi
 [ -f $BIN/run ] && chmod u+w $BIN/run
 cp $REPO/install/run $BIN/run
 chmod u=rx $BIN/run
+
+#
+### Some configuration checks
+#
+
+if [ -z "$BIGDISK" ]
+then echo "You need to set BIGDISK to your bulk store." >&2
+     exit 6    # ENXIO
+fi
+
+if [ ! -d "$BIGDISK" ]
+then echo "BIGDISK '$BIGDISK' does not exist or not a directory." >&2
+     exit 2    # ENOENT
+fi
+
+if [ -z "$FASTDISK" ]
+then echo "You need to set FASTDISK to your bulk store." >&2
+     exit 6    # ENXIO
+fi
+
+if [ ! -d "$FASTDISK" ]
+then echo "FASTDISK '$FASTDISK' does not exist or not a directory." >&2
+     exit 2    # ENOENT
+fi
+
 
 #
 ### Update all plugins

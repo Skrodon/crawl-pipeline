@@ -1,25 +1,32 @@
 #!/bin/bash
 #
 # CommonCrawl specific profile
+# All variable are overrulable in your own ~/etc/crawl-profile
 
 set -e
 
-export CC_RELEASE="2021-10"    # YYYYY-WW
+: ${AWS_CP:=aws --no-sign-request s3 cp}
+: ${S3_BUCKET:=s3://commoncrawl}
+: ${LOCKS:=$FASTDISK/CommonCrawl/locks}
+: ${LOGS:=$FASTDISK/CommonCrawl/logs}
+export AWS_CP S3_BUCKET LOCKS LOGS
 
-export AWS_CP="aws --no-sign-request s3 cp"
-export S3_BUCKET="s3://commoncrawl"
+: ${CRAWL_PATHS_TODO:=$BIGDISK/CommonCrawl/CRAWL-paths-todo}
+: ${CRAWL_WARC_CACHE:=$FASTDISK/CommonCrawl/CRAWL-warcs-incoming}
+: ${CRAWL_WARC_CACHE_SIZE:=10}
+export CRAWL_PATHS_TODO CRAWL_WARC_CACHE CRAWL_WARC_CACHE_SIZE
 
-export CACHE_DAY="$TMP_DAY/CommonCrawl"
-[ -d "$CACHE_DAY" ] || mkdir $CACHE_DAY
+: ${WAT_PATHS_TODO:=$BIGDISK/CommonCrawl/WAT-paths-todo}
+: ${WAT_WARC_CACHE:=$FASTDISK/CommonCrawl/WAT-warcs-incoming}
+: ${WAT_WARC_CACHE_SIZE:=10}
+export WAT_PATHS_TODO WAT_WARC_CACHE WAT_WARC_CACHE_SIZE
 
-export CRAWL_FILES_CACHE="$CACHE_DAY/crawl-files"
-export CRAWL_FILES_CACHE_SIZE=10
+: ${WET_PATHS_TODO:=$BIGDISK/CommonCrawl/WET-paths-todo}
+: ${WET_WARC_CACHE:=$FASTDISK/CommonCrawl/WET-warcs-incoming}
+: ${WET_WARC_CACHE_SIZE:=10}
+export WET_PATHS_TODO WET_WARC_CACHE WET_WARC_CACHE_SIZE
 
-export WAT_FILES_CACHE="$TMP_DAY/$CRAWL_SET-wat-files"
-export WAT_FILES_CACHE_SIZE=10
+: ${PROCESS_DIRS:=$FASTDISK/CommonCrawl/processing}
+: ${MAX_PROCESSES_PARALLEL:=1}
+export PROCESS_DIRS MAX_PROCESSES_PARALLEL
 
-export WET_FILES_CACHE="$TMP_DAY/$CRAWL_SET-wet-files"
-export WET_FILES_CACHE_SIZE=10
-
-export PROCESS_DIRS="$TMP_DAY/cc-processing"
-export MAX_WARC_BATCHES=1

@@ -1,0 +1,28 @@
+#!/bin/bash
+# This is run every 5 minutes
+
+set -e
+
+# Only work with latest release
+export CC_RELEASE=$(ls "$CRAWL_PATHS_TODO" | tail -1)
+
+if [ -z "$CC_RELEASE" ]
+then log "No CommonCrawl release initiated yet"
+     exit 0
+fi
+
+# Fill each of the incoming queues for the pipelin
+download-queue CRAWL				\
+    "$CRAWL_PATHS_TODO/$CC_RELEASE"	\
+    "$CRAWL_WARC_CACHE"				\
+    "$CRAWL_WARC_CACHE_SIZE"
+
+download-queue WAT					\
+    "$WAT_PATHS_TODO/$CC_RELEASE"	\
+    "$WAT_WARC_CACHE"				\
+    "$WAT_WARC_CACHE_SIZE"
+
+download-queue WET				\
+    "$WET_PATHS_TODO/$CC_RELEASE"	\
+    "$WET_WARC_CACHE"				\
+    "$WET_WARC_CACHE_SIZE"

@@ -37,7 +37,7 @@ then log "Ending $LABEL $COMMAND: success"
 else log "Ending $LABEL $COMMAND: FAILED"
 
      # No flooding of emails to ops when something goes wrong
-     MAILBLOCK="$TMP_HOUR/$LABEL.$COMMAND.mail-lock"
+     MAILBLOCK="$LOCKS/$LABEL.$COMMAND.mail-lock"
 
      if [ ! -f "$MAILBLOCK" ]
      then touch "$MAILBLOCK"

@@ -21,16 +21,14 @@ esac
 log "*** CommonCrawl Kick-off release $CC_RELEASE"
 
 S3_ROOT="$S3_BUCKET/crawl-data/$CC_RELEASE"
-PLAN="$TMP_MONTH/CommonCrawl-todo"
 
-[ -d "$PLAN" ] || mkdir $PLAN
+[ -d "$CRAWL_PATHS_TODO" ] || mkdir -p "$CRAWL_PATHS_TODO"
+CRAWL_PATHS_LIST="$CRAWL_PATHS_TODO/$CC_RELEASE"
+log "** collecting CRAWL files TODO in $CRAWL_PATHS_LIST"
 
-CRAWL_PATHS_TODO="$PLAN/$CC_RELEASE-CRAWL-paths"
-log "** collecting CRAWL files TODO in $CRAWL_PATHS_TODO"
-
-if [ ! -d "$CRAWL_PATHS_TODO" ]
+if [ ! -d "$CRAWL_PATHS_LIST" ]
 then
-    OUT="$TMP_HOUR/cc-crawl.paths.gz"
+    OUT="$CRAWL_PATHS_TODO/CRAWL.paths.gz"
     if [ ! -f "$OUT" ]
     then log "Collecting crawl path index from AWS"
          $AWS_CP "$S3_ROOT/warc.paths.gz" "$OUT"
@@ -38,7 +36,7 @@ then
 
     log "Initiating crawl file download TODO list"
 
-    TODO="$CRAWL_PATHS_TODO.tmp"
+    TODO="$CRAWL_PATHS_TODO/upcoming.tmp"
     [ -d "$TODO" ] && rm -r "$TODO"
     mkdir "$TODO"
 
@@ -48,16 +46,18 @@ then
             echo "$S3_BUCKET/$F" > "$TODO/$LABEL"
        done
 
-    mv "$TODO" "$CRAWL_PATHS_TODO"
+    mv "$TODO" "$CRAWL_PATHS_LIST"
+    rm "$OUT"
 fi
 
 
-WAT_PATHS_TODO="$PLAN/$CC_RELEASE-WAT-paths"
-log "** collecting WAT files TODO in $WAT_PATHS_TODO"
+[ -d "$WAT_PATHS_TODO" ] || mkdir -p "$WAT_PATHS_TODO"
+WAT_PATHS_LIST="$WAT_PATHS_TODO/$CC_RELEASE"
+log "** collecting WAT files TODO in $WAT_PATHS_LIST"
 
-if [ ! -d "$WAT_PATHS_TODO" ]
+if [ ! -d "$WAT_PATHS_LIST" ]
 then
-    OUT="$TMP_HOUR/cc-wat.paths.gz"
+    OUT="$WAT_PATHS_TODO/WAT.paths.gz"
     if [ ! -f "$OUT" ]
     then log "Collecting WAT path index from AWS"
          $AWS_CP "$S3_ROOT/wat.paths.gz" "$OUT"
@@ -65,7 +65,7 @@ then
 
     log "Initiating WAT file download TODO list"
 
-    TODO="$WAT_PATHS_TODO.tmp"
+    TODO="$WAT_PATHS_TODO/upcoming.tmp"
     [ -d "$TODO" ] && rm -r "$TODO"
     mkdir "$TODO"
 
@@ -75,15 +75,17 @@ then
             echo "$S3_BUCKET/$F" > "$TODO/$LABEL"
        done
 
-    mv "$TODO" "$WAT_PATHS_TODO"
+    mv "$TODO" "$WAT_PATHS_LIST"
+    rm "$OUT"
 fi
 
-WET_PATHS_TODO="$PLAN/$CC_RELEASE-WET-paths"
-log "** collecting WET files TODO in $WET_PATHS_TODO"
+[ -d "$WET_PATHS_TODO" ] || mkdir -p "$WET_PATHS_TODO"
+WET_PATHS_LIST="$WET_PATHS_TODO/$CC_RELEASE"
+log "** collecting WET files TODO in $WET_PATHS_LIST"
 
-if [ ! -d "$WET_PATHS_TODO" ]
+if [ ! -d "$WET_PATHS_LIST" ]
 then
-    OUT="$TMP_HOUR/cc-wet.paths.gz"
+    OUT="$WET_PATHS_TODO/WET.paths.gz"
     if [ ! -f "$OUT" ]
     then log "Collecting WET path index from AWS"
          $AWS_CP "$S3_ROOT/wet.paths.gz" "$OUT"
@@ -91,7 +93,7 @@ then
 
     log "Initiating WET file download TODO list"
 
-    TODO="$WET_PATHS_TODO.tmp"
+    TODO="$WET_PATHS_TODO/upcoming.tmp"
     [ -d "$TODO" ] && rm -r "$TODO"
     mkdir "$TODO"
 
@@ -101,7 +103,7 @@ then
             echo "$S3_BUCKET/$F" > "$TODO/$LABEL"
        done
 
-    mv "$TODO" "$WET_PATHS_TODO"
+    mv "$TODO" "$WET_PATHS_LIST"
 fi
 
 log "Release $CC_RELEASE initialized"

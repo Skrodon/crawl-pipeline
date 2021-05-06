@@ -1,58 +1,45 @@
 #!/bin/bash
 #
-# Keep a few warc files in cache.  You may need to run multiple
-# of these processed in parallel to keep-up with the next stages
-# of production.
+# This script is re-useable: it requires a directory with (sorted)
+# files, which each contain one url to be downloaded into the
+# cache directory.
 
 set -e
 
 function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
 
-if [ $# -ne 1 ]
-then echo "Required: $0 <CRAWL|WAT|WET>" >&2
+if [ $# -ne 4 ]
+then echo "Required: $0 <queue> <todo> <cache> <cache-size>" >&2
      exit 1
 fi
 QUEUE="$1"
+PATHS_TODO="$2"
+CACHE_DIR="$3"
+CACHE_SIZE="$4"
 
-PLAN="$TMP_MONTH/CommonCrawl-todo"
-
-case "$QUEUE" in
-CRAWL) CACHE_SIZE="$CRAWL_FILES_CACHE_SIZE";;
-WAT)   CACHE_SIZE="$WAT_FILES_CACHE_SIZE";;
-WET)   CACHE_SIZE="$WET_FILES_CACHE_SIZE" ;;
-*)  echo "ERROR: unknown queue '$QUEUE'" >&2
-    exit 1
-    ;;
-esac
-
-# Get WARCs to process.  If there are still directories with old
-# months, we will ignore those (cleaned-up automatically)
-
-PATHS_TODO=$(ls -d "$PLAN"/*-$QUEUE-paths | tail -1)
-if [ -z "$PATHS_TODO" ]
-then echo "ERROR: no plan for $QUEUE in $PLAN" >&2
-     exit 1
+if [ ! -d "$PATHS_TODO" ]
+then log "No plan for queue $QUEUE in $PATHS_TODO"
+     exit 0
 fi
 
-CACHE_DIR="$CACHE_DAY/incoming-$QUEUE"
-[ -d "$CACHE_DIR" ] || mkdir "$CACHE_DIR"
-
-log "** CommonCrawl downloader for $QUEUE into $CACHE_DIR, max $CACHE_SIZE"
+log "** Downloader for $QUEUE into $CACHE_DIR, max $CACHE_SIZE"
 
 
+[ -d "$CACHE_DIR" ] || mkdir -p "$CACHE_DIR"
 CACHED=$(ls "$CACHE_DIR" | wc -l)
 if [ $CACHED -ge $CACHE_SIZE ]
 then log "Cache is full (size $CACHED, max $CACHE_SIZE)"
      exit 0
 fi
 
-LOCK_DEST="$TMP_HOUR/CommonCrawl-$QUEUE-$$-locker"
+[ -d "$LOCKS" ] || mkdir -p "$LOCKS"
+LOCK_DEST="$LOCKS/$QUEUE-$$-locker"
 touch "$LOCK_DEST"
 
 ls "$PATHS_TODO" | while read BATCH_LABEL
     do TODO="$PATHS_TODO/$BATCH_LABEL"
 
-       LOCK="$TMP_HOUR/$BATCH_LABEL.lock"
+       LOCK="$LOCKS/$BATCH_LABEL.lock"
        if ! ln -s "$LOCK_DEST" "$LOCK" 2>/dev/null
        then log "$BATCH_LABEL is currently locked.  Next..."
             continue
@@ -61,7 +48,8 @@ ls "$PATHS_TODO" | while read BATCH_LABEL
        AWS_PATH=$(cat "$TODO")
        DEST="$CACHE_DIR/$BATCH_LABEL-$QUEUE.warc.gz"
 
-       DOWNLOAD="$TMP_HOUR/$CC_RELEASE-$QUEUE-$BATCH_LABEL.warc.gz"
+       DOWNLOAD="$DEST.downloading"
+       rm -f "$DOWNLOAD"    # broken downloads
 
        log "Collecting $AWS_PATH into $DOWNLOAD"
        $AWS_CP "$AWS_PATH" "$DOWNLOAD" >/dev/null
