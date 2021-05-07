@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use JSON   qw(decode_json);
+use URI    ();
 
 sub new(%) { my $class = shift; (bless {}, $class)->init( {@_} ) }
 
@@ -15,7 +16,10 @@ sub init($)
 
 sub part($) { $_[0]->{OCP_parts}{$_[1]} }
 
-sub uri() { $_[0]->{OCP_uri} ||= $_[0]->part('request')->uri }
+sub uri()
+{   my $self = shift;
+    $self->{OCP_uri} ||= URI->new($self->part('request')->uri)->canonical;
+}
 
 sub cld2()
 {   my $self = shift;

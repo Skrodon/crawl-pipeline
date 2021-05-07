@@ -7,6 +7,7 @@ use warnings;
 use strict;
 
 use OSF::CommonCrawl::WarcSet  ();
+use OSF::KB_NL_Fryslan::Filter ();
 
 @ARGV==1
    or die "Usage: $0 <dir>\n";
@@ -16,6 +17,15 @@ my $workdir = $ARGV[0];
 
 my $cc = OSF::CommonCrawl::WarcSet->new(dir => $workdir);
 
+my @filters;
+push @filters, OSF::KB_NL_Fryslan::Filter->new;
+
 while(my $product = $cc->getProduct)
 {   print $product->part('request')->uri, "\n";
+
+    $_->filter($product) for @filters;
+
+sleep 5;
 }
+
+$_->finish for @filters;

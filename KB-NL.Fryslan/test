@@ -1,0 +1,6 @@
+#!/bin/bash
+
+REPO=/home/markov/osf-crawl
+BATCH=/data/pipeline/CommonCrawl/processing/CC-MAIN-20210410105831-20210410135831-00000/
+
+run KB-NL.Fryslan process-batch $BATCH
