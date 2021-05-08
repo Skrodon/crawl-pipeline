@@ -30,4 +30,9 @@ sub cld2()
     $self->{OCP_cld2} = decode_json $cld2;
 }
 
+sub contentType()
+{   my $self = shift;
+    $self->{OCP_ct} ||= $self->part('response')->contentType;
+}
+
 1;
