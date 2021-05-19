@@ -13,7 +13,7 @@ sub getRecord(@)
 
 sub _index()
 {   my $self = shift;
-    $self->{OWW_index} ||= $self->_warc_fields;
+    $self->{OWW_index} ||= $self->warcFields;
 }
 
 sub fields() { keys %{$_[0]->_index} }

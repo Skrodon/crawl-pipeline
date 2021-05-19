@@ -10,8 +10,12 @@ use charnames ':full', ':alias' => {
    CIRCUMFLEX => 'COMBINING CIRCUMFLEX ACCENT',
 };
 
-my @content_types = qw(text/html);
-my @domain_names  = qw(frl);
+use OSF::Package::7zip ();
+
+my $collect       = $ENV{KB_COLLECT} or die "Environment variable KB_COLLECT missing";
+
+my @content_types = qw(text/html text/xhtml application/pdf);
+my @domain_names  = qw(frl team);
 
 # The â probably has alternatives in Unicode
 my @words_in_text =
@@ -19,23 +23,25 @@ my @words_in_text =
  , "Frysl\N{a_CIRCUM}n"
  , "Frysla\N{CIRCUMFLEX}n"
  , "Friesland"
+ , 'Teszelszky'
  );
 
-my @regexes_in_text =
- ( Mark => qr/\bmark\b/si,
- );
-
+my @regexes_in_text;
 
 sub init($)
 {   my ($self, $args) = @_;
 
     # Exclude
-    $args->{accept_content_types} ||= \@content_types;
+#   $args->{accept_content_types} ||= \@content_types;
+#   $args->{minimum_text_size} //= 200;
 
     # Search
     push @{$args->{text_contains_words}}, @words_in_text;
     push @{$args->{text_contains_regexes}}, @regexes_in_text;
     push @{$args->{domain_names}}, @domain_names;
+
+    # Save
+    $self->{OKF_save} = OSF::Package::7zip->new(directory => $collect);
 
     $self->SUPER::init($args);
 }
@@ -49,9 +55,18 @@ sub exclude($)
 
 sub save($$)
 {   my ($self, $product, $hits) = @_;
-use Data::Dumper;
-warn Dumper $hits;
-warn "SAVING: ", $product->uri;
+warn "SAVE ", $product->name;
+
+    my $save = $self->{OKF_save};
+    foreach my $component ( qw/request response text/ )
+    {   my $part = $product->part($component) or next;
+        $save->addFile($product, "$component.warc.gz", $part->refBytes);
+    }
+
+    $save->addJson($product, 'facts.json', +{
+        hits   => $hits,
+        origin => $product->origin,
+    });
 }
 
 1;

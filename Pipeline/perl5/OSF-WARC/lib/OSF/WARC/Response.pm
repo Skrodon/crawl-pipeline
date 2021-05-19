@@ -18,7 +18,7 @@ sub getRecord(@)
 
 sub httpResponse()
 {   my $self = shift;
-    $self->{OWR_res} ||= HTTP::Response->parse(${$self->ref_body});
+    $self->{OWR_res} ||= HTTP::Response->parse(${$self->refBody});
 }
 
 sub contentType($)

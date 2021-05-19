@@ -13,7 +13,7 @@ sub getRecord(@)
 
 sub http_request()
 {   my $self = shift;
-    $self->{OWR_req} ||= HTTP::Request->parse(${$self->ref_body});
+    $self->{OWR_req} ||= HTTP::Request->parse(${$self->refBody});
 }
 
 1;

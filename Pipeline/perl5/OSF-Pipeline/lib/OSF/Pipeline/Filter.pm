@@ -8,10 +8,13 @@ use JSON        ();
 my $json = JSON->new->utf8;
 
 # my $filter = OSF::Pipeline::Filter->new(%options)
-# Options:
+#
+# Search options:
 #   text_contains_words   => ARRAY of strings
 #   text_contains_regexes => ARRAY of Regexps
 #   domain-names          => ARRAY of strings (includes all subdomains)
+#
+# Restrict options:
 #   accept_content_types  => ARRAY of strings (not patterns)
 #   requires_text         => BOOLEAN (default false)
 #   minimum_text_size     => INTEGER (default 0)
@@ -24,7 +27,9 @@ sub init($)
     ### Content-Type restrictions
     #
 
-    $self->{OPF_ct} = +{ map +(lc $_ => 1), $args->{accept_content_types} };
+    if(my $act = $args->{accept_content_types})
+    {   $self->{OPF_ct} = +{ map +(lc $_ => 1), @$act };
+    }
 
     ### Flags
     #
@@ -117,7 +122,7 @@ sub exclude($$)
 
     if(my $min = $self->{OPF_min_text})
     {   $text ||= $product->part('text');
-        return 1 if length ${$text->ref_body} < $min;
+        return 1 if length ${$text->refBody} < $min;
     }
 
     0;
@@ -135,7 +140,7 @@ sub selects($)
     my ($text, @hits);
     if(defined $any_word || defined $any_regex)
     {   if(my $p = $product->part('text'))
-        {   $text = $p->ref_body;    # is ref to text
+        {   $text = $p->refBody;    # is ref to text
 
             push @hits, $self->_find_words($text)
                 if defined $any_word && $$text =~ $any_word;

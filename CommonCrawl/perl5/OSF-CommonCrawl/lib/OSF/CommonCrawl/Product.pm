@@ -14,7 +14,17 @@ sub init($)
     $self;
 }
 
+sub origin
+{   my $self = shift;
+     +{ crawler => 'CommonCrawl',
+      , source  => $self->id,
+      };
+}
+
 sub part($) { $_[0]->{OCP_parts}{$_[1]} }
+
+sub id()   { $_[0]->{OCP_id} ||= $_[0]->part('request')->setId }
+sub name() { $_[0]->{OCP_name} ||= $_[0]->uri->as_string }
 
 sub uri()
 {   my $self = shift;
@@ -32,7 +42,20 @@ sub cld2()
 
 sub contentType()
 {   my $self = shift;
-    $self->{OCP_ct} ||= $self->part('response')->contentType;
+    return $self->{OCP_ct} if $self->{OCP_ct};
+
+    my $ct;
+    if(my $response = $self->part('response'))
+    {   $ct = $response->header('WARC-Identified-Payload-Type')
+           || $response->contentType;
+    }
+    else
+    {   # We could try to use MIME::Type->mimeTypeOf($uri) to
+        # autodetect the type, but that's what server software
+        # usually already does for us.
+    }
+
+    $self->{OCP_ct} = $ct || 'application/octet-stream';
 }
 
 1;

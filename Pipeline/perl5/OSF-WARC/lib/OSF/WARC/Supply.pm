@@ -1,6 +1,9 @@
 
 package OSF::WARC::Supply;
 
+use warnings;
+use strict;
+
 use OSF::WARC::Request  ();
 use OSF::WARC::Response ();
 use OSF::WARC::Metadata ();
@@ -28,13 +31,20 @@ sub init($)
     my $fn = $self->{OWS_fn} = $args->{filename}
         or die "ERROR: No warc filename supplied\n";
 
+    ### Set-up uncompressing the data
+
     $fn =~ /\.gz/
         or die "ERROR: Expected file as gzip-compressed, $fn\n";
 
-    my $fh = IO::Uncompress::Gunzip->new($fn, MultiStream => 1)
+    $self->{OWS_unzip} = IO::Uncompress::Gunzip->new($fn, MultiStream => 1)
         or die "ERROR: Cannot open warc-file '$fn' for read: $!\n";
 
-    $self->{OWS_fh}   = $fh;
+    ### Also, open the file raw, to be able to copy unmodified records
+    #   out.
+
+    open $self->{OWS_fh}, "<:raw", $fn
+        or die "ERROR: Cannot open warc-file '$fn' raw: $!\n";
+
     $self->{OWS_recs} = 0;
     $self->{OWS_info} = $self->readInfo;
     $self;
@@ -42,18 +52,20 @@ sub init($)
 
 sub filename   { $_[0]->{OWS_fn} }
 sub fh         { $_[0]->{OWS_fh} }
+sub fh_unzip   { $_[0]->{OWS_unzip} }
 sub info       { $_[0]->{OWS_info} }
 sub nr_records { $_[0]->{OWS_recs} }
 
 sub getRecord(;$)
-{   my ($self, $uri) = @_;
-    my $fh   = $self->fh;
+{   my ($self, $set_id) = @_;
+    my $fh   = $self->fh_unzip;
 
     if(my $next = $self->{OWS_next})
     {   return delete $self->{OWS_next}
-            if ! $uri || $next->uri eq $uri;
+            if ! $set_id || $next->setId eq $set_id;
     }
 
+    my $start   = $fh->tell;
     my $version = $fh->getline;
     $version = $fh->getline
         while ! $fh->eof && $version eq "\r\n";
@@ -83,9 +95,17 @@ sub getRecord(;$)
         or die "ERROR: unknown warc type $type";
 
     $self->{OWS_recs}++;
-    my $record = $class->new(\%head, \$body);
 
-    if($uri && $record->uri ne $uri)
+    my $record = $class->new
+      ( \%head,
+        \$body,    # scalar by reference to avoid copies
+
+        # The gzip is a MultiStream, where each record is compressed
+        # separately, so we should be able to do this.
+        [ $self->fh, $start, $fh->tell - $start ],
+      );
+
+    if($set_id && $record->setId ne $set_id)
     {   $self->{OWS_next} = $record;
         return undef;
     }

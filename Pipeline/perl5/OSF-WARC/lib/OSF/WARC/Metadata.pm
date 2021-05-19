@@ -17,8 +17,8 @@ sub _index()
 
     my $ct = lc($self->header('Content-Type') or die);
     $self->{OWM_index}
-       = $ct eq 'application/warc-fields' ? $self->_warc_fields
-       : $ct eq 'application/json'        ? decode_json ${$self->ref_body}
+       = $ct eq 'application/warc-fields' ? $self->warcFields
+       : $ct eq 'application/json'        ? decode_json ${$self->refBody}
        : die $ct;
 }
 

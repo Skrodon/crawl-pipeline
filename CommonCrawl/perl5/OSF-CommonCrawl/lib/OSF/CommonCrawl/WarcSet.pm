@@ -29,24 +29,29 @@ sub init($$)
 
 sub getProduct()
 {   my $self = shift;
+
+    # In CommonCrawl products, the CRAWL file always have matching
+    # request, response and metadata records.  In other WARC files,
+    # that's not required.
+
     my $request = $self->{OC_crawl}->getRecord or return;
-    my $uri = $request->uri;
+    my $set_id  = $request->setId;
 
     my $response = $self->{OC_crawl}->getRecord;
-    $response->uri eq $uri
+    $response->setId eq $set_id
         or die;
 
     my $metadata = $self->{OC_crawl}->getRecord;
-    $metadata->uri eq $uri
+    $response->setId eq $set_id
         or die;
 
     OSF::CommonCrawl::Product->new(
-        name  => $uri,
+        name  => $request->uri,
         parts => {
             request => $request,
             response => $response,
             metadata => $metadata,
-            text     => $self->{OC_wet}->getRecord($uri),
+            text     => $self->{OC_wet}->getRecord($set_id),
         },
     );
 }
