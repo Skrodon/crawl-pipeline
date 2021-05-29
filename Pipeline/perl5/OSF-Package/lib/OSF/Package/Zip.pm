@@ -1,4 +1,4 @@
-package OSF::Package::7zip;
+package OSF::Package::Zip;
 use parent 'OSF::Package';
 
 use warnings;
@@ -9,22 +9,20 @@ use File::Path  qw(make_path);
 sub init($)
 {   my ($self, $args) = @_;
 
-    my $dir = $self->{OP7_root} = $args->{directory}
+    my $dir = $self->{OPZ_root} = $args->{directory}
         or die "directory required";
 
     make_path $dir;
-
     $self;
 }
 
-sub root() { $_[0]->{OP7_root} }
+sub root() { $_[0]->{OPZ_root} }
 
 sub addFile($$$)
 {   my ($self, $product, $name, $ref_bytes) = @_;
 
     my $dir = $self->root;
-    $dir   .= '/' . $product->id if $product;
-
+    $dir   .= '/' . $product->id;
     make_path $dir;
 
     my $fn  = "$dir/$name";

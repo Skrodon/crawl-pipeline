@@ -11,7 +11,7 @@ umask ug=rwx
 #   cases we make exceptions.
 #
 
-: ${MODULES:="Pipeline CommonCrawl KB-NL.Fryslan"}
+: ${MODULES:="Pipeline CommonCrawl KB-NL.Fryslan LinkCollector"}
 export MODULES
 
 for MODULE in $MODULES

@@ -1,4 +1,5 @@
 package OSF::CommonCrawl::WarcSet;
+use parent 'OSF::Pipeline::Batch';
 
 use warnings;
 use strict;
@@ -12,18 +13,21 @@ sub new(%) { my $class = shift; (bless {}, $class)->init( {@_} ) }
 
 sub init($$)
 {   my ($self, $args) = @_;
+    $self->SUPER::init($args);
+
     my $dir = $args->{dir} or die "No dir";
 
     my $crawl_fn = (bsd_glob "$dir/*-CRAWL.warc.gz")[0] or die "No Crawl";
-    $self->{OC_crawl} = OSF::WARC::Supply->new(filename => $crawl_fn);
+    $self->{OCW_crawl} = OSF::WARC::Supply->new(filename => $crawl_fn);
+
 #use Data::Dumper;
 # warn Dumper $crawl->info;
 
     my $wat_fn   = (bsd_glob "$dir/*-WAT.warc.gz")[0] or die "No WAT";
-    $self->{OC_wat} = OSF::WARC::Supply->new(filename => $wat_fn);
+    $self->{OCW_wat} = OSF::WARC::Supply->new(filename => $wat_fn);
 
     my $wet_fn   = (bsd_glob "$dir/*-WET.warc.gz")[0] or die "No WET";
-    $self->{OC_wet} = OSF::WARC::Supply->new(filename => $wet_fn);
+    $self->{OCW_wet} = OSF::WARC::Supply->new(filename => $wet_fn);
     $self;
 }
 
@@ -34,14 +38,14 @@ sub getProduct()
     # request, response and metadata records.  In other WARC files,
     # that's not required.
 
-    my $request = $self->{OC_crawl}->getRecord or return;
+    my $request = $self->{OCW_crawl}->getRecord or return;
     my $set_id  = $request->setId;
 
-    my $response = $self->{OC_crawl}->getRecord;
+    my $response = $self->{OCW_crawl}->getRecord;
     $response->setId eq $set_id
         or die;
 
-    my $metadata = $self->{OC_crawl}->getRecord;
+    my $metadata = $self->{OCW_crawl}->getRecord;
     $response->setId eq $set_id
         or die;
 
@@ -51,7 +55,7 @@ sub getProduct()
             request => $request,
             response => $response,
             metadata => $metadata,
-            text     => $self->{OC_wet}->getRecord($set_id),
+            text     => $self->{OCW_wet}->getRecord($set_id),
         },
     );
 }

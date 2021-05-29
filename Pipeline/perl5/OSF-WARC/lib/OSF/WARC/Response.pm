@@ -4,8 +4,10 @@ use parent 'OSF::WARC::Record';
 use warnings;
 use strict;
 
-use HTTP::Response ();
-use MIME::Types    ();
+use OSF::HTML::Inspect ();
+use HTTP::Response     ();
+
+use MIME::Types        ();
 my $mt = MIME::Types->new;
 
 sub getRecord(@)
@@ -22,8 +24,24 @@ sub httpResponse()
 }
 
 sub contentType($)
-{   my $resp = $_[0]->httpResponse;
-    $mt->type($resp->content_type || 'application/octet-stream');
+{   my $self = shift;
+    $self->{OWR_ct} ||=
+        $mt->type($self->httpResponse->content_type || 'application/octet-stream');
+}
+
+sub inspectHTML()
+{   my $self = shift;
+    return $self->{OWR_html} if exists $self->{OWR_html};
+
+    my $ct = $self->contentType;
+    $ct eq 'text/html' || $ct eq 'text/xhtml'
+        or return $self->{OWR_html} = undef;
+
+    my $html = $self->httpResponse->decoded_content(ref => 1,
+        alt_charset => 'cp-1252'
+    );
+
+    $self->{OWR_html} = OSF::HTML::Inspect->new(html_ref => $html);
 }
 
 1;

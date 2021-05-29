@@ -8,5 +8,5 @@
 export KB_COLLECT KB_PUBLISH
 
 # Options for 7z
-: ${KB_7ZIP_OPTIONS:=-bd -mmt4 -scsUTF-8 -slp -md=32m -y}
+: ${KB_7ZIP_OPTIONS:=-bd -mmt4 -scsUTF-8 -md=32m -y}
 export KB_7ZIP_OPTIONS

@@ -16,13 +16,14 @@ use File::Slurper qw(read_binary);
 
 @ARGV==3 or die "Usage: $0 <out> <dir> <regex>";
 
-my ($out, $dir, $regex) = @_;
+my ($out, $dir, $regex) = @ARGV;
 
 # Get the filenames (many!)  File will not return them sorted, so
 # we cannot read the json now (for efficiency)
 
 my @files;
 
+warn "DIR=$dir; ", $ENV{PWD};
 find { wanted   => sub { push @files, $_ if m/$regex/ },
        no_chdir => 1,
      }, $dir;
@@ -32,11 +33,13 @@ open my $outfh, ">:raw", $out
 
 $outfh->print("[\n");
 my $first = 1;
+
 foreach my $fn (sort @files)
 {   print ",\n" unless $first;
     $first = 0;
     $outfh->print(read_binary $fn);
 }
+
 $outfh->print("]\n");
 $outfh->close
      or die "ERROR: errors while writing $out: $!\n";

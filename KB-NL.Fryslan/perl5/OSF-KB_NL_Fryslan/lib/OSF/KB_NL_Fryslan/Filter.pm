@@ -60,7 +60,7 @@ warn "SAVE ", $product->name;
     my $save = $self->{OKF_save};
     foreach my $component ( qw/request response text/ )
     {   my $part = $product->part($component) or next;
-        $save->addFile($product, "$component.warc.gz", $part->refBytes);
+        $save->addFile($product, "$component.warc-record.gz", $part->refBytes);
     }
 
     $save->addJson($product, 'facts.json', +{

@@ -1,0 +1,9 @@
+
+# Where the daily results are prepared
+: ${LC_COLLECT:=$FASTDISK/$MODULE}
+
+# Where the LC can download its files for this project
+: ${LC_PUBLISH:=$PUBLISH/Links/$MODULE}
+
+export LC_COLLECT LC_PUBLISH
+
