@@ -1,0 +1,6 @@
+
+: ${PIPELINE_TASKS:="
+OSF::KB_NL::Task::Fryslan
+OSF::Planner::Task::LinkCollector
+"
+

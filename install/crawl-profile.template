@@ -1,9 +1,10 @@
+#!/bin/bash    - only for syntax highlighting: file gets sourced
 # Created by [% SCRIPT %] on [% DATE %]
 # which runs your crawl pipeline.
 # Defaults are commented-out
 
 # Where is the large disk for storage?
-export BIGDISK=/data
+export BIGDISK="/data"
 export FASTDISK="$BIGDISK"
 
 # Where do we put the logs?  There will be a lot of logs,

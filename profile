@@ -11,11 +11,16 @@ umask ug=rwx
 #   cases we make exceptions.
 #
 
-: ${MODULES:="Pipeline CommonCrawl KB-NL.Fryslan LinkCollector"}
-export MODULES
+: ${PROJECTS:="Pipeline CommonCrawl KB-NL.Fryslan LinkCollector"}
+export PROJECTS
 
-for MODULE in $MODULES
-do  DIR="$PWD/$MODULE"
+for PROJECT in $PROJECTS
+do  DIR="$PWD/$PROJECT"
+
+    if [ ! -d "$DIR" ]
+    then echo "Project $PROJECT is not known: skipped" >&2
+         continue
+    fi
 
     # Needs blib/lib when we start with XS
     for PERL5 in "$DIR"/perl5/*
@@ -27,12 +32,6 @@ done
 
 export PERL5LIB PATH
 
-# Where publication are stored (temporarily)
+# Where publications are stored (temporarily)
 : ${PUBLISH:=$BIGDISK/publish}
 export PUBLISH
-
-#
-###
-#
-
-function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }

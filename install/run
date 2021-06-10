@@ -5,45 +5,63 @@
 
 # Everything what is started via crontab should be wrapped in this
 # script, like this:
-#  * * * * * $RUN label command parameters
+#  * * * * * $RUN project command parameters
 
 
 set -e
 
-export MODULE="$1"
+if [ $# -lt 2 ]
+then echo "Usage: $0 <project> <command> <parameters>" >&2
+     exit 1
+fi
+
+export PROJECT="$1"
 shift
 
 COMMAND="$1"
 
-source $HOME/etc/crawl-profile
-source $PIPELINE_REPO/profile
-source $PIPELINE_REPO/$MODULE/profile
+function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
 
-if [ -t 0 ]
-then : # Running from the command-line
-else
-    LOGDIR="$LOGS/$MODULE"
+# Your private instance environment settings, overrules release
+source $HOME/etc/crawl-profile
+
+# The current release environment settings
+source $PIPELINE_REPO/profile
+
+# The project specific environment setting defaults
+
+if [ ! -d "$PIPELINE_REPO/$PROJECT" ]
+then log "Project $PROJECT does not exist (anymore/yet)" >&2
+     exit 1
+fi
+
+source $PIPELINE_REPO/$PROJECT/profile
+
+# Log to a file, when not interactive
+if [ ! -t 0 ]
+then
+    LOGDIR="$LOGS/$PROJECT"
     [ -d "$LOGDIR" ] || mkdir $LOGDIR
 
     LOG="$LOGDIR/$(date +%F)-$COMMAND.log"
     exec >>$LOG 2>&1
 fi
 
-PATH="$PIPELINE_REPO/$MODULE/bin:$PATH"
-log "Starting $MODULE: $@"
+PATH="$PIPELINE_REPO/$PROJECT/bin:$PATH"
+log "Starting $PROJECT: $@"
 
 if "$@"      ### RUN!
-then log "Ending $MODULE $COMMAND: success"
-else log "Ending $MODULE $COMMAND: FAILED"
+then log "Ending $PROJECT $COMMAND: success"
+else log "Ending $PROJECT $COMMAND: FAILED"
 
      # No flooding of emails to ops when something goes wrong
-     MAILBLOCK="$LOCKS/$MODULE.$COMMAND.mail-lock"
+     MAILBLOCK="$LOCKS/$PROJECT.$COMMAND.mail-lock"
 
      if [ ! -f "$MAILBLOCK" ]
      then touch "$MAILBLOCK"
           mail -t <<__WARNING
 To: $MAILTO
-Subject: crawl-pipeline fail $MODULE
+Subject: crawl-pipeline FAIL $PROJECT
 
 Please have a look at $LOG to see what went wrong.
 __WARNING

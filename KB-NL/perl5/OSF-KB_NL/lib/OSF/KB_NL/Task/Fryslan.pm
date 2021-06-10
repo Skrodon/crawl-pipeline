@@ -1,4 +1,4 @@
-package OSF::KB_NL_Fryslan::Task;
+package OSF::KB_NL::Fryslan;
 use parent 'OSF::Pipeline::Task';
 
 use warnings;
