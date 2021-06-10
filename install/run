@@ -30,12 +30,14 @@ source $PIPELINE_REPO/profile
 
 # The project specific environment setting defaults
 
-if [ ! -d "$PIPELINE_REPO/$PROJECT" ]
+export PROJECT_ROOT="$PIPELINE_REPO/$PROJECT"
+
+if [ ! -d "$$PROJECT_ROOT" ]
 then log "Project $PROJECT does not exist (anymore/yet)" >&2
      exit 1
 fi
 
-source $PIPELINE_REPO/$PROJECT/profile
+source $PROJECT_ROOT/profile
 
 # Log to a file, when not interactive
 if [ ! -t 0 ]

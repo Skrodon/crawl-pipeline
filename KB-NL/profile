@@ -1,12 +1,14 @@
 
 
 # Where the daily results are prepared
-: ${KB_COLLECT:=$FASTDISK/$MODULE}
+: ${KB_COLLECT:=$FASTDISK}
 
 # Where the KB can download its files for this project
-: ${KB_PUBLISH:=$PUBLISH/KB-NL/$MODULE}
+: ${KB_PUBLISH:=$PUBLISH/KB-NL}
 export KB_COLLECT KB_PUBLISH
 
 # Options for 7z
 : ${KB_7ZIP_OPTIONS:=-bd -mmt4 -scsUTF-8 -md=32m -y}
 export KB_7ZIP_OPTIONS
+
+PERL5LIB="$PERL5LIB:$PROJECT_ROOT/perl5/OSF-KB_NL/lib"
