@@ -1,14 +1,14 @@
 #!/usr/bin/perl
 #
-# Feed all related warcs files per source through a set of filters.
+# Feed all related warcs files per source through a set of tasks.
 #
 
 use warnings;
 use strict;
 
 use OSF::CommonCrawl::WarcSet  ();
-use OSF::KB_NL_Fryslan::Filter ();
-use OSF::LinkCollector::Filter ();
+use OSF::KB_NL_Fryslan::Task ();
+use OSF::LinkCollector::Task ();
 use File::Basename  qw(basename);
 
 @ARGV==1
@@ -22,16 +22,16 @@ my $cc = OSF::CommonCrawl::WarcSet->new(
   name => basename($workdir),
 );
 
-my @filters;
-push @filters, OSF::KB_NL_Fryslan::Filter->new;
-push @filters, OSF::LinkCollector::Filter->new;
+my @tasks;
+push @tasks, OSF::KB_NL_Fryslan::Task->new;
+push @tasks, OSF::LinkCollector::Task->new;
 
 while(my $product = $cc->getProduct)
 {   #print $product->part('request')->uri, "\n";
 
-    $_->filter($product) for @filters;
+    $_->filter($product) for @tasks;
 
 #sleep 1;
 }
 
-$_->finish(batch => $cc) for @filters;
+$_->finish(batch => $cc) for @tasks;

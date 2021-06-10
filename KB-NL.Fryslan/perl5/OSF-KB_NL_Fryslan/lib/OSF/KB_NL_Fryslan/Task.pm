@@ -1,5 +1,5 @@
-package OSF::KB_NL_Fryslan::Filter;
-use parent 'OSF::Pipeline::Filter';
+package OSF::KB_NL_Fryslan::Task;
+use parent 'OSF::Pipeline::Task';
 
 use warnings;
 use strict;
@@ -41,7 +41,7 @@ sub init($)
     push @{$args->{domain_names}}, @domain_names;
 
     # Save
-    $self->{OKF_save} = OSF::Package::7zip->new(directory => $collect);
+    $self->{OKT_save} = OSF::Package::7zip->new(directory => $collect);
 
     $self->SUPER::init($args);
 }
@@ -57,7 +57,7 @@ sub save($$)
 {   my ($self, $product, $hits) = @_;
 warn "SAVE ", $product->name;
 
-    my $save = $self->{OKF_save};
+    my $save = $self->{OKT_save};
     foreach my $component ( qw/request response text/ )
     {   my $part = $product->part($component) or next;
         $save->addFile($product, "$component.warc-record.gz", $part->refBytes);

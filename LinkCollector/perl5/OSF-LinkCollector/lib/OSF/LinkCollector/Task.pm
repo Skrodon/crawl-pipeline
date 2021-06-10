@@ -1,5 +1,5 @@
-package OSF::LinkCollector::Filter;
-use parent 'OSF::Pipeline::Filter';
+package OSF::LinkCollector::Task;
+use parent 'OSF::Pipeline::Task';
 
 ### Collects ALL links from HTML/XHTML
 
@@ -22,12 +22,12 @@ sub init($)
 
     # Search
 
-    $self->{OKF_packer} = OSF::Package::Zip->new(directory => $collect);
+    $self->{OLT_packer} = OSF::Package::Zip->new(directory => $collect);
     $self->SUPER::init($args);
 }
 
-sub packer(){ $_[0]->{OKF_packer} }
-sub index() { $_[0]->{OKF_index} ||= {} }
+sub packer(){ $_[0]->{OLT_packer} }
+sub index() { $_[0]->{OLT_index} ||= {} }
 
 sub exclude($)
 {   my ($self, $product) = @_;
