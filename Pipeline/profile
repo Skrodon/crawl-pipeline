@@ -1,6 +1,29 @@
 
-: ${PIPELINE_TASKS:="
-OSF::KB_NL::Task::Fryslan
-OSF::Planner::Task::LinkCollector
+_T="\
+ OSF::KB_NL::Task::Fryslan\
+ OSF::Planner::Task::LinkCollector\
 "
 
+PERL5LIB+=":$PIPELINE_REPO/CommonCrawl/perl5/OSF-CommonCrawl/lib"
+source $PIPELINE_REPO/CommonCrawl/profile
+
+PERL5LIB+=":$PROJECT_ROOT/perl5/OSF-Pipeline/lib"
+PERL5LIB+=":$PROJECT_ROOT/perl5/OSF-HTML/lib"
+
+export PIPELINE_TASKS=
+for TASK in $_T
+do
+    if [ ${PIPELINE_TASK["$TASK"]:-on} = 'on' ]
+    then PIPELINE_TASKS+=" $TASK"
+         unset PIPELINE_TASK["$TASK"]
+    fi
+done
+
+if [ "${PIPELINE_TASK[*]}" != '' ]
+then echo "ERROR: unknown pipeline task: #${PIPELINE_TASK[@]}#" >&2
+     exit 1
+fi
+
+#XXX only when TASKS are enabled, but it is not killing
+source $PIPELINE_REPO/KB-NL/profile
+source $PIPELINE_REPO/Planner/profile

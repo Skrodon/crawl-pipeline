@@ -3,4 +3,4 @@
 REPO=/home/markov/osf-crawl
 BATCH=/data/pipeline/CommonCrawl/batch-testset
 
-run KB-NL.Fryslan process-batch $BATCH
+run Pipeline process-batch $BATCH

@@ -7,9 +7,10 @@ use warnings;
 use strict;
 
 use OSF::CommonCrawl::WarcSet  ();
-use OSF::KB_NL_Fryslan::Task ();
-use OSF::LinkCollector::Task ();
 use File::Basename  qw(basename);
+
+my @task_pkgs = grep /^[\w:]+$/, split ' ', $ENV{PIPELINE_TASKS};
+@task_pkgs or die "ERROR: No PIPELINE_TASKS in the environment\n";
 
 @ARGV==1
    or die "Usage: $0 <dir>\n";
@@ -23,8 +24,12 @@ my $cc = OSF::CommonCrawl::WarcSet->new(
 );
 
 my @tasks;
-push @tasks, OSF::KB_NL_Fryslan::Task->new;
-push @tasks, OSF::LinkCollector::Task->new;
+foreach my $task_pkg (@task_pkgs)
+{   eval "require $task_pkg";
+    die $@ if $@;
+
+    push @tasks, $task_pkg->new;
+}
 
 while(my $product = $cc->getProduct)
 {   #print $product->part('request')->uri, "\n";

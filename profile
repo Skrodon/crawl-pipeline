@@ -6,10 +6,11 @@ set -e
 umask ug=rwx
 
 # Add the generic programs
-export PATH="$PATH:$PIPELINE_REPO/bin"
+PATH+=":$PIPELINE_REPO/bin"
 
 # Add the generic perl5 modules
-export PERL5LIB="$PERL5LIB:$PIPELINE_REPO/perl5/OSF-Package/lib:$PIPELINE_REPO/perl5/OSF_WARC/lib"
+PERL5LIB+=":$PIPELINE_REPO/perl5/OSF-Package/lib"
+PERL5LIB+=":$PIPELINE_REPO/perl5/OSF-WARC/lib"
 
 # Where publications are stored (temporarily)
 

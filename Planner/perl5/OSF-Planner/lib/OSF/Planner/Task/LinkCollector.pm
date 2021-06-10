@@ -9,8 +9,8 @@ use utf8;
 
 use OSF::Package::Zip  ();
 
-my $collect       = $ENV{LC_COLLECT}
-    or die "Environment variable LC_COLLECT missing";
+my $collect       = $ENV{PLANNER_LC_COLLECT}
+    or die "Environment variable PLANNER_LC_COLLECT missing";
 
 my @content_types = qw(text/html text/xhtml);
 

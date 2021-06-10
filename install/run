@@ -23,6 +23,7 @@ COMMAND="$1"
 function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
 
 # Your private instance environment settings, overrules release
+declare -A PIPELINE_TASK
 source $HOME/etc/crawl-profile
 
 # The current release environment settings
@@ -32,8 +33,8 @@ source $PIPELINE_REPO/profile
 
 export PROJECT_ROOT="$PIPELINE_REPO/$PROJECT"
 
-if [ ! -d "$$PROJECT_ROOT" ]
-then log "Project $PROJECT does not exist (anymore/yet)" >&2
+if [ ! -d "$PROJECT_ROOT" ]
+then log "Project '$PROJECT' does not exist (anymore/yet)" >&2
      exit 1
 fi
 

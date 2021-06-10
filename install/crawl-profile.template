@@ -16,3 +16,8 @@ export PIPELINE_REPO="[% REPO %]"
 
 # Who to email when something is wrong
 export MAILTO="info@example.com"
+
+# You may switch pipeline tasks of by uncommenting these
+#PIPELINE_TASK["OSF::KB_NL::Task::Fryslan"]=off
+#PIPELINE_TASK["OSF::Planner::Task::LinkCollector"]=off
+

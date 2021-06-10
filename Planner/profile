@@ -1,9 +1,7 @@
 
-# Where the daily results are prepared
-: ${LC_COLLECT:=$FASTDISK/$MODULE}
+# For the LinkCollector Task
+: ${PLANNER_LC_COLLECT:=$FASTDISK/Planner/Links}
+: ${PLANNER_LC_PUBLISH:=$PUBLISH/Planner/Links}
+export PLANNER_LC_COLLECT PLANNER_LC_PUBLISH
 
-# Where the LC can download its files for this project
-: ${LC_PUBLISH:=$PUBLISH/Links/$MODULE}
-
-export LC_COLLECT LC_PUBLISH
-
+PERL5LIB+=":$PIPELINE_REPO/Planner/perl5/OSF-Planner/lib"
