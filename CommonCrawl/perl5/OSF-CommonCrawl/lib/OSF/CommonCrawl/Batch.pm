@@ -1,4 +1,4 @@
-package OSF::CommonCrawl::WarcSet;
+package OSF::CommonCrawl::Batch;
 use parent 'OSF::Pipeline::Batch';
 
 use warnings;

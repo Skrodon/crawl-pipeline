@@ -11,8 +11,10 @@ use charnames ':full', ':alias' => {
 };
 
 use OSF::Package::7zip ();
+use HTTP::Status       qw(is_success);
 
-my $collect       = $ENV{KB_COLLECT} or die "Environment variable KB_COLLECT missing";
+my $collect       = $ENV{KB_COLLECT}
+    or die "Environment variable KB_COLLECT missing";
 
 my @content_types = qw(text/html text/xhtml application/pdf);
 my @domain_names  = qw(frl team);
@@ -30,27 +32,27 @@ my @regexes_in_text;
 
 sub init($)
 {   my ($self, $args) = @_;
-
-    # Exclude
-#   $args->{accept_content_types} ||= \@content_types;
-#   $args->{minimum_text_size} //= 200;
-
-    # Search
-    push @{$args->{text_contains_words}}, @words_in_text;
-    push @{$args->{text_contains_regexes}}, @regexes_in_text;
-    push @{$args->{domain_names}}, @domain_names;
-
-    # Save
     $self->{OKT_save} = OSF::Package::7zip->new(directory => $collect);
-
     $self->SUPER::init($args);
 }
 
-sub exclude($)
-{   my ($self, $product) = @_;
-    return 1 if $self->SUPER::exclude($product);
+sub createFilter()
+{   my $self  = shift;
+    my $text  = $self->filterRequiresText(minimum_size => 200);
+    my $ct    = $self->filterContentType(\@content_types);
+    my $rid   = $self->filterDomain(\@domain_names);
+    my $words = $self->filterFullWords(\@words_in_text);
 
-    0;
+    sub {
+        my $product = shift;
+           is_success($product->responseStatus)
+        && $ct->($product)
+        && $text->($product)
+            or return undef;
+
+        my @hits = ($words->($product), $rid->($product));
+        @hits ? \@hits : undef;
+    };
 }
 
 sub save($$)

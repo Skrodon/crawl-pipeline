@@ -4,206 +4,169 @@ package OSF::Pipeline::Task;
 use warnings;
 use strict;
 
-use JSON        ();
+use Log::Report 'pipeline';
+
+use JSON            ();
+use List::MoreUtils qw(uniq);
+
 my $json = JSON->new->utf8;
 
-# my $filter = OSF::Pipeline::Task->new(%options)
-#
-# Search options:
-#   text_contains_words   => ARRAY of strings
-#   text_contains_regexes => ARRAY of Regexps
-#   domain-names          => ARRAY of strings (includes all subdomains)
-#
-# Restrict options:
-#   accept_content_types  => ARRAY of strings (not patterns)
-#   requires_text         => BOOLEAN (default false)
-#   minimum_text_size     => INTEGER (default 0)
+=chapter NAME
+
+OSF::Pipeline::Task - client task
+
+=chapter SYNOPSIS
+
+=chapter DESCRIPTION
+Extensions of this module are Tasks which run on the Pipeline.
+
+=chapter METHODS
+
+=c_method new %options
+=cut
 
 sub new(%) { my $class = shift; (bless {}, $class)->init({@_}) }
 
 sub init($)
 {   my ($self, $args) = @_;
 
-    ### Content-Type restrictions
-    #
-
-    if(my $act = $args->{accept_content_types})
-    {   $self->{OPT_ct} = +{ map +(lc $_ => 1), @$act };
-    }
-
-    ### Flags
-    #
-
-    # No not inspect a product unless it has a text extract.
-    $self->{OPT_req_text} = $args->{requires_text}     || 0;
-
-    # Small texts extracts are usually garbage
-    $self->{OPT_min_text} = $args->{minimum_text_size} || 0;
-
-    ### Words
-    #   May contain \W, but f.i. blanks are not handled as \s+
-
-    my $words = $args->{text_contains_words} || [];
-    if(@$words)
-    {   # For the first, optimized scan
-        my $any = join '|', map quotemeta, @$words;
-        $self->{OPT_any_word} = qr!\b(?:$any)\b!;
-
-        # Translate word into regex
-        $self->{OPT_words} = +{ map +($_ => qr/\b\Q$_\E\b/i), @$words };
-    }
-
-    ### Regex
-    #   Passed as LIST of pairs.
-
-    my $regexes = $self->{OPT_regexes}
-       = +{ @{$args->{text_contains_regexes} || []} };
-
-    if(keys %$regexes)
-    {   my $any = join '|', values %$regexes;
-        $self->{OPT_any_regex} = qr!\b(?:$any)\b!;
-    }
-
-    ### Domain-names
-
-    my $domains = $self->{OPT_domains} = $args->{domain_names} || [];
-    if(@$domains)
-    {   # Matching them reverse sorted makes regex internal optimizations
-        # possible.
-        my $domains = join '|', sort map lc scalar reverse, @$domains;
-        $domains    =~ s/\./\\./g;
-        $self->{OPT_any_domain} = qr/^($domains)(?:\.|$)/;
-    }
-
-    ### Statistics
-    $self->{OPT_stats} = { taken => 0 };
-
     $self;
 }
 
-# my $taken = $filter->filter($product)
-# Process the product: take what we need if we need it.
+=method take $product, %options
+=cut
 
-sub filter($)
-{   my ($self, $product) = @_;
-    my $stats = $self->{OPT_stats};
-    $stats->{products}++;
-
-    return 0
-        if $self->exclude($product);
-
-    $stats->{inspected}++;
-
-    # Do we need this object?
-    my $hits = $self->selects($product);
-    @$hits or return 0;
+sub take($%)
+{   my ($self, $product, %args) = @_;
 
     # write
-    $self->save($product, $hits);
-    $stats->{taken}++;
+    $self->_save($product, my $hits);
+    1;
 }
 
-# my $exclude = $filter->exclude($product);
-# Do not inspect the product any further which this returns true.
+#---------------
+=section Filter construction
 
-sub exclude($$)
-{   my ($self, $product) = @_;
+=method filterRequiresText %options
+=option  minimum_size INTEGER
+=default minimum_size 0
+=cut
 
-    if(my $accept_ct = $self->{OPT_ct})
-    {   $accept_ct->{lc $product->contentType}
-            or return 1;
-    }
-
-    my $text;
-    if($self->{OPT_req_text})
-    {   $text = $product->part('text');
-        $text or return 1;
-    }
-
-    if(my $min = $self->{OPT_min_text})
-    {   $text ||= $product->part('text');
-        return 1 if length ${$text->refBody} < $min;
-    }
-
-    0;
-}
-
-# my $hits = $filter->selects($product);
-# Returns an ARRAY of HASHes with information about the reasons of
-# selection, when the product needs to be sent to consumer.
-
-sub selects($)
-{   my ($self, $product) = @_;
-    my $any_word  = $self->{OPT_any_word};
-    my $any_regex = $self->{OPT_any_regex};
-
-    my ($text, @hits);
-    if(defined $any_word || defined $any_regex)
-    {   if(my $p = $product->part('text'))
-        {   $text = $p->refBody;    # is ref to text
-
-            push @hits, $self->_find_words($text)
-                if defined $any_word && $$text =~ $any_word;
-
-            push @hits, $self->_find_regexes($text)
-                if defined $any_regex && $$text =~ $any_regex;
-        }
-    }
-
-    if(my $domains = $self->{OPT_any_domain})
-    {   my $hostname = lc $product->uri->host;
-
-        if(reverse($hostname) =~ $domains)
-        {   my $domain = reverse $1;
-            push @hits, +{ rule => 'domain name', name => $domain };
-
-            # Don't overdo the stats
-            my $counter = @{$self->{OPT_domains}} > 10 ? 'domain'
-               : "domain in $domain";
-
-            $self->{OPT_stats}{rule}{$counter}++;
-        }
-    }
-
-    \@hits;
-}
-
-sub _find_words($)
-{   my ($self, $text) = @_;
-    my @hits;
-    my $words = $self->{OPT_words};
-
-    foreach my $word (keys %$words)
-    {   $$text =~ $words->{$word} or next;
-
-        push @hits, +{ rule => 'word in text', word => $word };
-        $self->{OPT_stats}{rule}{"word $word"}++;
-    }
-
-    @hits;
-}
-
-sub _find_regexes($)
-{   my ($self, $text) = @_;
-    my @hits;
-    my $regexes = $self->{OPT_regexes};
-
-    foreach my $name (keys %$regexes)
-    {   $$text =~ $regexes->{$name} or next;
-        push @hits, +{ rule => 'regex in text', name => $name };
-        $self->{OPT_stats}{rule}{"regex $name"}++;
-    }
-
-    @hits;
-}
-
-# Called when one batch of input has been processed.  It may
-# trigger statistics to be written, files to be closed or whatever.
-sub finish(%)
+sub filterRequiresText(%)
 {   my ($self, %args) = @_;
+    my $minsize = $args{minimum_size} || 0;
 
-use Data::Dumper;
-warn "STATS=", Dumper($self->{OPT_stats});
+    $minsize
+        or return sub { $_[0]->refText ? +{ rule => 'requires text' } : () };
+
+    sub {
+        my $t = $_[0]->refText;
+        $t && length $$t >= $minsize or return ();
+         +{ rule          => 'requires text',
+             minimum_size => $minsize,
+             size         => length $$t,
+          };
+    };
+}
+
+=method filterContentType \@types
+=cut
+
+sub filterContentType($)
+{   my ($self, $types) = @_;
+    @$types or return sub { () };
+
+    my %types = map +(lc $_ => 1), @$types;
+
+    sub {
+        my $ct = $_[0]->contentType;
+        $types{lc $ct} or return ();
+        +{ rule => 'content type', type => $ct };
+    };
+}
+
+=method filterDomain \@domains
+=cut
+
+sub filterDomain($)
+{   my ($self, $domains) = @_;
+    @$domains or return sub { () };
+
+    # Matching them reverse sorted makes regex internal optimizations
+    # possible.
+    my $any   = join '|', sort map lc scalar reverse, @$domains;
+    $any      =~ s/\./\\./g;
+    my $match = qr/^($any)(?:\.|$)/;
+
+    sub {
+        my $hostname = reverse lc($_[0]->uri->host);
+        $hostname =~ $match or return ();
+        +{ rule => 'domain name', name => reverse $1 };
+    };
+}
+
+=method filterFullWords \@words, %options;
+=option  case_sensitive BOOLEAN
+=default case_sensitive <false>
+=cut
+
+sub filterFullWords($%)
+{   my ($self, $words, %args) = @_;
+    @$words or return sub { 0 };
+
+    my $any   = join '|', map quotemeta, @$words;
+
+    if($args{case_sensitive})
+    {   my $match = qr!\b(?:$any)\b!;
+        return sub {
+            my $ref_text = $_[0]->refText;
+            my @words = $$ref_text =~ /$match/m;
+            @words or return ();
+
+            map +{ rule => 'full word', word => $_ },
+                uniq @words;
+        };
+    }
+    else
+    {   my $match = qr!\b(?:$any)\b!i;
+        my %words = map +(lc($_) => $_), @$words;  # right capitization
+
+        return sub {
+            my $ref_text = $_[0]->refText;
+            my @words = $$ref_text =~ /$match/im;
+            @words or return ();
+
+            map +{ rule => 'full word', word => $words{$_} },
+                uniq(map lc, @words);
+        };
+    }
+}
+
+=method filterMatchText \%regexps, %options;
+The keys are the names for the regexes, used for logging.  The $1 of
+the regex is collected in the log.
+
+=option  case_sensitive BOOLEAN
+=default case_sensitive <false>
+=cut
+
+sub filterMatchText($%)
+{   my ($self, $regexes, %args) = @_;
+    keys %$regexes or return sub { () };
+
+    sub {
+        my $text = $_[0]->refText or return ();
+        my @hits;
+        foreach my $label (keys %$regexes)
+        {   my @matches = $$text =~ /$regexes->{$label}/g;
+            push @hits, +{
+                rule    => 'match text',
+                pattern => $label,
+                matches => [ uniq @matches ],
+            } if @matches;
+        }
+        @hits;
+    };
 }
 
 1;

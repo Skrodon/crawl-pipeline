@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+#
+# Feed all related warcs files per source through a set of tasks.
+#
+
+use warnings;
+use strict;
+
+use OSF::CommonCrawl::Batch  ();
+use File::Basename  qw(basename);
+
+@ARGV==1
+   or die "Usage: $0 <dir>\n";
+
+my $workdir = $ARGV[0];
+-d $workdir or die "ERROR: workdir '$workdir' does not exist\n";
+
+my $cc = OSF::CommonCrawl::Batch->new(
+  dir  => $workdir,
+  name => basename($workdir),
+);
+
+$cc->processProducts;
+
+$cc->showStats;
+
+$cc->finish;
