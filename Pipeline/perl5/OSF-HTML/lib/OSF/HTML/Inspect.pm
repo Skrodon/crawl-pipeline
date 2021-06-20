@@ -10,7 +10,8 @@ sub new(%) { my $class = shift; (bless {}, $class)->_init({@_}) }
 
 # Initialises an OSF::HTML::Inspect instance and returns it.
 sub _init(%)
-{   my ($self, $args) = @_;
+{
+    my ($self, $args) = @_;
     my $html_ref_re = qr!\<\s*/?\s*\w+!;
     {
         local $Carp::CarpLevel = 2;
@@ -19,7 +20,7 @@ sub _init(%)
           unless $args->{html_ref};
         croak('Argument "html_ref" is not a reference to a HTML string.')
           unless (ref $args->{html_ref} eq 'SCALAR'
-            && ${$args->{html_ref}} =~ /$html_ref_re/);
+            && (${$args->{html_ref}} || '') =~ /$html_ref_re/);
     }
 
     # Translate all tags to lower-case, because libxml is case-
@@ -44,13 +45,13 @@ sub _init(%)
 # everything in it.
 sub doc() { $_[0]->{OHI_doc} }
 
-# attributes must be treated are case-insensitive
+# attributes must be treated as if they are case-insensitive
 sub _attributes($)
 {   my ($self, $element) = @_;
     my %attrs = map +(lc($_->name) => $_->value),
         grep $_->isa('XML::LibXML::Attr'),  # not namespace decls
             $element->attributes;
-    \%attrs;
+    return \%attrs;
 }
 
 
@@ -64,25 +65,24 @@ sub _attributes($)
 # ignored here.
 
 sub collectMeta(%)
-{   my ($self, %args) = @_;
+{
+    my ($self, %args) = @_;
     return $self->{OHI_meta} if $self->{OHI_meta};
-
     my %meta;
-    foreach my $meta ($self->doc->getElementsByTagName('meta'))
-    {   my $attrs = $self->_attributes($meta);
-        if(my $http = $attrs->{'http-equiv'})
-        {   my $content = $attrs->{content};
-            $meta{'http-equiv'}{$http} = $content if defined $content;
+    foreach my $meta ($self->doc->getElementsByTagName('meta')) {
+        my $attrs = $self->_attributes($meta);
+        if (my $http = $attrs->{'http-equiv'}) {
+            $meta{'http-equiv'}{lc $http} = $attrs->{content}
+              if defined $attrs->{content};
         }
-        elsif(my $name = $attrs->{name})
-        {   my $content = $attrs->{content};
-            $meta{name}{$name} = $content if defined $content;
+        elsif (my $name = $attrs->{name}) {
+            $meta{name}{$name} = $attrs->{content} if defined $attrs->{content};
         }
-        elsif(my $charset = $attrs->{charset})
-        {   $meta{charset} = $charset;
+        elsif (my $charset = $attrs->{charset}) {
+            $meta{charset} = $charset;
         }
     }
-
+    return $self->{OHI_meta} = \%meta;
 }
 
 1;
