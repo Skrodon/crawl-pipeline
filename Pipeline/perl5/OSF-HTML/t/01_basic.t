@@ -38,10 +38,9 @@ my $constructor_and_doc = sub {
         '$inspector->doc() is a read-only getter'
     );
 };
-
 my $collectMeta = sub {
-    my $inspector = OSF::HTML::Inspect->new(
-        html_ref => \_slurp("$Bin/data/collectMeta.html"));
+my $html =_slurp("$Bin/data/collectMeta.html");
+    my $inspector = OSF::HTML::Inspect->new( html_ref =>\$html );
     my $expectedMeta = {
         charset => 'utf-8',
         name    => {
@@ -61,8 +60,18 @@ my $collectMeta = sub {
     );
 };
 
-subtest constructor_and_doc => $constructor_and_doc;
-subtest collectMeta         => $collectMeta;
+my $collectOpenGraph = sub {
+    my $html = _slurp("$Bin/data/collectOpenGraph.html");
+
+    my $inspector = OSF::HTML::Inspect->new(html_ref => \$html);
+    my $og        = $inspector->collectOpenGraph();
+    is(ref $og => 'HASH', 'collectOpenGraph() returns a HASH reference');
+    note explain $og;
+};
+
+# subtest constructor_and_doc => $constructor_and_doc;
+# subtest collectMeta         => $collectMeta;
+subtest collectOpenGraph => $collectOpenGraph;
 
 sub _slurp {
     open my $fh, '<', $_[0] || Carp::croak($!);

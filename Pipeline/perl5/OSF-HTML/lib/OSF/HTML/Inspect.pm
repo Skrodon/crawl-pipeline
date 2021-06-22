@@ -17,7 +17,7 @@ sub _init(%)
         local $Carp::CarpLevel = 2;
         croak(  'Expected parameter "html_ref" is not present.'
               . ' Please provide reference to a HTML string!')
-          unless $args->{html_ref};
+          if(!($args && $args->{html_ref}));
         croak('Argument "html_ref" is not a reference to a HTML string.')
           unless (ref $args->{html_ref} eq 'SCALAR'
             && (${$args->{html_ref}} || '') =~ /$html_ref_re/);
@@ -83,6 +83,55 @@ sub collectMeta(%)
         }
     }
     return $self->{OHI_meta} = \%meta;
+}
+
+# Collects all meta elements which have an attribute 'property'
+# TODO: Implement collection fo all tags specified in this page
+# https://developers.facebook.com/docs/sharing/webmasters
+# https://ogp.me/#types
+# See also: https://developers.facebook.com/docs/sharing/webmasters/crawler
+# https://developers.facebook.com/docs/sharing/webmasters/optimizing
+sub collectOpenGraph(%)
+{
+    my ($self, %args) = @_;
+    return $self->{OHI_og} if $self->{OHI_og};
+    $self->{OHI_og} = {};
+    for my $meta ($self->doc->findnodes('//meta[@property]')) {
+        $self->_handle_og_meta($meta);
+    }
+
+    return $self->{OHI_og};
+}
+
+# A dummy, initial implementation of collecting OG data from a page
+sub _handle_og_meta {
+    my ($self, $meta) = @_;
+    my ($ns, $type, $attr) = split m':', $meta->getAttribute('property');
+
+    # Handle Types title,type,url
+    if ($type =~ /title|type|url/) {
+        $self->{OHI_og}{$ns}{$type} = $meta->getAttribute('content');
+        return;
+    }
+
+    # Handle Arrays
+    # a new object starts
+    if (!exists $self->{OHI_og}{$ns}{$type}) {
+        $self->{OHI_og}{$ns}{$type} =
+          [{($attr ? $attr : 'content') => $meta->getAttribute('content')}];
+    }
+
+    # continue adding properties to this object
+    elsif ($attr && !exists $self->{OHI_og}{$ns}{$type}[-1]{$attr}) {
+        $self->{OHI_og}{$ns}{$type}[-1]{$attr} = $meta->getAttribute('content');
+    }
+
+    #alternates
+    else {
+        push @{$self->{OHI_og}{$ns}{$type}},
+          {($attr ? $attr : 'content') => $meta->getAttribute('content')};
+    }
+    return;
 }
 
 1;
