@@ -1,4 +1,4 @@
-package OSF::HTML::Inspect;
+package HTML::Inspect;
 
 use warnings;
 use strict;
@@ -8,7 +8,7 @@ use XML::LibXML   ();
 
 sub new(%) { my $class = shift; (bless {}, $class)->_init({@_}) }
 
-# Initialises an OSF::HTML::Inspect instance and returns it.
+# Initialises an HTML::Inspect instance and returns it.
 sub _init(%)
 {
     my ($self, $args) = @_;
