@@ -3,4 +3,4 @@
 REPO=/home/markov/osf-crawl
 BATCH=/data/pipeline/CommonCrawl/batch-testset
 
-run Pipeline process-batch $BATCH
+run CommonCrawl process-batch $BATCH

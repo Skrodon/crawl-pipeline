@@ -4,7 +4,7 @@ use parent 'OSF::WARC::Record';
 use warnings;
 use strict;
 
-use OSF::HTML::Inspect ();
+use HTML::Inspect      ();
 use HTTP::Response     ();
 
 use MIME::Types        ();
