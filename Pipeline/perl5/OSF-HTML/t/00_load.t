@@ -3,8 +3,8 @@ use FindBin qw($Bin);
 use lib "$Bin/../lib";
 use Test::More;
 
-use_ok('OSF::HTML::Inspect');
-require_ok('OSF::HTML::Inspect');
+use_ok('HTML::Inspect');
+require_ok('HTML::Inspect');
 
 
 done_testing;
