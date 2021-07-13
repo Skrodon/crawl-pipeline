@@ -1,4 +1,3 @@
-# t/01_basic.t
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
 use Test::More;
