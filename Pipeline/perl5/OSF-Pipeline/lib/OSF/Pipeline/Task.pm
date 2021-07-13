@@ -4,7 +4,7 @@ package OSF::Pipeline::Task;
 use warnings;
 use strict;
 
-use Log::Report 'pipeline';
+use Log::Report 'osf-pipeline';
 
 use JSON            ();
 use List::MoreUtils qw(uniq);
@@ -48,24 +48,43 @@ sub take($%)
 =section Filter construction
 
 =method filterRequiresText %options
+Returns a CODE which returns a descriptive HASH when the product has
+a text extract and fulfils the (optional) size restriction.
+
 =option  minimum_size INTEGER
-=default minimum_size 0
+=default minimum_size <undef>
+
+=option  minimum_chars INTEGER
+=default minimum_chars <undef>
+Counts only C<\w> characters.
+
+=option  minimum_words INTEGER
+=default minimum_words <undef>
 =cut
 
 sub filterRequiresText(%)
 {   my ($self, %args) = @_;
-    my $minsize = $args{minimum_size} || 0;
-
-    $minsize
-        or return sub { $_[0]->refText ? +{ rule => 'requires text' } : () };
+    my $minsize  = $args{minimum_size } || 0;
+    my $minchars = $args{minimum_chars} || 0;
+    my $minwords = $args{minimum_words} || 0;
 
     sub {
-        my $t = $_[0]->refText;
-        $t && length $$t >= $minsize or return ();
-         +{ rule          => 'requires text',
-             minimum_size => $minsize,
-             size         => length $$t,
-          };
+        my $product = shift;
+        my $size  = $product->contentSize or return ();
+        my %facts = (rule => 'requires text', size => $size);
+        return () if $minsize > $size || $minchars > $size || $minwords > $size;
+
+        if($minchars)
+        {   my $chars = $facts{chars} = $product->contentWordChars;
+            return () if $minchars > $chars;
+        }
+
+        if($minwords)
+        {   my $words = $facts{words} = $product->contentWords;
+            return () if $minwords > $words;
+        }
+
+        \%facts;
     };
 }
 

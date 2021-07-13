@@ -4,11 +4,8 @@ _T="\
  OSF::Planner::Task::LinkCollector\
 "
 
-PERL5LIB+=":$PIPELINE_REPO/CommonCrawl/perl5/OSF-CommonCrawl/lib"
-source $PIPELINE_REPO/CommonCrawl/profile
-
-PERL5LIB+=":$PROJECT_ROOT/perl5/OSF-Pipeline/lib"
-PERL5LIB+=":$PROJECT_ROOT/perl5/OSF-HTML/lib"
+PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/OSF-Pipeline/lib"
+PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/OSF-HTML/lib"
 
 export PIPELINE_TASKS=
 for TASK in $_T
