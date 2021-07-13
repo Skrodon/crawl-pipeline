@@ -9,21 +9,9 @@ require_ok('HTML::Inspect');
 
 my $constructor_and_doc = sub {
     my $inspector;
-    like(
-        ($inspector = eval { HTML::Inspect->new(); } || $@) =>
-          qr/^Expected parameter "html_ref/,
-        '_init croaks ok1'
-    );
-    like(
-        ($inspector = eval { HTML::Inspect->new(html_ref => "foo"); } || $@) =>
-          qr/^Argument "html_ref/,
-        '_init croaks ok2'
-    );
-    like(
-        ($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) =>
-          qr/HTML\sstring\./,
-        '_init croaks ok3'
-    );
+    like(($inspector = eval { HTML::Inspect->new(); } || $@) => qr/^Expected parameter "html_ref/, '_init croaks ok1');
+    like(($inspector = eval { HTML::Inspect->new(html_ref => "foo"); }  || $@) => qr/^Argument "html_ref/, '_init croaks ok2');
+    like(($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) => qr/HTML\sstring\./,      '_init croaks ok3');
 
     $inspector = HTML::Inspect->new(html_ref => \"<B>FooBar</B>");
     isa_ok($inspector => 'HTML::Inspect');
@@ -32,31 +20,19 @@ my $constructor_and_doc = sub {
     isa_ok($inspector->doc, 'XML::LibXML::Element');
     like($inspector->doc => qr|<b>FooBar</b>|, '$inspector->doc, lowercased ok');
 
-    like(
-        $inspector->doc("hehe") => qr/FooBar/,
-        '$inspector->doc() is a read-only getter'
-    );
+    like($inspector->doc("hehe") => qr/FooBar/, '$inspector->doc() is a read-only getter');
 };
 my $collectMeta = sub {
-my $html =_slurp("$Bin/data/collectMeta.html");
-    my $inspector = HTML::Inspect->new( html_ref =>\$html );
+    my $html      = _slurp("$Bin/data/collectMeta.html");
+    my $inspector = HTML::Inspect->new(html_ref => \$html);
     my $expectedMeta = {
-        charset => 'utf-8',
-        name    => {
-            Алабала     => 'ница',
-            generator   => "Хей, гиди Ванчо",
-            description => 'The Open Graph protocol enables...'
-        },
-        'http-equiv' => {
-            'content-type' => 'text/html;charset=utf-8',
-            refresh        => '3;url=https://www.mozilla.org'
-        }
+                   charset => 'utf-8',
+                   name => {Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
+                   'http-equiv' => {'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
     };
     my $collectedMeta = $inspector->collectMeta();
     is_deeply($collectedMeta => $expectedMeta, 'OHI_meta, parsed ok');
-    is( $collectedMeta => $inspector->collectMeta(),
-        'collectMeta() returns already parsed OHI_meta'
-    );
+    is($collectedMeta => $inspector->collectMeta(), 'collectMeta() returns already parsed OHI_meta');
 };
 
 my $collectOpenGraph = sub {
