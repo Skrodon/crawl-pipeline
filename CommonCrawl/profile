@@ -30,3 +30,8 @@ export WET_PATHS_TODO WET_WARC_CACHE WET_WARC_CACHE_SIZE
 : ${MAX_PROCESSES_PARALLEL:=1}
 export PROCESS_DIRS MAX_PROCESSES_PARALLEL
 
+PERL5LIB+=":$PIPELINE_REPO/CommonCrawl/perl5/OSF-CommonCrawl/lib"
+
+if [ "$COMMAND" = process-batch ]
+then source "$PIPELINE_REPO/Pipeline/profile"
+fi

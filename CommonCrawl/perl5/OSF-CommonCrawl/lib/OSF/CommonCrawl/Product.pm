@@ -1,30 +1,23 @@
 package OSF::CommonCrawl::Product;
+use parent 'OSF::Pipeline::Product';
 
 use warnings;
 use strict;
 
+use Log::Report 'osf-commoncrawl';
+
 use JSON   qw(decode_json);
 use URI    ();
 
-sub new(%) { my $class = shift; (bless {}, $class)->init( {@_} ) }
-
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
-    $self->{OCP_parts} = $args->{parts} || {};
+    $args->{origin} = 'CommonCrawl';
+    $self->SUPER::_init($args);
     $self;
 }
 
-sub origin
-{   my $self = shift;
-     +{ crawler => 'CommonCrawl',
-      , source  => $self->id,
-      };
-}
-
-sub part($) { $_[0]->{OCP_parts}{$_[1]} }
-
-sub id()   { $_[0]->{OCP_id} ||= $_[0]->part('request')->setId }
-sub name() { $_[0]->{OCP_name} ||= $_[0]->uri->as_string }
+sub _id()   { $_[0]->part('request')->setId }
+sub _name() { $_[0]->uri->as_string }
 
 sub uri()
 {   my $self = shift;
@@ -40,9 +33,8 @@ sub cld2()
     $self->{OCP_cld2} = decode_json $cld2;
 }
 
-sub contentType()
+sub _ct()
 {   my $self = shift;
-    return $self->{OCP_ct} if $self->{OCP_ct};
 
     my $ct;
     if(my $response = $self->part('response'))
@@ -55,7 +47,12 @@ sub contentType()
         # usually already does for us.
     }
 
-    $self->{OCP_ct} = $ct || 'application/octet-stream';
+    $ct;
+}
+
+sub _textRef()
+{   my $part = $_[0]->part('text') or return;
+    $part->bodyRef;
 }
 
 1;
