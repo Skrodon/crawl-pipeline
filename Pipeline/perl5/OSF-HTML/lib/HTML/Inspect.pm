@@ -1,12 +1,11 @@
 package HTML::Inspect;
-
+use feature ':5.20';
 use warnings;
 use strict;
 use Carp;
 
 use XML::LibXML ();
 
-sub new(%) { my $class = shift; (bless {}, $class)->_init({@_}) }
 
 # Initialises an HTML::Inspect instance and returns it.
 sub _init(%) {
@@ -18,6 +17,8 @@ sub _init(%) {
           if (!($args && $args->{html_ref}));
         croak('Argument "html_ref" is not a reference to a HTML string.')
           unless (ref $args->{html_ref} eq 'SCALAR' && (${$args->{html_ref}} || '') =~ /$html_ref_re/);
+        croak('Argument "request_uri" is mandatory. PLease provide an URI as a string.') unless ($args->{request_uri});
+
     }
 
     # Translate all tags to lower-case, because libxml is case-
@@ -36,6 +37,8 @@ sub _init(%) {
     $self->{OHI_doc} = $dom->documentElement;
     return $self;
 }
+
+sub new(%) { _init((bless {}, shift), {@_}) }
 
 # A read-only getter for the parsed document. Returns instance of
 # XML::LibXML::Element, representing the root node of the document and
@@ -122,6 +125,41 @@ sub _handle_og_meta {
     else {
         push @{$self->{OHI_og}{$ns}{$type}}, {($attr ? $attr : 'content') => $meta->getAttribute('content')};
     }
+    return;
+}
+
+# Collects all links from document. Returns a hash with keys like $tag_$attr
+# and values an array of links with that tag and attribute.
+# TODO: guess the <base> of the document.
+sub collectLinks {
+    my $self = shift;
+    return $self->{OHI_links} if $self->{OHI_links};
+
+    # A map: for which tag which attributes to be considered as links?
+    # We can add more tags and types of links later.
+    state $tag2attr = {
+                       a      => 'href',
+                       area   => 'href',
+                       embed  => 'src',
+                       form   => 'action',
+                       iframe => 'src',
+                       img    => 'src',
+                       link   => 'href',
+                       script => 'src',
+                      };
+
+    while (my ($tag, $attr) = each %$tag2attr) {
+        for my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
+            $self->_handle_link($tag, $attr, $link);
+        }
+    }
+    return $self->{OHI_links};
+}
+
+sub _handle_link {
+    my ($self, $t, $a, $link) = @_;
+    $self->{OHI_links}{"${t}_$a"} //= [];
+    push @{$self->{OHI_links}{"${t}_$a"}}, $link->getAttribute($a);
     return;
 }
 

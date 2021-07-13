@@ -13,7 +13,7 @@ my $constructor_and_doc = sub {
     like(($inspector = eval { HTML::Inspect->new(html_ref => "foo"); }  || $@) => qr/^Argument "html_ref/, '_init croaks ok2');
     like(($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) => qr/HTML\sstring\./,      '_init croaks ok3');
 
-    $inspector = HTML::Inspect->new(html_ref => \"<B>FooBar</B>");
+    $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \"<B>FooBar</B>");
     isa_ok($inspector => 'HTML::Inspect');
 
 # note $inspector->doc;
@@ -24,7 +24,7 @@ my $constructor_and_doc = sub {
 };
 my $collectMeta = sub {
     my $html      = _slurp("$Bin/data/collectMeta.html");
-    my $inspector = HTML::Inspect->new(html_ref => \$html);
+    my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $expectedMeta = {
                    charset => 'utf-8',
                    name => {Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
@@ -38,7 +38,7 @@ my $collectMeta = sub {
 my $collectOpenGraph = sub {
     my $html = _slurp("$Bin/data/collectOpenGraph.html");
 
-    my $inspector = HTML::Inspect->new(html_ref => \$html);
+    my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $og        = $inspector->collectOpenGraph();
     is(ref $og => 'HASH', 'collectOpenGraph() returns a HASH reference');
     note explain $og;
