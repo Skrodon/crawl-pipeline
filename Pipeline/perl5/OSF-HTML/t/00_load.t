@@ -1,7 +1,10 @@
 # t/00_load.t - check module loading
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-use Test::More tests => 1;
-use_ok('OSF::HTML::Inspect');
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use Test::More;
+
+use_ok('HTML::Inspect');
+require_ok('HTML::Inspect');
 
 
+done_testing;
