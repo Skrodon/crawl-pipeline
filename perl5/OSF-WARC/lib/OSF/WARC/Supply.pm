@@ -15,6 +15,7 @@ use IO::Uncompress::Gunzip qw($GunzipError);
 my %warc_type_class = (
     request    => 'OSF::WARC::Request',
     response   => 'OSF::WARC::Response',
+    revisit    => 'OSF::WARC::Revisit',
     metadata   => 'OSF::WARC::Metadata',
     warcinfo   => 'OSF::WARC::WarcInfo',
     conversion => 'OSF::WARC::Conversion',
