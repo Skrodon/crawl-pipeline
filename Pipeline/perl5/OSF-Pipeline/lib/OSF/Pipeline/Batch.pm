@@ -7,7 +7,7 @@ use parent 'OSF::Pipeline';
 use warnings;
 use strict;
 
-use Log::Report 'pipeline';
+use Log::Report 'osf-pipeline';
 
 =chapter NAME
 
@@ -27,11 +27,11 @@ WARC archives.
 =c_method new %options
 =cut
 
-sub init($)
-{   my ($self, $args) = @_;
-    $self->SUPER::init($args);
-    $self;
-}
+#sub _init($)
+#{   my ($self, $args) = @_;
+#    $self->SUPER::_init($args);
+#    $self;
+#}
 
 =method processProducts %options
 Process all products from the batch.

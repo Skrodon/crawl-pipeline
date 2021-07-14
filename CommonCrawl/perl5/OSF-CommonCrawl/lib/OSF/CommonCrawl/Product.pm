@@ -33,6 +33,15 @@ sub cld2()
     $self->{OCP_cld2} = decode_json $cld2;
 }
 
+# Could also use part('text')/WARC-Identified-Content-Language
+
+sub _lang()
+{   my $cld2   = shift->cld2 or return;
+    my $langs  = $cld2->{languages} || [];
+    (my $best) = sort { $b->{'text-covered'} <=> $a->{'text-covered'} } @$langs;
+    $best ? $best->{'code-iso-639-3'} : undef;
+}
+
 sub _ct()
 {   my $self = shift;
 

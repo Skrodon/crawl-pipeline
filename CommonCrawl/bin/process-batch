@@ -16,8 +16,8 @@ my $workdir = $ARGV[0];
 -d $workdir or die "ERROR: workdir '$workdir' does not exist\n";
 
 my $cc = OSF::CommonCrawl::Batch->new(
-  dir  => $workdir,
-  name => basename($workdir),
+  source => $workdir,
+  name   => basename($workdir),
 );
 
 $cc->processProducts;

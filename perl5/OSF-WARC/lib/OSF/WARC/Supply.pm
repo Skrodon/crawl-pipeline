@@ -22,10 +22,10 @@ my %warc_type_class = (
 
 sub new(%)
 {   my $class = shift;
-    (bless {}, $class)->init({@_});
+    (bless {}, $class)->_init({@_});
 }
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
 
     my $fn = $self->{OWS_fn} = $args->{filename}
@@ -62,7 +62,9 @@ sub getRecord(;$)
 
     if(my $next = $self->{OWS_next})
     {   return delete $self->{OWS_next}
-            if ! $set_id || $next->setId eq $set_id;
+            if ! $set_id || $next->basedOn eq $set_id;
+
+        return undef if $set_id;
     }
 
     my $start   = $fh->tell;
@@ -80,32 +82,32 @@ sub getRecord(;$)
     my $line = $fh->getline;
     while(! $fh->eof && $line !~ m/^\r?$/)
     {   ($key, $val) = split /\: /, $line, 2;
-        $head{lc $key} = $val =~ s/\r?\n$//r;
+        $head{$key} = $val =~ s/\r?\n$//r;
         $line = $fh->getline;
     }
 
-    my $len = $head{'content-length'}
-        or die "ERROR: record does not have a content length\n";
+    my $len = $head{'Content-Length'}
+        or die "ERROR: record does not have a Content-Length\n";
 
     $fh->read($body, $len) == $len
         or die "ERROR: file is too short\n";;
 
-    my $type = $head{'warc-type'} || 'unknown';
+    my $type = $head{'WARC-Type'} || 'unknown';
     my $class = $warc_type_class{$type}
         or die "ERROR: unknown warc type $type";
 
     $self->{OWS_recs}++;
 
     my $record = $class->new
-      ( \%head,
-        \$body,    # scalar by reference to avoid copies
+      ( head => \%head,
+        body => \$body,    # scalar by reference to avoid copies
 
         # The gzip is a MultiStream, where each record is compressed
         # separately, so we should be able to do this.
-        [ $self->fh, $start, $fh->tell - $start ],
+        compressed => [ $self->fh, $start, $fh->tell - $start ],
       );
 
-    if($set_id && $record->setId ne $set_id)
+    if($set_id && $record->basedOn ne $set_id)
     {   $self->{OWS_next} = $record;
         return undef;
     }

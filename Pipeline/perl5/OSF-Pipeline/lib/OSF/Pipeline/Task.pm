@@ -21,17 +21,34 @@ OSF::Pipeline::Task - client task
 Extensions of this module are Tasks which run on the Pipeline.
 
 =chapter METHODS
+=section Constructors
 
 =c_method new %options
+=requires name STRING
 =cut
 
-sub new(%) { my $class = shift; (bless {}, $class)->init({@_}) }
+sub new(%)
+{   my $class = shift;
+    $class ne __PACKAGE__ or panic "You need to extend $class";
+    (bless {}, $class)->_init({@_});
+}
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
-
+    $self->{OPT_name} = $args->{name} or panic "Task $self needs a name";
     $self;
 }
+
+#---------------
+=section Accessors
+
+=method name
+=cut
+
+sub name() { $_[0]->{OPT_name} }
+
+#---------------
+=section Actions
 
 =method take $product, %options
 =cut
