@@ -44,9 +44,18 @@ my $collectOpenGraph = sub {
     note explain $og;
 };
 
-# subtest constructor_and_doc => $constructor_and_doc;
-# subtest collectMeta         => $collectMeta;
-subtest collectOpenGraph => $collectOpenGraph;
+my $collectLinks = sub {
+    my $html      = _slurp("$Bin/data/links.html");
+    my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc.html', html_ref => \$html);
+    my $links     = $inspector->collectLinks();
+    is(ref $og           => 'HASH',  'collectLinks() returns a HASH reference');
+    is(ref $og->{a_href} => 'ARRAY', 'collectLinks() returns a HASH reference of ARRAYs');
+    note explain $links;
+};
+subtest constructor_and_doc => $constructor_and_doc;
+subtest collectMeta         => $collectMeta;
+subtest collectOpenGraph    => $collectOpenGraph;
+subtest collectLinks        => $collectLinks;
 
 sub _slurp {
     open my $fh, '<', $_[0] || Carp::croak($!);
