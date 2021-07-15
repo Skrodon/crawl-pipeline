@@ -55,3 +55,39 @@
   <a href=https://dom.spec.whatwg.org/#concept-document-url id="documents:the-document's-address" data-x-internal="the-document's-address">URL</a> in their user interface. This is the primary
   mechanism by which a user can tell if a site is attempting to impersonate another.</p>
   ....
+  <!-- taken from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/area -->
+  <map name="infographic">
+    <area shape="rect" coords="184,6,253,27"
+          href="https://mozilla.org"
+          target="_blank" alt="Mozilla" />
+    <area shape="circle" coords="130,136,60"
+          href="https://developer.mozilla.org/"
+          target="_blank" alt="MDN" />
+    <area shape="poly" coords="130,6,253,96,223,106,130,39"
+          href="https://developer.mozilla.org/docs/Web/Guide/Graphics"
+          target="_blank" alt="Graphics" />
+    <area shape="poly" coords="253,96,207,241,189,217,223,103"
+          href="https://developer.mozilla.org/docs/Web/HTML"
+          target="_blank" alt="HTML" />
+    <area shape="poly" coords="207,241,54,241,72,217,189,217"
+          href="https://developer.mozilla.org/docs/Web/JavaScript"
+          target="_blank" alt="JavaScript" />
+    <area shape="poly" coords="54,241,6,97,36,107,72,217"
+          href="https://developer.mozilla.org/docs/Web/API"
+          target="_blank" alt="Web APIs" />
+    <area shape="poly" coords="6,97,130,6,130,39,36,107"
+          href="https://developer.mozilla.org/docs/Web/CSS"
+          target="_blank" alt="CSS" />
+</map>
+<!-- This url will resolve to the request_uri host - OK -->
+<img usemap="#infographic" src="/media/examples/mdn-info.png" alt="MDN infographic" />
+
+<!-- Taken from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/embed -->
+<embed type="video/webm" src="/media/cc0-videos/flower.mp4" width="250" height="200">
+
+<!-- Taken from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form -->
+<form action="" method="get" class="form-example">...</form>
+<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe -->
+<iframe id="inlineFrameExample" title="Inline Frame Example" width="300" height="200"
+    src="https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik">
+</iframe>

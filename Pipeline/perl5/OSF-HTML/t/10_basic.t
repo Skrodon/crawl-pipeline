@@ -1,10 +1,11 @@
-use FindBin qw($Bin);
-use lib "$Bin/../lib";
-use Test::More;
 use strict;
 use warnings;
 use utf8;
-
+use FindBin qw($Bin);
+use lib "$Bin/lib";
+use lib "$Bin/../lib";
+use Test::More;
+use TestUtils qw(slurp);
 require_ok('HTML::Inspect');
 
 my $constructor_and_doc = sub {
@@ -13,17 +14,19 @@ my $constructor_and_doc = sub {
     like(($inspector = eval { HTML::Inspect->new(html_ref => "foo"); }  || $@) => qr/^Argument "html_ref/, '_init croaks ok2');
     like(($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) => qr/HTML\sstring\./,      '_init croaks ok3');
 
+    like(($inspector = eval { HTML::Inspect->new(html_ref => \"<B>FooBar</B>"); } || $@) => qr/is\smandatory\./,
+         '_init croaks ok4');
     $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \"<B>FooBar</B>");
     isa_ok($inspector => 'HTML::Inspect');
 
-# note $inspector->doc;
+    # note $inspector->doc;
     isa_ok($inspector->doc, 'XML::LibXML::Element');
     like($inspector->doc => qr|<b>FooBar</b>|, '$inspector->doc, lowercased ok');
 
     like($inspector->doc("hehe") => qr/FooBar/, '$inspector->doc() is a read-only getter');
 };
 my $collectMeta = sub {
-    my $html      = _slurp("$Bin/data/collectMeta.html");
+    my $html      = slurp("$Bin/data/collectMeta.html");
     my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $expectedMeta = {
                    charset => 'utf-8',
@@ -36,7 +39,7 @@ my $collectMeta = sub {
 };
 
 my $collectOpenGraph = sub {
-    my $html = _slurp("$Bin/data/collectOpenGraph.html");
+    my $html = slurp("$Bin/data/collectOpenGraph.html");
 
     my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $og        = $inspector->collectOpenGraph();
@@ -45,11 +48,11 @@ my $collectOpenGraph = sub {
 };
 
 my $collectLinks = sub {
-    my $html      = _slurp("$Bin/data/links.html");
-    my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc.html', html_ref => \$html);
+    my $html      = slurp("$Bin/data/links.html");
+    my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
     my $links     = $inspector->collectLinks();
-    is(ref $og           => 'HASH',  'collectLinks() returns a HASH reference');
-    is(ref $og->{a_href} => 'ARRAY', 'collectLinks() returns a HASH reference of ARRAYs');
+    is(ref $links           => 'HASH',  'collectLinks() returns a HASH reference');
+    is(ref $links->{a_href} => 'ARRAY', 'collectLinks() returns a HASH reference of ARRAYs');
     note explain $links;
 };
 subtest constructor_and_doc => $constructor_and_doc;
@@ -57,10 +60,5 @@ subtest collectMeta         => $collectMeta;
 subtest collectOpenGraph    => $collectOpenGraph;
 subtest collectLinks        => $collectLinks;
 
-sub _slurp {
-    open my $fh, '<', $_[0] || Carp::croak($!);
-    local $/;
-    return <$fh>;
-}
 
 done_testing;

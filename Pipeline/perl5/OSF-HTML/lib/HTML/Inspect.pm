@@ -1,10 +1,14 @@
 package HTML::Inspect;
-use feature ':5.20';
-use warnings;
 use strict;
-use Carp;
+use warnings;
+no warnings 'experimental::lexical_subs';    # needed if $] < 5.026;
+no warnings 'experimental::signatures';
+use feature qw (:5.20 lexical_subs signatures);
 
-use XML::LibXML ();
+# TODO: Make a Makefile.PL and describe the dependencise - prepare for CPAN
+use Carp;                                    # TODO: Change to Log::Report
+use XML::LibXML();
+use URI();
 
 
 # Initialises an HTML::Inspect instance and returns it.
@@ -20,6 +24,9 @@ sub _init(%) {
         croak('Argument "request_uri" is mandatory. PLease provide an URI as a string.') unless ($args->{request_uri});
 
     }
+
+    # use a normalized version
+    $self->{request_uri} = URI->new($args->{request_uri})->canonical;
 
     # Translate all tags to lower-case, because libxml is case-
     # sensisitive, but HTML isn't.  This is not fail-safe.
@@ -38,15 +45,15 @@ sub _init(%) {
     return $self;
 }
 
-sub new(%) { _init((bless {}, shift), {@_}) }
+sub new { _init((bless {}, shift), {@_}) }
 
 # A read-only getter for the parsed document. Returns instance of
 # XML::LibXML::Element, representing the root node of the document and
 # everything in it.
-sub doc() { $_[0]->{OHI_doc} }
+sub doc { $_[0]->{OHI_doc} }
 
 # attributes must be treated as if they are case-insensitive
-sub _attributes($) {
+sub _attributes {
     my ($self, $element) = @_;
     my %attrs = map +(lc($_->name) => $_->value), grep $_->isa('XML::LibXML::Attr'),    # not namespace decls
       $element->attributes;
@@ -63,7 +70,7 @@ sub _attributes($) {
 # OpenGraph meta-data records use attribute 'property', and are
 # ignored here.
 
-sub collectMeta(%) {
+sub collectMeta {
     my ($self, %args) = @_;
     return $self->{OHI_meta} if $self->{OHI_meta};
     my %meta;
@@ -88,7 +95,7 @@ sub collectMeta(%) {
 # https://ogp.me/#types
 # See also: https://developers.facebook.com/docs/sharing/webmasters/crawler
 # https://developers.facebook.com/docs/sharing/webmasters/optimizing
-sub collectOpenGraph(%) {
+sub collectOpenGraph {
     my ($self, %args) = @_;
     return $self->{OHI_og} if $self->{OHI_og};
     $self->{OHI_og} = {};
@@ -128,15 +135,8 @@ sub _handle_og_meta {
     return;
 }
 
-# Collects all links from document. Returns a hash with keys like $tag_$attr
-# and values an array of links with that tag and attribute.
-# TODO: guess the <base> of the document.
-sub collectLinks {
-    my $self = shift;
-    return $self->{OHI_links} if $self->{OHI_links};
+sub tag2attr {
 
-    # A map: for which tag which attributes to be considered as links?
-    # We can add more tags and types of links later.
     state $tag2attr = {
                        a      => 'href',
                        area   => 'href',
@@ -147,8 +147,18 @@ sub collectLinks {
                        link   => 'href',
                        script => 'src',
                       };
+}
 
-    while (my ($tag, $attr) = each %$tag2attr) {
+# Collects all links from document. Returns a hash with keys like $tag_$attr
+# and values an array of links with that tag and attribute.
+# TODO: guess the <base> of the document.
+sub collectLinks ($self) {
+    return $self->{OHI_links} if $self->{OHI_links};
+
+    # A map: for which tag which attributes to be considered as links?
+    # We can add more tags and types of links later.
+
+    while (my ($tag, $attr) = each %{$self->tag2attr}) {
         for my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
             $self->_handle_link($tag, $attr, $link);
         }
@@ -156,11 +166,31 @@ sub collectLinks {
     return $self->{OHI_links};
 }
 
-sub _handle_link {
-    my ($self, $t, $a, $link) = @_;
-    $self->{OHI_links}{"${t}_$a"} //= [];
-    push @{$self->{OHI_links}{"${t}_$a"}}, $link->getAttribute($a);
+# https://en.wikipedia.org/wiki/URI_normalization
+# Returns a normalized link as string
+my sub _normalize ($self, $link, $a) {
+    my $req_uri = $self->{request_uri};
+    my $attr    = $link->getAttribute($a);
+    my $url     = URI->new($attr);
+
+    # Relative urls get the scheme of the request_uri
+    if (!$url->scheme && $req_uri->has_recognized_scheme) {
+        $url->scheme($req_uri->scheme);
+        if ($url->scheme =~ /^http/) {
+            $url->host($req_uri->host);
+            return $url->canonical->as_string;
+        }
+
+        #TODO: How about all other type of schemes?
+    }
+    return $attr;
+}
+
+sub _handle_link ($self, $t, $a, $link) {
+    my $links = $self->{OHI_links}{"${t}_$a"} //= [];
+    push @$links, _normalize($self, $link, $a);
     return;
 }
+
 
 1;
