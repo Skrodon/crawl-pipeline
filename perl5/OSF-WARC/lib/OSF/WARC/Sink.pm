@@ -5,8 +5,10 @@ package OSF::WARC::Sink;
 use warnings;
 use strict;
 
+use Log::Report 'osf-warc';
+
 use IO::Compress::Gzip qw($GzipError);
-use Fcntl   qw(SEEK_CUR SEEK_END);
+use Fcntl              qw(SEEK_SET SEEK_CUR SEEK_END);
 
 sub new(%)
 {   my $class = shift;
@@ -38,9 +40,9 @@ sub write($)
     my $start = sysseek $out, 0, SEEK_END;
 
     if(my $c = $record->compressed)
-    {   my ($in, $from, $size) = @_;
-        sysseek $in, $from;
-        sysread $in, my $zipped, $size;
+    {   my ($in, $from, $size) = @$c;
+        sysseek $in, $from, SEEK_SET;
+        sysread $in, (my $zipped), $size;
         syswrite $out, $zipped;
     }
     else
@@ -49,10 +51,16 @@ sub write($)
         $z->close;
     }
 
-    $self->index->{$record->name} =
-     +{ 'offset' => $start
-      , 'length' => (sysseek $out, 0, SEEK_CUR) - $start
-      };
+    if($record->type eq 'warcinfo')
+    {   $self->index->{__WARCINFO__}{$record->type} = $record->info;
+    }
+    else
+    {   my %data  =
+          ( offset => $start
+          , length => (sysseek $out, 0, SEEK_CUR) - $start
+          );
+        $self->index->{$record->uri}{$record->type} = \%data;
+    }
 
     $self;
 }

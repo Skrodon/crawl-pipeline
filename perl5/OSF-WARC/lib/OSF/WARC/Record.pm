@@ -65,10 +65,12 @@ sub getRecord($;$)
 sub write($$)
 {   my ($self, $outfh) = @_;
     my $head = $self->head;
+    my $body = $self->refBody;
 
-    $outfh->print(join $CRLF, "WARC/1.0",
+    $outfh->print(join $CRLF, 'WARC/1.0',
        (map "$_: $head->{$_}", sort keys %$head),
-       '', ${$self->refBody});
+       '', $$body);
+    $outfh->print($CRLF) if $$body =~ m!$CRLF\z!;
 
     $self;
 }
