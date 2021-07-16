@@ -26,4 +26,6 @@ sub addJson($$$)
     $self->addFile($product, "$name.json", encode_json $data);
 }
 
+sub batchFinished() { shift }
+
 1;
