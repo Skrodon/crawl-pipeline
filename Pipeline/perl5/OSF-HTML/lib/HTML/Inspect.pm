@@ -110,21 +110,22 @@ sub _handle_og_meta ($self, $meta) {
         return;
     }
 
-    # Handle Arrays
-    # a new object starts
-    if (!$self->{OHI_og}{$ns}{$type}) {
+    # Handle objects, represented as arry of alternatives.
+    # A new object starts.
+    if (! exists $self->{OHI_og}{$ns}{$type}) {
         $self->{OHI_og}{$ns}{$type} = [{$attr => $attrs->{content}}];
         return;
     }
 
-    # continue adding properties to this object
-    elsif (!exists $self->{OHI_og}{$ns}{$type}[-1]{$attr}) {
-        $self->{OHI_og}{$ns}{$type}[-1]{$attr} = $attrs->{content};
+    # Continue adding properties to this object.
+    my $arr = $self->{OHI_og}{$ns}{$type};
+    if (!exists $arr->[-1]{$attr}) {
+        $arr->[-1]{$attr} = $attrs->{content};
     }
 
-    #alternates
+    # Alternates for this object
     else {
-        push @{$self->{OHI_og}{$ns}{$type}}, {$attr => $attrs->{content}};
+        push @$arr, {$attr => $attrs->{content}};
     }
     return;
 }
