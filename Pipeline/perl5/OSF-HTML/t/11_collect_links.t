@@ -19,7 +19,8 @@ while (my ($t, $a) = each %{$inspector->tag2attr}) {
 
     # Are all links absolute == canonical?
     for my $link (@{$links->{"${t}_$a"}}) {
-        is(URI->new($link)->scheme => 'https', 'right scheme - absolute url');
+        isa_ok($link => 'URI', 'the link is an URI instance');
+        is(URI->new("$link")->scheme => 'https', 'right scheme - absolute url');
     }
 
     # Do the links need to be deduplicated? I think - No

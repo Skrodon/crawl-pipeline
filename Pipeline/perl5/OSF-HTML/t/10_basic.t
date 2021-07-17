@@ -10,12 +10,11 @@ require_ok('HTML::Inspect');
 
 my $constructor_and_doc = sub {
     my $inspector;
-    like(($inspector = eval { HTML::Inspect->new(); } || $@) => qr/^Expected parameter "html_ref/, '_init croaks ok1');
-    like(($inspector = eval { HTML::Inspect->new(html_ref => "foo"); }  || $@) => qr/^Argument "html_ref/, '_init croaks ok2');
-    like(($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) => qr/HTML\sstring\./,      '_init croaks ok3');
+    like(($inspector = eval { HTML::Inspect->new(); } || $@) => qr/no html/, '_init croaks ok1');
+    like(($inspector = eval { HTML::Inspect->new(html_ref => "foo"); }  || $@) => qr/Not SCALAR/, '_init croaks ok2');
+    like(($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) => qr/Not HTML/,   '_init croaks ok3');
 
-    like(($inspector = eval { HTML::Inspect->new(html_ref => \"<B>FooBar</B>"); } || $@) => qr/is\smandatory\./,
-         '_init croaks ok4');
+    like(($inspector = eval { HTML::Inspect->new(html_ref => \"<B>FooBar</B>"); } || $@) => qr/is\smandatory/, '_init croaks ok4');
     $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \"<B>FooBar</B>");
     isa_ok($inspector => 'HTML::Inspect');
 
@@ -56,9 +55,10 @@ my $collectLinks = sub {
     note explain $links;
 };
 subtest constructor_and_doc => $constructor_and_doc;
-subtest collectMeta         => $collectMeta;
-subtest collectOpenGraph    => $collectOpenGraph;
-subtest collectLinks        => $collectLinks;
+
+subtest collectMeta      => $collectMeta;
+subtest collectOpenGraph => $collectOpenGraph;
+subtest collectLinks     => $collectLinks;
 
 
 done_testing;
