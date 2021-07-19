@@ -18,3 +18,5 @@
 -nbl     # Opening brace on the same line as the keyword introducing it
 -cti=1   # 1 extra indentation such that the closing token aligns with its opening token.
 --nospace-after-keyword="if elsif"
+#--nodelete-semicolons
+

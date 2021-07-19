@@ -42,7 +42,8 @@ my $collectOpenGraph = sub {
 
     my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $og        = $inspector->collectOpenGraph();
-    is(ref $og => 'HASH', 'collectOpenGraph() returns a HASH reference');
+    is(ref $og          => 'HASH',                'collectOpenGraph() returns a HASH reference');
+    is($og->{og}{title} => 'Open Graph protocol', 'content is trimmed');
     note explain $og;
 };
 

@@ -50,8 +50,14 @@ sub _attributes ($self, $element) {
     return {map { +(lc($_->name) => $_->value) } grep { $_->isa('XML::LibXML::Attr') } $element->attributes};
 }
 
+sub _cleanup_content($string) {
+    $string =~ s/\s+/ /g;            # reduce spaces
+    $string =~ s/^\s(.*?)\s$/$1/;    # trim
+    return $string;
+}
 
-### $html->collectMeta(%options)
+
+# $html->collectMeta(%options)
 # Returns a HASH with all <meta> information of traditional
 # content: each value will only appear once.  Example:
 #  { 'http-equiv' => { 'content-type' => 'text/plain' }
@@ -65,6 +71,7 @@ sub collectMeta ($self, %args) {
     my %meta;
     foreach my $meta ($self->doc->findnodes('//meta')) {
         my $attrs = $self->_attributes($meta);
+        $attrs->{content} = _cleanup_content $attrs->{content};
         if(my $http = $attrs->{'http-equiv'}) {
             $meta{'http-equiv'}{lc $http} = $attrs->{content} if defined $attrs->{content};
         }
@@ -99,24 +106,26 @@ sub _handle_og_meta ($self, $meta) {
     my $attrs = $self->_attributes($meta);
     my ($ns, $type, $attr) = split /:/, lc $attrs->{property};
     $attr //= 'content';
+    $attrs->{content} = _cleanup_content $attrs->{content};
+
+    my $namespace = ($self->{HI_og}{$ns} //= {});
 
     # Handle Types title,type,url
     if($type =~ /^(?:title|type|url)$/i) {
-        $self->{HI_og}{$ns}{$type} = $attrs->{content} =~ s/\s+/ /gr;
-### We use $self->{HI_og}{$ns} everywhere, so assign it to a my()
+        $namespace->{$type} = $attrs->{content};
         return;
     }
 
-    # Handle objects, represented as arry of alternatives.
+    # Handle objects, represented as array of possible alternative properties
+    # or overrides.
     # A new object starts.
-    if(!exists $self->{HI_og}{$ns}{$type}) {
-        $self->{HI_og}{$ns}{$type} = [{$attr => $attrs->{content}}];
-### No cleanout of content?
+    if(!exists $namespace->{$type}) {
+        $namespace->{$type} = [{$attr => $attrs->{content}}];
         return;
     }
 
     # Continue adding properties to this object.
-    my $arr = $self->{HI_og}{$ns}{$type};
+    my $arr = $namespace->{$type};
     if(!exists $arr->[-1]{$attr}) {
         $arr->[-1]{$attr} = $attrs->{content};
     }
