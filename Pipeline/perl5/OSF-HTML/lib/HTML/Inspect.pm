@@ -20,14 +20,13 @@ sub _init ($self, $args) {
     $$html_ref =~ $html_ref_re or panic "Not HTML";
     $args->{request_uri}       or panic '"request_uri" is mandatory';
 
-    # use a normalized version
+    # use a canonicalised version
     $self->{HI_request_uri} = URI->new($args->{request_uri})->canonical;
 
     # Translate all tags to lower-case, because libxml is case-
     # sensisitive, but HTML isn't.  This is not fail-safe.
     my $string = $$html_ref =~ s!($html_ref_re)!lc $1!gsre;
-
-    my $dom = XML::LibXML->load_html(
+    my $dom    = XML::LibXML->load_html(
         string            => \$string,
         recover           => 2,
         suppress_errors   => 1,
@@ -35,17 +34,7 @@ sub _init ($self, $args) {
         no_network        => 1,
         no_xinclude_nodes => 1,
     );
-
     $self->{HI_doc} = $dom->documentElement;
-### As you can see, I use OHI_ before the object attributes.  This keeps
-### poeple from "accidentally" do "$inspect->{request_uri}" where the
-### intention was to write "inspect->requestURI".
-### OHI_ is the abbreviation of OSF::HTML::Inspect.  Now the module name
-### changed, it should become HI_
-### This also protects a bit against accidental name collisions in the
-### inheritance structure.  In Data::Dumper, you can now easily see
-### which inheritance level maintains the parameter.
-### So: maybe $self->{request_uri} --> $self->{HI_request_uri}
     return $self;
 }
 
@@ -58,16 +47,7 @@ sub doc { return $_[0]->{HI_doc} }
 
 # attributes must be treated as if they are case-insensitive
 sub _attributes ($self, $element) {
-    my %attrs = map { +(lc($_->name) => $_->value) } grep { $_->isa('XML::LibXML::Attr') }    # not namespace decls
-      $element->attributes;
-
-### I do not used {} when map and grep are very simple actions.  But you do
-### NOT NEED to follow me:
-### my %attrs = map +(lc($_->name) => $_->value),
-###      grep $_->isa('XML::LibXML::Attr'),   # not namespace decls
-###          $element->attributes;
-
-    return \%attrs;
+    return {map { +(lc($_->name) => $_->value) } grep { $_->isa('XML::LibXML::Attr') } $element->attributes};
 }
 
 
