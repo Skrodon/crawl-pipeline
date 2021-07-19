@@ -66,9 +66,6 @@ sub collectMeta ($self, %args) {
     foreach my $meta ($self->doc->findnodes('//meta')) {
         my $attrs = $self->_attributes($meta);
         if(my $http = $attrs->{'http-equiv'}) {
-### I do not like the blank between "if" and "(": I feel the "(" is part
-### of the if keyword: it is not a separate expression.  But it's your
-### choice.
             $meta{'http-equiv'}{lc $http} = $attrs->{content} if defined $attrs->{content};
         }
         elsif(my $name = $attrs->{name}) {
@@ -90,9 +87,7 @@ sub collectMeta ($self, %args) {
 sub collectOpenGraph ($self, %args) {
     return $self->{HI_og} if $self->{HI_og};
     $self->{HI_og} = {};
-    for my $meta ($self->doc->findnodes('//meta[@property]')) {
-### Please use foreach() here.
-### Is findnodes really faster than what I used?
+    foreach my $meta ($self->doc->findnodes('//meta[@property]')) {
         $self->_handle_og_meta($meta);
     }
 
@@ -163,9 +158,7 @@ sub tag2attr {
 sub collectLinks ($self) {
     return $self->{HI_links} if $self->{HI_links};
     while (my ($tag, $attr) = each %{$self->tag2attr}) {
-        for my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
-### foreach
-### attributes must be handled case-insensitive: use _attributes()
+        foreach my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
 
             # https://en.wikipedia.org/wiki/URI_normalization maybe some day
             push @{$self->{HI_links}{"${tag}_$attr"} //= []},

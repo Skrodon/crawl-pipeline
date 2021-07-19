@@ -42,7 +42,7 @@ sub MY::postamble {
             push @perltidy_files, $_ if $_ =~ /\.(PL|pm|pl|t)$/;
         }
     };
-    File::Find::find($options, 'lib', 't');
+    File::Find::find($options, 'lib', 't', 'xt');
     my $perltidy_files = join '\\' . $/ . "\t ", @perltidy_files;
     return <<"TARGETS";
 readme ::
