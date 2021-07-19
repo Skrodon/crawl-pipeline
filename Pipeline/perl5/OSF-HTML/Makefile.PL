@@ -22,7 +22,7 @@ WriteMakefile(
     META_MERGE       => {
         dynamic_config => 0,
         'meta-spec'    => {version   => 2},
-        no_index       => {directory => ['t']},
+        no_index       => {directory => [ 't', 'xt', ]},
         prereqs        => {runtime   => {requires => {perl => '5.020000'}}},
         resources      => {
             bugtracker => {web => "$git_url/issues"},

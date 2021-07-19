@@ -137,7 +137,7 @@ sub _handle_og_meta ($self, $meta) {
     # or overrides.
     # A new object starts.
     if(!exists $namespace->{$type}) {
-        $namespace->{$type} = [{$attr => $attrs->{content}}];
+        $namespace->{$type} = [ {$attr => $attrs->{content}} ];
         return;
     }
 

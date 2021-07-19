@@ -8,7 +8,7 @@
 -vt=0    # Less vertical tightness
 -pt=2    # High parenthesis tightness
 -bt=2    # High brace tightness
--sbt=2   # High square bracket tightness
+-sbt=1   # Default square bracket tightness
 -isbc    # Don't indent comments without leading space
 
 -nst     # --nostandard-output
@@ -16,7 +16,9 @@
 -b       # Modify files in place
 -bext='/' # and delete the originals if there are no error.
 -nbl     # Opening brace on the same line as the keyword introducing it
--cti=1   # 1 extra indentation such that the closing token aligns with its opening token.
+-cti=1   # 1 extra indentation such that the closing token aligns with its
+         # opening token.
 --nospace-after-keyword="if elsif"
 #--nodelete-semicolons
-
+--noblanks-before-comments # to prevent such blank lines from being introduced
+                           # before a commented line.
