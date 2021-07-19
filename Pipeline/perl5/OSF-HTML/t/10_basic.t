@@ -25,12 +25,12 @@ my $constructor_and_doc = sub {
     like($inspector->doc("hehe") => qr/FooBar/, '$inspector->doc() is a read-only getter');
 };
 my $collectMeta = sub {
-    my $html      = slurp("$Bin/data/collectMeta.html");
-    my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+    my $html         = slurp("$Bin/data/collectMeta.html");
+    my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $expectedMeta = {
-                   charset => 'utf-8',
-                   name => {Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
-                   'http-equiv' => {'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
+        charset      => 'utf-8',
+        name         => {Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
+        'http-equiv' => {'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
     };
     my $collectedMeta = $inspector->collectMeta();
     is_deeply($collectedMeta => $expectedMeta, 'OHI_meta, parsed ok');

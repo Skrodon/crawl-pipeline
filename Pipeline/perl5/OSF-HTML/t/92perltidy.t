@@ -17,8 +17,8 @@ Test::PerlTidy::run_tests(
 
 ### Why above blank?
     #debug      => 1,
-    path       => $ROOT,
-    exclude    => ['blib/', 'data/'],
+    path    => $ROOT,
+    exclude => ['blib/', 'data/'],
 ### I prefer a blank after [ and before ]
     perltidyrc => "$ROOT/.perltidyrc"
 ### When you put a trailing comma here, you will get less syntax errors

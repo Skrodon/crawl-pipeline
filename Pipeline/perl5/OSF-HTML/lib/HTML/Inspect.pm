@@ -18,7 +18,7 @@ sub _init ($self, $args) {
     my $html_ref    = $args->{html_ref} or panic "no html";
     ref $html_ref eq 'SCALAR'  or panic "Not SCALAR";
     $$html_ref =~ $html_ref_re or panic "Not HTML";
-    $args->{request_uri} or panic '"request_uri" is mandatory';
+    $args->{request_uri}       or panic '"request_uri" is mandatory';
 
     # use a normalized version
     $self->{HI_request_uri} = URI->new($args->{request_uri})->canonical;
@@ -28,15 +28,13 @@ sub _init ($self, $args) {
     my $string = $$html_ref =~ s!($html_ref_re)!lc $1!gsre;
 
     my $dom = XML::LibXML->load_html(
-                                     string            => \$string,
-                                     recover           => 2,
-                                     suppress_errors   => 1,
-                                     suppress_warnings => 1,
-                                     no_network        => 1,
-                                     no_xinclude_nodes => 1,
-                                    );
-### This is really ugly formatting.  Can we just indent this with 4, like
-### we do with code>
+        string            => \$string,
+        recover           => 2,
+        suppress_errors   => 1,
+        suppress_warnings => 1,
+        no_network        => 1,
+        no_xinclude_nodes => 1,
+    );
 
     $self->{HI_doc} = $dom->documentElement;
 ### As you can see, I use OHI_ before the object attributes.  This keeps
@@ -136,7 +134,7 @@ sub _handle_og_meta ($self, $meta) {
 
     # Handle objects, represented as arry of alternatives.
     # A new object starts.
-    if (! exists $self->{HI_og}{$ns}{$type}) {
+    if (!exists $self->{HI_og}{$ns}{$type}) {
         $self->{HI_og}{$ns}{$type} = [{$attr => $attrs->{content}}];
 ### No cleanout of content?
         return;
@@ -170,7 +168,7 @@ sub tag2attr {
         script => 'src',
 
         # more ?..
-                      };
+    };
 ### I prefer "configurables" in the top of the file.
 ### tag2attr is not clear enough: attrContainsLink?
 ### Public method?
