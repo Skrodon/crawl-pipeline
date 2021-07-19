@@ -14,14 +14,21 @@ use Log::Report 'html-inspect';
 
 # Initialises an HTML::Inspect instance and returns it.
 sub _init ($self, $args = {}) {
+### $args is not optional
     my $html_ref_re = qr!\<\s*/?\s*\w+!;
     my $html_ref    = $args->{html_ref} or panic "no html";
     ref $html_ref eq 'SCALAR'  or error "Not SCALAR";
+### Use 'panic' for internal software errors: it gives a stack-trace
+### like confess which is useful for debugging.
     $$html_ref =~ $html_ref_re or error "Not HTML";
     $args->{request_uri} || error '"request_uri" is mandatory';
+### To be consistent with the line before it, I would use 'or'
 
     # use a normalized version
     $self->{request_uri} = URI->new($args->{request_uri})->canonical;
+### The 'request_uri' is a good name for the parameter, but not for
+### the base in new_abs(), because that is influenced by other parameters
+### like <base>.
 
     # Translate all tags to lower-case, because libxml is case-
     # sensisitive, but HTML isn't.  This is not fail-safe.
@@ -35,8 +42,19 @@ sub _init ($self, $args = {}) {
                                      no_network        => 1,
                                      no_xinclude_nodes => 1,
                                     );
+### This is really ugly formatting.  Can we just indent this with 4, like
+### we do with code>
 
     $self->{OHI_doc} = $dom->documentElement;
+### As you can see, I use OHI_ before the object attributes.  This keeps
+### poeple from "accidentally" do "$inspect->{request_uri}" where the
+### intention was to write "inspect->requestURI".
+### OHI_ is the abbreviation of OSF::HTML::Inspect.  Now the module name
+### changed, it should become HI_
+### This also protects a bit against accidental name collisions in the
+### inheritance structure.  In Data::Dumper, you can now easily see
+### which inheritance level maintains the parameter.
+### So: maybe $self->{request_uri} --> $self->{HI_request_uri}
     return $self;
 }
 
@@ -51,6 +69,13 @@ sub doc { return $_[0]->{OHI_doc} }
 sub _attributes ($self, $element) {
     my %attrs = map { +(lc($_->name) => $_->value) } grep { $_->isa('XML::LibXML::Attr') }    # not namespace decls
       $element->attributes;
+
+### I do not used {} when map and grep are very simple actions.  But you do
+### NOT NEED to follow me:
+### my %attrs = map +(lc($_->name) => $_->value),
+###      grep $_->isa('XML::LibXML::Attr'),   # not namespace decls
+###          $element->attributes;
+
     return \%attrs;
 }
 
@@ -70,6 +95,9 @@ sub collectMeta ($self, %args) {
     foreach my $meta ($self->doc->findnodes('//meta')) {
         my $attrs = $self->_attributes($meta);
         if (my $http = $attrs->{'http-equiv'}) {
+### I do not like the blank between "if" and "(": I feel the "(" is part
+### of the if keyword: it is not a separate expression.  But it's your
+### choice.
             $meta{'http-equiv'}{lc $http} = $attrs->{content} if defined $attrs->{content};
         }
         elsif (my $name = $attrs->{name}) {
@@ -92,6 +120,8 @@ sub collectOpenGraph ($self, %args) {
     return $self->{OHI_og} if $self->{OHI_og};
     $self->{OHI_og} = {};
     for my $meta ($self->doc->findnodes('//meta[@property]')) {
+### Please use foreach() here.
+### Is findnodes really faster than what I used?
         $self->_handle_og_meta($meta);
     }
 
@@ -107,6 +137,7 @@ sub _handle_og_meta ($self, $meta) {
     # Handle Types title,type,url
     if ($type =~ /^(?:title|type|url)$/i) {
         $self->{OHI_og}{$ns}{$type} = $attrs->{content} =~ s/\s+/ /gr;
+### We use $self->{OHI_og}{$ns} everywhere, so assign it to a my()
         return;
     }
 
@@ -114,6 +145,7 @@ sub _handle_og_meta ($self, $meta) {
     # A new object starts.
     if (! exists $self->{OHI_og}{$ns}{$type}) {
         $self->{OHI_og}{$ns}{$type} = [{$attr => $attrs->{content}}];
+### No cleanout of content?
         return;
     }
 
@@ -146,7 +178,12 @@ sub tag2attr {
 
         # more ?..
                       };
+### I prefer "configurables" in the top of the file.
+### tag2attr is not clear enough: attrContainsLink?
+### Public method?
+
     return $_[1] && ref $_[1] eq 'HASH' ? $_[0]->{tag2attr} = $_[1] : $tag2attr;
+### No setter please.
 }
 
 # Collects all links from document. Returns a hash with keys like $tag_$attr
@@ -156,10 +193,16 @@ sub collectLinks ($self) {
     return $self->{OHI_links} if $self->{OHI_links};
     while (my ($tag, $attr) = each %{$self->tag2attr}) {
         for my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
+### foreach
+### attributes must be handled case-insensitive: use _attributes()
 
             # https://en.wikipedia.org/wiki/URI_normalization maybe some day
             push @{$self->{OHI_links}{"${tag}_$attr"} //= []},
+###  //= []  is not needed: autovifivication
+### $self->{OHI_links} is used a lot, assign it a my() before while()
               URI->new_abs($self->_attributes($link)->{$attr}, $self->{request_uri});
+### You use $self->{request_uri} for any link, and there are always many
+### links.  Before while() use $self->base to the URI.
         }
     }
     return $self->{OHI_links};
