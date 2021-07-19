@@ -9,8 +9,25 @@ our $VERSION = 0.11;
 
 # TODO: Make a Makefile.PL and describe the dependencise - prepare for CPAN
 use XML::LibXML();
-use URI();
+use URI;
+use URI::WithBase();
 use Log::Report 'html-inspect';
+
+# A map: for which tag which attributes to be considered as links?
+# We can add more tags and types of links later.
+my %attributesWithLinks = (
+    a      => 'href',
+    area   => 'href',
+    embed  => 'src',
+    form   => 'action',
+    iframe => 'src',
+    img    => 'src',
+    link   => 'href',
+    script => 'src',
+    base   => 'href',
+
+    # more ?..
+);
 
 # Initialises an HTML::Inspect instance and returns it.
 sub _init ($self, $args) {
@@ -137,49 +154,26 @@ sub _handle_og_meta ($self, $meta) {
     return;
 }
 
-# A map: for which tag which attributes to be considered as links?
-# We can add more tags and types of links later.
-# We can also add/change this map per instance.
-sub tag2attr {
-    state $tag2attr = {
-        a      => 'href',
-        area   => 'href',
-        embed  => 'src',
-        form   => 'action',
-        iframe => 'src',
-        img    => 'src',
-        link   => 'href',
-        script => 'src',
-
-        # more ?..
-    };
-### I prefer "configurables" in the top of the file.
-### tag2attr is not clear enough: attrContainsLink?
-### Public method?
-
-    return $_[1] && ref $_[1] eq 'HASH' ? $_[0]->{tag2attr} = $_[1] : $tag2attr;
-### No setter please.
-}
 
 # Collects all links from document. Returns a hash with keys like $tag_$attr
 # and values an array of links found in such tags and attributes.
-# TODO: guess the <base> of the document.
 sub collectLinks ($self) {
-    return $self->{HI_links} if $self->{HI_links};
-    while (my ($tag, $attr) = each %{$self->tag2attr}) {
+    my $links = $self->{HI_links};
+    return $links if $links;
+    my $base = $self->{HI_request_uri} =~ s|/[^/]+$|/|r;
+    if(my ($_base) = $self->doc->findnodes('//base[@href]')) {
+        my $href = $self->_attributes($_base)->{href};
+        $base = $href if $href;
+    }
+
+    while (my ($tag, $attr) = each %attributesWithLinks) {
         foreach my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
 
             # https://en.wikipedia.org/wiki/URI_normalization maybe some day
-            push @{$self->{HI_links}{"${tag}_$attr"} //= []},
-###  //= []  is not needed: autovifivication
-### $self->{HI_links} is used a lot, assign it a my() before while()
-              URI->new_abs($self->_attributes($link)->{$attr}, $self->{HI_request_uri});
-### You use $self->{request_uri} for any link, and there are always many
-### links.  Before while() use $self->base to the URI.
+            push @{$links->{"${tag}_$attr"}}, URI->new_abs($self->_attributes($link)->{$attr}, $base);
         }
     }
-    return $self->{HI_links};
+    return $self->{HI_links} = $links;
 }
-
 
 1;

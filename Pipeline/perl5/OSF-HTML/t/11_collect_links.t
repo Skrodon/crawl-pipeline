@@ -13,8 +13,23 @@ my $html      = slurp("$Bin/data/links.html");
 my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
 my $links     = $inspector->collectLinks();
 
+# maybe we need this to be a global variable or we need a getter
+my %attributesWithLinks = (
+    a      => 'href',
+    area   => 'href',
+    embed  => 'src',
+    form   => 'action',
+    iframe => 'src',
+    img    => 'src',
+    link   => 'href',
+    script => 'src',
+    base   => 'href',
+
+    # more ?..
+);
+
 # Have we collected all links that we support?
-while (my ($t, $a) = each %{$inspector->tag2attr}) {
+while (my ($t, $a) = each(%attributesWithLinks)) {
     ok(exists $links->{"${t}_$a"}, "${t}_$a were found in document");
 
     # Are all links absolute == canonical?
