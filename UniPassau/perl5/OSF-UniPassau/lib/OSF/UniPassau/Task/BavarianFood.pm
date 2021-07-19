@@ -5,6 +5,10 @@ use warnings;
 use strict;
 use utf8;
 
+use HTTP::Status        qw(is_success);
+use File::Path          qw(mkpath);
+use OSF::Package::WARCs ();
+
 use charnames ':full', ':alias' => {
    a_CIRCUM   => 'LATIN SMALL LETTER A WITH CIRCUMFLEX',
    o_CIRCUM   => 'LATIN SMALL LETTER O WITH CIRCUMFLEX',
@@ -12,14 +16,8 @@ use charnames ':full', ':alias' => {
    CIRCUMFLEX => 'COMBINING CIRCUMFLEX ACCENT',
 };
 
-use HTTP::Status       qw(is_success);
-use File::Path         qw(mkpath);
-
-my $collect       = $ENV{UP_COLLECT}
-    or die "Environment variable UP_COLLECT missing";
-
-my $publish       = $ENV{UP_PUBLISH}
-    or die "Environment variable UP_PUBLISH missing";
+my $collect       = $ENV{UP_COLLECT} or die "Environment variable UP_COLLECT missing";
+my $publish       = $ENV{UP_PUBLISH} or die "Environment variable UP_PUBLISH missing";
 
 my @content_types = qw(text/html text/xhtml);
 my @domain_names  = qw(bayern);
@@ -58,13 +56,13 @@ my @simple_city_names = qw/
  /;
 # City 'Hof' will produce too many false positives
 
-my $_a_uml  = '(?:ae|a\N{CIRCUMFLEX}|\N{a_CIRCUM})';
-my $_o_uml  = '(?:oe|o\N{CIRCUMFLEX}|\N{o_CIRCUM})';
-my $_u_uml  = '(?:ue|u\N{CIRCUMFLEX}|\N{u_CIRCUM})';
+my $_a_uml  = qr#(?:ae|a\N{CIRCUMFLEX}|\N{a_CIRCUM})#;
+my $_o_uml  = qr#(?:oe|o\N{CIRCUMFLEX}|\N{o_CIRCUM})#;
+my $_u_uml  = qr#(?:ue|u\N{CIRCUMFLEX}|\N{u_CIRCUM})#;
 
-my $_in_der = '(?i:\s+in\s+der\s+|\s+i\.?\s*d\.?\s*|\s*i\s*/\s*d\s+|\s*/\s*)';
-my $_an_der = '(?i:\s+an\s+der\s+|\s+a\.?\s*d\.?\s*|\s*a\s*/\s*d\s+|\s*/\s*)';
-my $_am     = '(?i:\s+am?\s+|\s*/\s*)';
+my $_in_der = qr#(?i:\s+in\s+der\s+|\s+i\.?\s*d\.?\s*|\s*i\s*/\s*d\s+|\s*/\s*)#;
+my $_an_der = qr#(?i:\s+an\s+der\s+|\s+a\.?\s*d\.?\s*|\s*a\s*/\s*d\s+|\s*/\s*)#;
+my $_am     = qr#(?i:\s+am?\s+|\s*/\s*)#;
 
 my %composed_city_names =
   ( 'Bad Kissingen'           => qr/\bBad\s+Kissingen\b/,
@@ -107,7 +105,7 @@ sub _init($)
     mkpath $_ for $collect, $publish;
 
     $self->{OKT_save} = OSF::Package::WARCs->new(tmp => $collect, publish => $publish);
-    $self->SUPER::init($args);
+    $self->SUPER::_init($args);
 }
 
 sub createFilter()

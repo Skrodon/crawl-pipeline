@@ -2,6 +2,7 @@
 _T="\
  OSF::KB_NL::Task::Fryslan\
  OSF::Planner::Task::LinkCollector\
+ OSF::UniPassau::Task::BavarianFood\
 "
 
 PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/OSF-Pipeline/lib"
@@ -24,3 +25,4 @@ fi
 #XXX only when TASKS are enabled, but it is not killing
 source $PIPELINE_REPO/KB-NL/profile
 source $PIPELINE_REPO/Planner/profile
+source $PIPELINE_REPO/UniPassau/profile

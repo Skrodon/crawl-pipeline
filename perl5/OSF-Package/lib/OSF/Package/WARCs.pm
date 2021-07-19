@@ -10,6 +10,7 @@ use OSF::WARC::Sink    ();
 
 use File::Copy         qw(move);
 use File::Path         qw(make_path);
+use File::Glob         qw(bsd_glob);
 use POSIX              qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError);
 use JSON               ();
@@ -128,7 +129,8 @@ This may return C<undef> when there is none available.
 sub adoptWARC()
 {   my $self = shift;
     my $tmp  = $self->tmp;
-    while(my $adopt = bsd_glob "$tmp/*-orphan")
+
+    foreach my $adopt (bsd_glob "$tmp/*-orphan")
     {   my $filebase = $adopt =~ s/-orphan$//r;
         my $part     = "$filebase-part";
         move $adopt, $part
@@ -154,7 +156,7 @@ sub publishWARC()
 {   my $self    = shift;
     my $warc    = delete $self->{OPW_warc} or return;
     my $part_fn = $warc->filename;
-    my $unique  = $part_fn ~ m!.*/(.*?).warc.gz-part$! ? $1 : panic $part_fn;
+    my $unique  = $part_fn =~ m!.*/(.*?).warc.gz-part$! ? $1 : panic $part_fn;
 
     # Publish the index file in compressed form
     my $tmpindex = $self->_saveIndex;

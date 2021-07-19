@@ -35,7 +35,7 @@ sub new(%)
 
 sub _init($)
 {   my ($self, $args) = @_;
-    $self->{OPT_name} = $args->{name} or panic "Task $self needs a name";
+    $self->{OPT_name} = $args->{name} || ref $self;
     $self;
 }
 
@@ -57,7 +57,7 @@ sub take($%)
 {   my ($self, $product, %args) = @_;
 
     # write
-    $self->_save($product, my $hits);
+    $self->save($product, my $hits);
     1;
 }
 
