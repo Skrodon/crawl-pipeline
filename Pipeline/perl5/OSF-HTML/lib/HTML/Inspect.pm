@@ -65,16 +65,16 @@ sub collectMeta ($self, %args) {
     my %meta;
     foreach my $meta ($self->doc->findnodes('//meta')) {
         my $attrs = $self->_attributes($meta);
-        if (my $http = $attrs->{'http-equiv'}) {
+        if(my $http = $attrs->{'http-equiv'}) {
 ### I do not like the blank between "if" and "(": I feel the "(" is part
 ### of the if keyword: it is not a separate expression.  But it's your
 ### choice.
             $meta{'http-equiv'}{lc $http} = $attrs->{content} if defined $attrs->{content};
         }
-        elsif (my $name = $attrs->{name}) {
+        elsif(my $name = $attrs->{name}) {
             $meta{name}{$name} = $attrs->{content} if defined $attrs->{content};
         }
-        elsif (my $charset = $attrs->{charset}) {
+        elsif(my $charset = $attrs->{charset}) {
             $meta{charset} = $charset;
         }
     }
@@ -106,7 +106,7 @@ sub _handle_og_meta ($self, $meta) {
     $attr //= 'content';
 
     # Handle Types title,type,url
-    if ($type =~ /^(?:title|type|url)$/i) {
+    if($type =~ /^(?:title|type|url)$/i) {
         $self->{HI_og}{$ns}{$type} = $attrs->{content} =~ s/\s+/ /gr;
 ### We use $self->{HI_og}{$ns} everywhere, so assign it to a my()
         return;
@@ -114,7 +114,7 @@ sub _handle_og_meta ($self, $meta) {
 
     # Handle objects, represented as arry of alternatives.
     # A new object starts.
-    if (!exists $self->{HI_og}{$ns}{$type}) {
+    if(!exists $self->{HI_og}{$ns}{$type}) {
         $self->{HI_og}{$ns}{$type} = [{$attr => $attrs->{content}}];
 ### No cleanout of content?
         return;
@@ -122,7 +122,7 @@ sub _handle_og_meta ($self, $meta) {
 
     # Continue adding properties to this object.
     my $arr = $self->{HI_og}{$ns}{$type};
-    if (!exists $arr->[-1]{$attr}) {
+    if(!exists $arr->[-1]{$attr}) {
         $arr->[-1]{$attr} = $attrs->{content};
     }
 

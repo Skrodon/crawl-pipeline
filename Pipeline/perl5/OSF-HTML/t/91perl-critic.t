@@ -6,7 +6,7 @@ use File::Basename;
 eval { require Test::Perl::Critic; };
 ### use_ok 'Test::Perl::Critic';
 
-if ($@) {
+if($@) {
     my $msg = 'Test::Perl::Critic required to criticise code';
     plan(skip_all => $msg);
 }
