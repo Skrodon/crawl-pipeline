@@ -1,10 +1,10 @@
 
 
 # Where the daily results are prepared
-: ${KB_COLLECT:=$FASTDISK}
+: ${KB_COLLECT:=$FASTDISK/KB-NL.Fryslan}
 
 # Where the KB can download its files for this project
-: ${KB_PUBLISH:=$PUBLISH/KB-NL}
+: ${KB_PUBLISH:=$PUBLISH/KB-NL.Fryslan}
 export KB_COLLECT KB_PUBLISH
 
 # Options for 7z

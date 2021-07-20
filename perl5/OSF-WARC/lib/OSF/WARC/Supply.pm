@@ -4,28 +4,29 @@ package OSF::WARC::Supply;
 use warnings;
 use strict;
 
-use OSF::WARC::Request  ();
-use OSF::WARC::Response ();
-use OSF::WARC::Metadata ();
-use OSF::WARC::WarcInfo ();
+use Log::Report  'osf-warc';
+
 use OSF::WARC::Conversion ();
+use OSF::WARC::Metadata   ();
+use OSF::WARC::Request    ();
+use OSF::WARC::Response   ();
+use OSF::WARC::Revisit    ();
+use OSF::WARC::WarcInfo   ();
 
 use IO::Uncompress::Gunzip qw($GunzipError);
 
 my %warc_type_class = (
+    conversion => 'OSF::WARC::Conversion',
+    metadata   => 'OSF::WARC::Metadata',
     request    => 'OSF::WARC::Request',
     response   => 'OSF::WARC::Response',
-    metadata   => 'OSF::WARC::Metadata',
+    revisit    => 'OSF::WARC::Revisit',
     warcinfo   => 'OSF::WARC::WarcInfo',
-    conversion => 'OSF::WARC::Conversion',
 );
 
-sub new(%)
-{   my $class = shift;
-    (bless {}, $class)->init({@_});
-}
+sub new(%) { my $class = shift; (bless {}, $class)->_init({@_}) }
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
 
     my $fn = $self->{OWS_fn} = $args->{filename}
@@ -37,13 +38,7 @@ sub init($)
         or die "ERROR: Expected file as gzip-compressed, $fn\n";
 
     $self->{OWS_unzip} = IO::Uncompress::Gunzip->new($fn, MultiStream => 1)
-        or die "ERROR: Cannot open warc-file '$fn' for read: $!\n";
-
-    ### Also, open the file raw, to be able to copy unmodified records
-    #   out.
-
-    open $self->{OWS_fh}, "<:raw", $fn
-        or die "ERROR: Cannot open warc-file '$fn' raw: $!\n";
+        or error "Cannot open warc-file '$fn' for read: $!\n";
 
     $self->{OWS_recs} = 0;
     $self->{OWS_info} = $self->readInfo;
@@ -52,60 +47,63 @@ sub init($)
 
 sub filename   { $_[0]->{OWS_fn} }
 sub fh         { $_[0]->{OWS_fh} }
-sub fh_unzip   { $_[0]->{OWS_unzip} }
-sub info       { $_[0]->{OWS_info} }
+sub unzip      { $_[0]->{OWS_unzip} }
+sub warcinfo   { $_[0]->{OWS_info} }
 sub nr_records { $_[0]->{OWS_recs} }
 
 sub getRecord(;$)
 {   my ($self, $set_id) = @_;
-    my $fh   = $self->fh_unzip;
+    my $unzip   = $self->unzip;
 
     if(my $next = $self->{OWS_next})
     {   return delete $self->{OWS_next}
-            if ! $set_id || $next->setId eq $set_id;
+            if ! $set_id || $next->basedOn eq $set_id;
+
+        return undef if $set_id;
     }
 
-    my $start   = $fh->tell;
-    my $version = $fh->getline;
-    $version = $fh->getline
-        while ! $fh->eof && $version eq "\r\n";
+    my $version = $unzip->getline;
+    $version = $unzip->getline
+        while ! $unzip->eof && $version eq "\r\n";
 
-    return undef if $fh->eof;
+    return undef if $unzip->eof;
 
     $version =~ m!^WARC/1\.!
          or die "ERROR: version '$version' not supported.\n";
 
     my (%head, $body);
     my ($key, $val);
-    my $line = $fh->getline;
-    while(! $fh->eof && $line !~ m/^\r?$/)
+    my $line = $unzip->getline;
+    while(! $unzip->eof && $line !~ m/^\r?$/)
     {   ($key, $val) = split /\: /, $line, 2;
-        $head{lc $key} = $val =~ s/\r?\n$//r;
-        $line = $fh->getline;
+        $head{$key} = $val =~ s/\r?\n$//r;
+        $line = $unzip->getline;
     }
 
-    my $len = $head{'content-length'}
-        or die "ERROR: record does not have a content length\n";
+    my $len = $head{'Content-Length'}
+        or die "ERROR: record does not have a Content-Length\n";
 
-    $fh->read($body, $len) == $len
+    $unzip->read($body, $len) == $len
         or die "ERROR: file is too short\n";;
 
-    my $type = $head{'warc-type'} || 'unknown';
+    my $type = $head{'WARC-Type'} || 'unknown';
     my $class = $warc_type_class{$type}
         or die "ERROR: unknown warc type $type";
 
     $self->{OWS_recs}++;
 
     my $record = $class->new
-      ( \%head,
-        \$body,    # scalar by reference to avoid copies
+      ( head => \%head,
+        body => \$body,    # scalar by reference to avoid copies
 
         # The gzip is a MultiStream, where each record is compressed
-        # separately, so we should be able to do this.
-        [ $self->fh, $start, $fh->tell - $start ],
+        # separately, so we should be able to do this.  However, the
+        # tell() returns the uncompressed location: we need to be able
+        # to find the start byte of the zip stream.
+#       compressed => [ $self->fh, $start, $unzip->tell - $start ],
       );
 
-    if($set_id && $record->setId ne $set_id)
+    if($set_id && $record->basedOn ne $set_id)
     {   $self->{OWS_next} = $record;
         return undef;
     }

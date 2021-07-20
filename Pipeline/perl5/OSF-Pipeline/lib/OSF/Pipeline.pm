@@ -4,7 +4,7 @@ package OSF::Pipeline;
 use warnings;
 use strict;
 
-use Log::Report 'pipeline';
+use Log::Report 'osf-pipeline';
 use Data::Dumper;
 
 =chapter NAME
@@ -15,7 +15,7 @@ OSF::Pipeline - base for all processing pipelines
 
   my $pipe = OSF::Pipeline->new(...)
   $pipe->runTasks($_) for @products;
-  $pipe->finish;
+  $pipe->batchFinished;
 
 =chapter DESCRIPTION
 All pipeline scripts use a single pipeline, which handles task
@@ -32,12 +32,14 @@ Create a new pipeline.  All tasks get initialized.
 =required name STRING
 =cut
 
-sub new(%) { my $class = shift; (bless {}, $class)->init( {@_} ) }
+sub new(%) { my $class = shift; (bless {}, $class)->_init( {@_} ) }
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
 
-    $self->{OP_name}   = $args->{name} or die;
+    $self->{OP_name}   = $args->{name}
+        or panic "Pipeline without name";
+
     $self->{OP_closed} = 0;
     $self->{OP_stats}  = {
         products => 0,
@@ -45,15 +47,18 @@ sub init($)
         start    => time,
     };
 
-    my @pkgs = grep /^[\w:]+$/, split ' ', $ENV{PIPELINE_TASKS};
-    @pkgs or die "ERROR: No PIPELINE_TASKS in the environment\n";
+    my @pkgs = grep /^[\w:]+$/, split ' ', $ENV{PIPELINE_TASKS} // '';
+    @pkgs or error "No PIPELINE_TASKS in the environment";
 
     my $tasks = $self->{OP_tasks} = [];
     foreach my $pkg (@pkgs)
     {   eval "require $pkg";
         die $@ if $@;
 
-        push @$tasks, $pkg->new;
+        $pkg->isa('OSF::Pipeline::Task')
+            or error "$pkg is not a pipeline task in PIPELINE_TASKS";
+
+        push @$tasks, $pkg->new(batch => $self);
     }
 
     $self;
@@ -66,13 +71,13 @@ sub name()  { $_[0]->{OP_name} }
 
 =method stats
 Returns a HASH with statistics about the pipeline.  May also be
-called after M<finish()>.
+called after M<batchFinished()>.
 =cut
 
 sub stats() { $_[0]->{OP_stats} }
 
 =method isClosed
-When M<finished()> has already been executed, you should not attempt
+When M<batchFinished()> has already been executed, you should not attempt
 to process more products.
 =cut
 
@@ -94,9 +99,9 @@ sub showStats()
 
     print join "\n  ",
         "Pipeline ".$self->name. ($self->isClosed ? ' (closed)' : ''),
-        "products processed: $stats->{processed}",
+        "products processed: $stats->{products}",
         "products taken:     $stats->{taken}",
-        'elapse time:        ' .(time - $stats->{start}). ' seconds';
+        'elapse time:        ' .(time - $stats->{start}). " seconds\n";
 }
 
 =method runTasks $product
@@ -111,19 +116,20 @@ sub runTasks($)
 
     my $stats = $self->stats;
     $stats->{products}++;
-    $stats->{taken} = grep $_->take($product), $self->tasks;
+    $stats->{taken}++ if grep $_->take($product), $self->tasks;
+    $self;
 }
 
-=method finish %options
+=method batchFinished %options
 Must be called when you stop processing a pipeline: some of the tasks
 have caches which need to be flushed.
 =cut
 
-sub finish(%)
+sub batchFinished(%)
 {   my ($self, %args) = @_;
     next if $self->{OP_closed}++;
 
-    $_->finish($self) for $self->tasks;
+    $_->batchFinished($self) for $self->tasks;
     1;
 }
 

@@ -1,15 +1,9 @@
 package OSF::WARC::Metadata;
 use parent 'OSF::WARC::Record';
 
-use JSON;
+use JSON   qw(decode_json);
 
-sub getRecord(@)
-{   my $self = shift;
-    my $rec  = $self->SUPER::getRecord(@_);
-
-    $rec->header('WARC-Type') eq 'metadata' or die;
-    $rec;
-}
+sub type() { 'metadata' }
 
 sub _index()
 {   my $self = shift;

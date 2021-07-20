@@ -5,6 +5,10 @@ use warnings;
 use strict;
 use utf8;
 
+use HTTP::Status        qw(is_success);
+use File::Path          qw(mkpath);
+use OSF::Package::WARCs ();
+
 use charnames ':full', ':alias' => {
    a_CIRCUM   => 'LATIN SMALL LETTER A WITH CIRCUMFLEX',
    o_CIRCUM   => 'LATIN SMALL LETTER O WITH CIRCUMFLEX',
@@ -12,10 +16,8 @@ use charnames ':full', ':alias' => {
    CIRCUMFLEX => 'COMBINING CIRCUMFLEX ACCENT',
 };
 
-use HTTP::Status       qw(is_success);
-
-my $collect       = $ENV{UP_COLLECT}
-    or die "Environment variable UP_COLLECT missing";
+my $collect       = $ENV{UP_COLLECT} or die "Environment variable UP_COLLECT missing";
+my $publish       = $ENV{UP_PUBLISH} or die "Environment variable UP_PUBLISH missing";
 
 my @content_types = qw(text/html text/xhtml);
 my @domain_names  = qw(bayern);
@@ -52,13 +54,15 @@ my @simple_city_names = qw/
   Schweinfurt
   Straubing
  /;
+# City 'Hof' will produce too many false positives
 
-my _a_uml  = "(?:ae|a\N{CIRCUMFLEX}|\N{a_CIRCUM})";
-my _o_uml  = "(?:oe|o\N{CIRCUMFLEX}|\N{o_CIRCUM})";
-my _u_uml  = "(?:ue|u\N{CIRCUMFLEX}|\N{u_CIRCUM})";
-my _in_der = "(?:\s+in\s+der\s+|\s+i\.?\s*d\.?\s*|\s*i\s*/\s*d\s+|\s*/\s*)";
-my _an_der = "(?:\s+an\s+der\s+|\s+a\.?\s*d\.?\s*|\s*a\s*/\s*d\s+|\s*/\s*)";
-my _am     = "(?:\s+am?\s+|\s*/\s*)";
+my $_a_uml  = qr#(?:ae|a\N{CIRCUMFLEX}|\N{a_CIRCUM})#;
+my $_o_uml  = qr#(?:oe|o\N{CIRCUMFLEX}|\N{o_CIRCUM})#;
+my $_u_uml  = qr#(?:ue|u\N{CIRCUMFLEX}|\N{u_CIRCUM})#;
+
+my $_in_der = qr#(?i:\s+in\s+der\s+|\s+i\.?\s*d\.?\s*|\s*i\s*/\s*d\s+|\s*/\s*)#;
+my $_an_der = qr#(?i:\s+an\s+der\s+|\s+a\.?\s*d\.?\s*|\s*a\s*/\s*d\s+|\s*/\s*)#;
+my $_am     = qr#(?i:\s+am?\s+|\s*/\s*)#;
 
 my %composed_city_names =
   ( 'Bad Kissingen'           => qr/\bBad\s+Kissingen\b/,
@@ -92,14 +96,16 @@ my @simple_food = qw/
 
 # not used yet
 my %composed_food =
-  ( 'getränke'   => qr/\bgetr${_a_uml}nke\b/,
-  , 'menü'        => qr/\bmen${_u_uml}\b/,
+  ( 'getränke' => qr/\bgetr${_a_uml}nke\b/,
+  , 'menü'     => qr/\bmen${_u_uml}\b/,
   );
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
-    $self->{OKT_save} = OSF::Package::WARC->new(directory => $collect);
-    $self->SUPER::init($args);
+    mkpath $_ for $collect, $publish;
+
+    $self->{OKT_save} = OSF::Package::WARCs->new(tmp => $collect, publish => $publish);
+    $self->SUPER::_init($args);
 }
 
 sub createFilter()
@@ -107,15 +113,17 @@ sub createFilter()
     my $size  = $self->filterRequiresText(minimum_words => 300);
     my $ct    = $self->filterContentType(\@content_types);
     my $rid   = $self->filterDomain(\@domain_names);
+    my $lang  = $self->filterLanguage('DEU');
     my $cities1 = $self->filterFullWords(\@simple_city_names);
-    my $cities2 = $self->filterRegexps(\%composed_city_names);
+    my $cities2 = $self->filterMatchText(\%composed_city_names);
 
     sub {
         my $product = shift;
 
            is_success($product->responseStatus)
+        && $product->origin eq 'CommonCrawl'
         && $ct->($product)
-        && $product->language =~ qr/^DEU?$/
+        && $lang->($product)
         && $size->($product)
             or return undef;
 
@@ -131,18 +139,22 @@ sub createFilter()
 
 sub save($$)
 {   my ($self, $product, $hits) = @_;
-warn "SAVE ", $product->name;
+    my %facts =
+      ( origin => $product->origin
+      , hits   => $hits
+      );
 
     my $save = $self->{OKT_save};
-    foreach my $component ( qw/request response text/ )
-    {   my $part = $product->part($component) or next;
-        $save->addFile($product, "$component.warc-record.gz", $part->refBytes);
-    }
+    $save->addWARCRecord($product->part('response'));
+    $save->addWARCRecord($product->part('text'));
+    $save->addWARCRecord($product->part('metadata'), \%facts);
+    $save->possibleBreakpoint;
+}
 
-    $save->addJson($product, 'facts.json', +{
-        hits   => $hits,
-        origin => $product->origin,
-    });
+sub batchFinished
+{   my $self = shift;
+    $self->{OKT_save}->batchFinished;
+    $self->SUPER::batchFinished;
 }
 
 1;

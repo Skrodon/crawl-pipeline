@@ -12,6 +12,11 @@ PATH+=":$PIPELINE_REPO/bin"
 PERL5LIB+=":$PIPELINE_REPO/perl5/OSF-Package/lib"
 PERL5LIB+=":$PIPELINE_REPO/perl5/OSF-WARC/lib"
 
+# Nearly everyone needs this
+PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/OSF-HTML/lib"
+PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/OSF-Pipeline/lib"
+export PERL5LIB
+
 # Where publications are stored (temporarily)
 
 : ${PUBLISH:=$BIGDISK/publish}

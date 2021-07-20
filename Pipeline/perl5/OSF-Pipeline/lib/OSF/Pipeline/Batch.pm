@@ -7,7 +7,7 @@ use parent 'OSF::Pipeline';
 use warnings;
 use strict;
 
-use Log::Report 'pipeline';
+use Log::Report 'osf-pipeline';
 
 =chapter NAME
 
@@ -16,7 +16,7 @@ OSF::Pipeline::Batch - run a pipeline in batch mode
 =chapter SYNOPSIS
   my $pipe = OSF::Pipeline::Batch->new(...)
   $pipe->processProducts(...);
-  $pipe->finish;
+  $pipe->batchFinished;
 
 =chapter DESCRIPTION
 Batch pipelines read static products from a source, usually from
@@ -27,11 +27,11 @@ WARC archives.
 =c_method new %options
 =cut
 
-sub init($)
-{   my ($self, $args) = @_;
-    $self->SUPER::init($args);
-    $self;
-}
+#sub _init($)
+#{   my ($self, $args) = @_;
+#    $self->SUPER::_init($args);
+#    $self;
+#}
 
 =method processProducts %options
 Process all products from the batch.

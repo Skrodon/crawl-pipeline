@@ -4,19 +4,13 @@ use parent 'OSF::WARC::Record';
 use warnings;
 use strict;
 
-use OSF::HTML::Inspect ();
+use HTML::Inspect      ();
 use HTTP::Response     ();
 
 use MIME::Types        ();
 my $mt = MIME::Types->new;
 
-sub getRecord(@)
-{   my $self = shift;
-    my $rec  = $self->SUPER::getRecord(@_);
-
-    $rec->header('WARC-Type') eq 'response' or die;
-    $rec;
-}
+sub type() { 'response' }
 
 sub httpResponse()
 {   my $self = shift;
@@ -37,11 +31,20 @@ sub inspectHTML()
     $ct eq 'text/html' || $ct eq 'text/xhtml'
         or return $self->{OWR_html} = undef;
 
-    my $html = $self->httpResponse->decoded_content(ref => 1,
-        alt_charset => 'cp-1252'
-    );
+    my $resp = $self->httpResponse;
+    my $html = $resp->decoded_content(ref => 1, alt_charset => 'cp-1252');
 
-    $self->{OWR_html} = OSF::HTML::Inspect->new(html_ref => $html);
+    my $headers = $resp->headers;
+    my $base
+        = $headers->header('Content-Location')
+       || $headers->header('Content-Base')
+       || $headers->header('Base')
+       || $self->uri;               # from WARC meta
+
+    $self->{OWR_html} = HTML::Inspect->new(
+        html_ref    => $html,
+        request_url => $base,
+    );
 }
 
 1;

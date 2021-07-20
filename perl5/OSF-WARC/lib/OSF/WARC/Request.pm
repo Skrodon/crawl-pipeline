@@ -3,13 +3,7 @@ use parent 'OSF::WARC::Record';
 
 use HTTP::Request;
 
-sub getRecord(@)
-{   my $self = shift;
-    my $rec  = $self->SUPER::getRecord(@_);
-
-    $rec->header('WARC-Type') eq 'request' or die;
-    $rec;
-}
+sub type() { 'request' }
 
 sub http_request()
 {   my $self = shift;

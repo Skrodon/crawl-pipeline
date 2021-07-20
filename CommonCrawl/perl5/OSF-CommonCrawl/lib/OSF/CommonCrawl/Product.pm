@@ -16,7 +16,7 @@ sub _init($)
     $self;
 }
 
-sub _id()   { $_[0]->part('request')->setId }
+sub _id()   { $_[0]->part('request')->recordId }
 sub _name() { $_[0]->uri->as_string }
 
 sub uri()
@@ -31,6 +31,15 @@ sub cld2()
     my $meta = $self->part('metadata') or return;
     my $cld2 = $meta->value('languages-cld2') or return;
     $self->{OCP_cld2} = decode_json $cld2;
+}
+
+# Could also use part('text')/WARC-Identified-Content-Language
+
+sub _lang()
+{   my $cld2   = shift->cld2 or return;
+    my $langs  = $cld2->{languages} || [];
+    (my $best) = sort { $b->{'text-covered'} <=> $a->{'text-covered'} } @$langs;
+    $best ? $best->{'code-iso-639-3'} : undef;
 }
 
 sub _ct()
@@ -50,9 +59,14 @@ sub _ct()
     $ct;
 }
 
-sub _textRef()
+sub _refText()
 {   my $part = $_[0]->part('text') or return;
-    $part->bodyRef;
+    $part->refBody;
+}
+
+sub _rs()
+{   my $part = $_[0]->part('response') or return;
+    $part->httpResponse->code;
 }
 
 1;

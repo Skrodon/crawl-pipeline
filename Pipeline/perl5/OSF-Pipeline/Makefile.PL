@@ -1,6 +1,6 @@
 use ExtUtils::MakeMaker;
 
-require 5.010;
+require 5.020;
 
 my $VERSION = '0.010';
 

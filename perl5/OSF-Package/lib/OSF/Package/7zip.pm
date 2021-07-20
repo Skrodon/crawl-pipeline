@@ -4,23 +4,26 @@ use parent 'OSF::Package';
 use warnings;
 use strict;
 
-use File::Path  qw(make_path);
+use Log::Report 'osf-package';
 
-sub init($)
+use File::Path   qw(make_path);
+use Scalar::Util qw(blessed);
+
+sub _init($)
 {   my ($self, $args) = @_;
+    $self->SUPER::_init($args);
 
     my $dir = $self->{OP7_root} = $args->{directory}
-        or die "directory required";
+        or panic "directory required";
 
     make_path $dir;
-
     $self;
 }
 
 sub root() { $_[0]->{OP7_root} }
 
 sub addFile($$$)
-{   my ($self, $product, $name, $ref_bytes) = @_;
+{   my ($self, $product, $name, $data) = @_;
 
     my $dir = $self->root;
     $dir   .= '/' . $product->id if $product;
@@ -29,11 +32,17 @@ sub addFile($$$)
 
     my $fn  = "$dir/$name";
     open my $fh, ">:raw", $fn
-        or die "ERROR: Cannot write results to $fn: $!";
+        or fault "Cannot write results to $fn";
 
-    $fh->print($$ref_bytes);
+    if(blessed $data && $data->isa('OSF::WARC::Record'))
+    {   $data->write($fh);
+    }
+    else
+    {   $fh->print(ref $data eq 'SCALAR' ? $$data : $data);
+    }
+
     $fh->close
-        or die "ERROR: Failed writing full result to $fn: $!";
+        or fault "Failed writing full result to $fn";
 
     $fn;
 }
