@@ -14,6 +14,7 @@ use File::Glob         qw(bsd_glob);
 use POSIX              qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError);
 use JSON               ();
+use File::Slurper      qw(write_binary);
 
 my $json = JSON->new->pretty;
 
@@ -97,9 +98,8 @@ sub createWARC()
     $self->{OPW_warc} = OSF::WARC::Sink->new(filename => $fn);
 }
 
-sub _saveIndex()
-{   my $self = shift;
-    my $warc = $self->currentWARC or return;
+sub _saveIndex($)
+{   my ($self, $warc) = @_;
     my $fn   = $warc->filename =~ s!-part$!-index.json!r;
     write_binary $fn, $json->encode($warc->index);
     $fn;
@@ -112,9 +112,10 @@ hopefully someone else will adopt it.
 
 sub orphanWARC()
 {   my $self   = shift;
-    $self->_saveIndex;    # before offering warc for adoption
 
     my $warc   = delete $self->{OPW_warc} or return;
+    $self->_saveIndex($warc);    # before offering warc for adoption
+
     my $fn     = $warc->filename;
     my $offer  = $fn =~ s/-part$/-orphan/r;
     move $fn, $offer
@@ -159,7 +160,7 @@ sub publishWARC()
     my $unique  = $part_fn =~ m!.*/(.*?).warc.gz-part$! ? $1 : panic $part_fn;
 
     # Publish the index file in compressed form
-    my $tmpindex = $self->_saveIndex;
+    my $tmpindex = $self->_saveIndex($warc);
     gzip $tmpindex, "$tmpindex.gz"
         or fault __x"Cannot gzip {fn}", fn => $tmpindex, _code => $GzipError;
 
@@ -184,7 +185,7 @@ When you specify C<%facts>, they are added to the index for that record.
 
 sub addWARCRecord($$)
 {   my ($self, $record, $facts) = @_;
-    my $warc = $self->currectWARC || $self->adoptWARC || $self->createWARC;
+    my $warc = $self->currentWARC || $self->adoptWARC || $self->createWARC;
     $warc->write($record, $facts || {});
     $self;
 }

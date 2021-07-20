@@ -115,7 +115,7 @@ sub createFilter()
     my $rid   = $self->filterDomain(\@domain_names);
     my $lang  = $self->filterLanguage('DEU');
     my $cities1 = $self->filterFullWords(\@simple_city_names);
-    my $cities2 = $self->filterRegexps(\%composed_city_names);
+    my $cities2 = $self->filterMatchText(\%composed_city_names);
 
     sub {
         my $product = shift;
@@ -139,7 +139,6 @@ sub createFilter()
 
 sub save($$)
 {   my ($self, $product, $hits) = @_;
-warn "SAVE ", $product->name;
     my %facts =
       ( origin => $product->origin
       , hits   => $hits

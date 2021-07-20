@@ -23,7 +23,7 @@ sub addFile($$$)
 sub addJson($$$)
 {   my ($self, $product, $name, $data) = @_;
     $name .= '.json' unless $name =~ m!\.json$!;
-    $self->addFile($product, "$name.json", encode_json $data);
+    $self->addFile($product, $name, encode_json $data);
 }
 
 sub batchFinished() { shift }

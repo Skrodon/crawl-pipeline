@@ -10,14 +10,15 @@ use Log::Report 'osf-warc';
 use IO::Compress::Gzip qw($GzipError);
 use Fcntl              qw(SEEK_SET SEEK_CUR SEEK_END);
 
+use constant WARC_FULL => 1024 * 1024 * 1024;   # 1GB, according to spec
+
 sub new(%) { my $class = shift; (bless {}, $class)->_init({@_}) }
 
 sub _init($)
 {   my ($self, $args) = @_;
-
     my $fn = $self->{OWS_fn} = $args->{filename} or panic;
 
-    if($args->reopen)
+    if($args->{reopen})
     {   open $self->{OWS_fh}, '>>:raw', $fn
             or fault __x"Cannot append to WARC {fn}", fn => $fn;
     }
@@ -31,7 +32,7 @@ sub _init($)
 }
 
 # WARC spec wants files of about 1GB
-sub isFull()     { -s $_[0]->filename > 1024 * 1024 }
+sub isFull()     { -s $_[0]->filename >= WARC_FULL }
 
 sub filename()   { $_[0]->{OWS_fn} }
 sub _fh()        { $_[0]->{OWS_fh} }

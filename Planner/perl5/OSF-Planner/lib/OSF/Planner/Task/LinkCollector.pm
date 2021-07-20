@@ -36,6 +36,11 @@ sub exclude($)
     0;
 }
 
+sub createFilter()
+{   my $self = shift;
+    sub { 0 };
+}
+
 sub save($$)
 {   my ($self, $product, $hits) = @_;
     my $response = $product->part('response') or return;
@@ -43,14 +48,13 @@ sub save($$)
 
 use Data::Dumper;
 warn Dumper $html->collectMeta;
-exit 0;
 #   $self->index->{$product->name} = $response->extractLinks;
 }
 
-sub finish(%)
-{   my ($self, %args) = @_;
+sub batchFinished()
+{   my $self = shift;
 
-    my $batch = $args{batch} or die;
+    my $batch = $self->batch;
     my $name  = $batch->name;
 
     my $index = $self->index;
@@ -58,7 +62,7 @@ sub finish(%)
 
     $self->packer->addJSON(undef, "$name.links", $index);
 
-    $self->SUPER::finish(%args);
+    $self->SUPER::batchFinished;
 }
 
 1;

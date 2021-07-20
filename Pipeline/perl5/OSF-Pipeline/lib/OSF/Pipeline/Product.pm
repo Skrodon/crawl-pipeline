@@ -31,11 +31,12 @@ sub id()          { $_[0]->{OPP_id}   ||= $_[0]->_id }
 sub name()        { $_[0]->{OPP_name} ||= $_[0]->_name }
 sub origin()      { $_[0]->{OPP_origin} }
 sub contentType() { $_[0]->{OPP_ct}   ||= $_[0]->_ct || 'application/octet-stream' }
+sub responseStatus{ $_[0]->{OPP_rs}   ||= $_[0]->_rs }
 
-sub plainTextRef()     { $_[0]->{OPP_text}  //= $_[0]->_textRef // '' }
-sub contentSize()      { length ${$_[0]->plainTextRef} }
-sub contentWordChars() { $_[0]->{OPP_chars} //= length(${$_[0]->plainTextRef} =~ s/\P{PerlWord}//gr) }
-sub contentWords()     { $_[0]->{OPP_words} //= () = ${$_[0]->plainTextRef} =~ m!\w+!g }
+sub refPlainText()     { $_[0]->{OPP_text}  //= $_[0]->_refText // \'' }
+sub contentSize()      { length ${$_[0]->refPlainText} }
+sub contentWordChars() { $_[0]->{OPP_chars} //= length(${$_[0]->refPlainText} =~ s/\P{PerlWord}//gr) }
+sub contentWords()     { $_[0]->{OPP_words} //= () = ${$_[0]->refPlainText} =~ m!\w+!g }
 
 =method language
 Returns the iso-639-3 code for the language which was detected the most
