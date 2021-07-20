@@ -39,6 +39,9 @@ sub _init ($self, $args) {
 
     # use a canonicalised version
     $self->{HI_request_uri} = URI->new($args->{request_uri})->canonical;
+### You can expect request_uri already to be a canonical URI object.  Very probably,
+### HTML::Inspect is called by a routine which also requires the same canonical version
+### of the URI.
 
     # Translate all tags to lower-case, because libxml is case-
     # sensisitive, but HTML isn't.  This is not fail-safe.
@@ -56,6 +59,9 @@ sub _init ($self, $args) {
 }
 
 sub new { _init((bless {}, shift), {@_}) }
+### Incorrect: must be called with OO syntax as well. Sub-classes may also contain their own
+### _init's.  So:
+### sub new { my $class = shift; (bless {}, $class)->_init({@_}) }
 
 # A read-only getter for the parsed document. Returns instance of
 # XML::LibXML::Element, representing the root node of the document and
@@ -70,6 +76,9 @@ sub _attributes ($self, $element) {
 sub _cleanup_content($string) {
     $string =~ s/\s+/ /g;            # reduce spaces
     $string =~ s/^\s(.*?)\s$/$1/;    # trim
+### Bug: their may be either one leading OR one trailing.
+### s/\s+/ /gs,s/^\s//,s/\s\z// for $string  OR
+### return $sintr =~ s/\s+/ /grs =~ s/^\s//r =~ s/\s\z//r;
     return $string;
 }
 
@@ -89,6 +98,8 @@ sub collectMeta ($self, %args) {
     foreach my $meta ($self->doc->findnodes('//meta')) {
         my $attrs = $self->_attributes($meta);
         $attrs->{content} = _cleanup_content $attrs->{content};
+### Why do overwrite $attrs->{content}?  For many reasons better:
+### my $content = _cleanup_content $attrs->{content};
         if(my $http = $attrs->{'http-equiv'}) {
             $meta{'http-equiv'}{lc $http} = $attrs->{content} if defined $attrs->{content};
         }
@@ -112,6 +123,7 @@ sub collectOpenGraph ($self, %args) {
     return $self->{HI_og} if $self->{HI_og};
     $self->{HI_og} = {};
     foreach my $meta ($self->doc->findnodes('//meta[@property]')) {
+## You cannot pre-filter on 'property' here, because it could be PROPERTY etc
         $self->_handle_og_meta($meta);
     }
 
@@ -122,8 +134,11 @@ sub collectOpenGraph ($self, %args) {
 sub _handle_og_meta ($self, $meta) {
     my $attrs = $self->_attributes($meta);
     my ($ns, $type, $attr) = split /:/, lc $attrs->{property};
+### not $ns but prefix
+
     $attr //= 'content';
     $attrs->{content} = _cleanup_content $attrs->{content};
+### my $content = _cleanup_content $attrs->{content};
 
     my $namespace = ($self->{HI_og}{$ns} //= {});
 
@@ -146,6 +161,7 @@ sub _handle_og_meta ($self, $meta) {
     if(!exists $arr->[-1]{$attr}) {
         $arr->[-1]{$attr} = $attrs->{content};
     }
+### Together $arr->[-1]{$attr} //= $attrs->{content};
 
     # Alternates for this object
     else {
@@ -159,21 +175,34 @@ sub _handle_og_meta ($self, $meta) {
 # and values an array of links found in such tags and attributes.
 sub collectLinks ($self) {
     my $links = $self->{HI_links};
+### return $self->{HI_links} if $self->{HI_links};
+###
+### my %links;
     return $links if $links;
     my $base = $self->{HI_request_uri} =~ s|/[^/]+$|/|r;
     if(my ($_base) = $self->doc->findnodes('//base[@href]')) {
+### might be HREF
+### Why '_' in '_base'?  My variables are always private.  $base_tag
         my $href = $self->_attributes($_base)->{href};
         $base = $href if $href;
     }
+### The $base is needed for all links, for instance also for the og:image.
+### Probably do that in _init.
 
     while (my ($tag, $attr) = each %attributesWithLinks) {
         foreach my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
+### No, $attr case insensitive
 
             # https://en.wikipedia.org/wiki/URI_normalization maybe some day
             push @{$links->{"${tag}_$attr"}}, URI->new_abs($self->_attributes($link)->{$attr}, $base);
+### if(my $v = $self->_attributes($link)->{$attr}) {
+###     my $link = URI->new_abs($v, $base)->canonical;
+###     $links{"${tag}_$attr"}}{"$link"} ||= $link;    # dedup links
+
         }
     }
     return $self->{HI_links} = $links;
+### $self->{HI_links} = { map +( $_ => [ values %{$links{$_}} ]), keys %links };
 }
 
 1;

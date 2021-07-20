@@ -11,8 +11,16 @@ require_ok('HTML::Inspect');
 my $constructor_and_doc = sub {
     my $inspector;
     like(($inspector = eval { HTML::Inspect->new(); } || $@) => qr/no html/, '_init croaks ok1');
+### why $@?
+
+### use Log::Report 'html-inspect';
+###    like try { HTML::Inspect->new } => qr/no html/, '_init croaks ok1';
+
     like(($inspector = eval { HTML::Inspect->new(html_ref => "foo"); }  || $@) => qr/Not SCALAR/, '_init croaks ok2');
     like(($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) => qr/Not HTML/,   '_init croaks ok3');
+### In my opinion, you do not need to check internal errors.  Panic()s help for unexpected code flows,
+### which are not intended to be producible in the first place.  Also, I would not have implemented
+### these checks in the first place.
 
     like(($inspector = eval { HTML::Inspect->new(html_ref => \"<B>FooBar</B>"); } || $@) => qr/is\smandatory/, '_init croaks ok4');
     $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \"<B>FooBar</B>");
@@ -60,6 +68,8 @@ subtest constructor_and_doc => $constructor_and_doc;
 subtest collectMeta      => $collectMeta;
 subtest collectOpenGraph => $collectOpenGraph;
 subtest collectLinks     => $collectLinks;
+### Are you never missing tests this way?  Why not simply:
+###   subtest collectMeta => sub { ... };
 
 
 done_testing;
