@@ -30,10 +30,13 @@ my @words_in_text =
 
 my @regexes_in_text;
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
+    $args->{name} ||= 'KB_NL Fryslân';
+
+    $self->SUPER::_init($args);
     $self->{OKT_save} = OSF::Package::7zip->new(directory => $collect);
-    $self->SUPER::init($args);
+    $self;
 }
 
 sub createFilter()

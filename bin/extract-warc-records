@@ -1,0 +1,26 @@
+#!/usr/bin/env perl
+# The the first N records from a (compressed) warc file.  Additionally, it first
+# copies the header record.
+
+use warnings;
+use strict;
+use IO::Compress::Gzip qw($GzipError);
+
+@ARGV==1 && $ARGV[0] =~ /^\d+$/
+   or die "Usage: zcat file | $0 count >a.warc.gz\n";
+
+my $take  = (shift @ARGV) +1;
+my $count = 0;
+
+my $z = IO::Compress::Gzip->new(*STDOUT);
+
+while(my $line = <>)
+{   if($line =~ m!^WARC/1\.!)
+    {   last if ++$count > $take;
+        $z->newStream if $count;
+    }
+
+    $z->print($line);
+}
+
+$z->close;

@@ -4,19 +4,13 @@ use parent 'OSF::WARC::Record';
 use warnings;
 use strict;
 
-use OSF::HTML::Inspect ();
+use HTML::Inspect      ();
 use HTTP::Response     ();
 
 use MIME::Types        ();
 my $mt = MIME::Types->new;
 
-sub getRecord(@)
-{   my $self = shift;
-    my $rec  = $self->SUPER::getRecord(@_);
-
-    $rec->header('WARC-Type') eq 'response' or die;
-    $rec;
-}
+sub type() { 'response' }
 
 sub httpResponse()
 {   my $self = shift;

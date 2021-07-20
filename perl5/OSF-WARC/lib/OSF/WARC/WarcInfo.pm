@@ -3,20 +3,14 @@ use parent 'OSF::WARC::Record';
 
 use JSON;
 
-sub getRecord(@)
-{   my $self = shift;
-    my $rec  = $self->SUPER::getRecord(@_);
+sub type() { 'warcinfo' }
 
-    $rec->header('WARC-Type') eq 'warcinfo' or die;
-    $rec;
-}
-
-sub _index()
+sub index()
 {   my $self = shift;
     $self->{OWW_index} ||= $self->warcFields;
 }
 
-sub fields() { keys %{$_[0]->_index} }
-sub value($) { $_[0]->_index->{$_[1]} }
+sub fields() { keys %{$_[0]->index} }
+sub value($) { $_[0]->index->{$_[1]} }
 
 1;

@@ -37,5 +37,13 @@ sub contentSize()      { length ${$_[0]->plainTextRef} }
 sub contentWordChars() { $_[0]->{OPP_chars} //= length(${$_[0]->plainTextRef} =~ s/\P{PerlWord}//gr) }
 sub contentWords()     { $_[0]->{OPP_words} //= () = ${$_[0]->plainTextRef} =~ m!\w+!g }
 
+=method language
+Returns the iso-639-3 code for the language which was detected the most
+in the response text.
+=cut
+
+sub language()    { $_[0]->{OPP_lang} ||= $_[0]->_lang }
+sub _lang()       { undef }
+
 1;
 

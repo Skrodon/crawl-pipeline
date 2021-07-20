@@ -4,7 +4,7 @@ package OSF::Pipeline;
 use warnings;
 use strict;
 
-use Log::Report 'pipeline';
+use Log::Report 'osf-pipeline';
 use Data::Dumper;
 
 =chapter NAME
@@ -32,12 +32,14 @@ Create a new pipeline.  All tasks get initialized.
 =required name STRING
 =cut
 
-sub new(%) { my $class = shift; (bless {}, $class)->init( {@_} ) }
+sub new(%) { my $class = shift; (bless {}, $class)->_init( {@_} ) }
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
 
-    $self->{OP_name}   = $args->{name} or die;
+    $self->{OP_name}   = $args->{name}
+        or panic "Pipeline without name";
+
     $self->{OP_closed} = 0;
     $self->{OP_stats}  = {
         products => 0,
@@ -45,13 +47,16 @@ sub init($)
         start    => time,
     };
 
-    my @pkgs = grep /^[\w:]+$/, split ' ', $ENV{PIPELINE_TASKS};
-    @pkgs or die "ERROR: No PIPELINE_TASKS in the environment\n";
+    my @pkgs = grep /^[\w:]+$/, split ' ', $ENV{PIPELINE_TASKS} // '';
+    @pkgs or error "No PIPELINE_TASKS in the environment";
 
     my $tasks = $self->{OP_tasks} = [];
     foreach my $pkg (@pkgs)
     {   eval "require $pkg";
         die $@ if $@;
+
+        $pkg->isa('OSF::Pipeline::Task')
+            or error "$pkg is not a pipeline task in PIPELINE_TASKS";
 
         push @$tasks, $pkg->new;
     }

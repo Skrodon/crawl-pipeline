@@ -4,10 +4,12 @@ use parent 'OSF::Package';
 use warnings;
 use strict;
 
+use Log::Report 'osf-package';
 use File::Path  qw(make_path);
 
-sub init($)
+sub _init($)
 {   my ($self, $args) = @_;
+    $self->SUPER::_init($args);
 
     my $dir = $self->{OPZ_root} = $args->{directory}
         or die "directory required";
