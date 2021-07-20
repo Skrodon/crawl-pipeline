@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html class=split lang=en-US-x-hixie>
     <!--
-        note the missing <head>!
+        This document is taken from
+        https://html.spec.whatwg.org/multipage/dom.html and addapted for our
+        tests.
+        Note the missing <head>, attribute quotes, etc!
         view-source:https://html.spec.whatwg.org/multipage/dom.html
     -->
+    <!-- Duplicate links will be deduplicated -->
     <bAse hRef="https://html.spec.whatwg.org/multipage/">
     <script src=/link-fixup.js defer=""></script>
-    <meta charset=utf-8>
+    <META CHARSET=UTF-8>
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name=viewport>
     <title>HTML Standard</title>
     <meta content=#3c790a name=theme-color>
     <link rel=stylesheet href=https://resources.whatwg.org/spec.css crossorigin="">
     <link rel=stylesheet href=https://resources.whatwg.org/standard.css crossorigin="">
     <link rel=stylesheet href=https://resources.whatwg.org/standard-shared-with-dev.css crossorigin="">
+    <link rel=stylesheet href=https://resources.whatwg.org/standard-shared-with-dev.css crossorigin="">
+    <link rel=icon href=https://resources.whatwg.org/logo.svg crossorigin="">
     <link rel=icon href=https://resources.whatwg.org/logo.svg crossorigin="">
     <link rel=stylesheet href=/styles.css crossorigin="">
     <script>
@@ -25,6 +31,7 @@
     </script>
   <body>
 
+  <script async="" crossorigin="" src=/html-dfn.js></script>
   <script async="" crossorigin="" src=/html-dfn.js></script>
   <script data-file-issue-url=https://github.com/whatwg/html/issues/new async="" crossorigin="" src=https://resources.whatwg.org/file-issue.js></script>
   
@@ -39,18 +46,27 @@
 
    
   </header>
-  <nav><a href=structured-data.html>← 2.7 Safe passing of structured data</a> — <a href=./>Table of Contents</a> — <a href=semantics.html>4 The elements of HTML →</a></nav><ol class=toc><li id=toc-dom><a href=dom.html#dom><span class=secno>3</span> Semantics, structure, and APIs of HTML documents</a><ol><li><a href=dom.html#documents><span class=secno>3.1</span> Documents</a><ol><li><a href=dom.html#the-document-object><span class=secno>3.1.1</span> The <code>Document</code> object</a><li><a href=dom.html#the-documentorshadowroot-interface><span class=secno>3.1.2</span> The <code>DocumentOrShadowRoot</code> interface</a><li><a href=dom.html#resource-metadata-management><span class=secno>3.1.3</span> Resource metadata management</a><li><a href=dom.html#reporting-document-loading-status><span class=secno>3.1.4</span> Reporting document loading status</a><li><a href=dom.html#dom-tree-accessors><span class=secno>3.1.5</span> DOM tree accessors</a></ol><li><a href=dom.html#elements><span class=secno>3.2</span> Elements</a><ol><li><a href=dom.html#semantics-2><span class=secno>3.2.1</span> Semantics</a><li><a href=dom.html#elements-in-the-dom><span class=secno>3.2.2</span> Elements in the DOM</a><li><a href=dom.html#html-element-constructors><span class=secno>3.2.3</span> HTML element constructors</a><li><a href=dom.html#element-definitions><span class=secno>3.2.4</span> Element definitions</a>
-
+  <!-- some links from the original document, which do not add diversity, are stripped -->
+  <nav>
+      <a href=structured-data.html>← 2.7 Safe passing of structured data</a> — <a href=./>Table of Contents</a> — <a href=semantics.html>4 The elements of HTML →</a>
+  </nav>
+  <ol class=toc>
+      <li id=toc-dom><a href=dom.html#dom><span class=secno>3</span> Semantics, structure, and APIs of HTML documents</a>
+          <ol>
+              <li><a href=dom.html#documents><span class=secno>3.1</span> Documents</a>
+          </ol>
+      <ol>
+          <li><a href=dom.html#elements><span class=secno>3.2</span> Elements</a>
+              <ol>
+                  <li><a href=dom.html#semantics-2><span class=secno>3.2.1</span> Semantics</a>
+                  <li><a href=dom.html#elements-in-the-dom><span class=secno>3.2.2</span> Elements in the DOM</a>
+                  <li><a href=dom.html#html-element-constructors><span class=secno>3.2.3</span> HTML element constructors</a>
+                  <li><a href=dom.html#element-definitions><span class=secno>3.2.4</span> Element definitions</a>
+              </ol>
   <h3 id=documents><span class=secno>3.1</span> Documents<a href=#documents class=self-link></a></h3>
 
   <p>Every XML and HTML document in an HTML UA is represented by a <code id=documents:document><a href=#document>Document</a></code> object. <a href=references.html#refsDOM>[DOM]</a></p>
 
-  <p>The <code id=documents:document-2><a href=#document>Document</a></code> object's <dfn data-x-for=Document id="the-document's-address"><a href=https://dom.spec.whatwg.org/#concept-document-url>URL</a></dfn> is defined in <cite>DOM</cite>. It is initially set when
-  the <code id=documents:document-3><a href=#document>Document</a></code> object is created, but can change during the lifetime of the
-  <code id=documents:document-4><a href=#document>Document</a></code> object; for example, it changes when the user <a href=browsing-the-web.html#navigate id=documents:navigate>navigates</a> to a <a href=browsing-the-web.html#navigate-fragid id=documents:navigate-fragid>fragment</a> on the page
-  and when the <code id=documents:dom-history-pushstate><a href=history.html#dom-history-pushstate>pushState()</a></code> method is called with a new
-  <a id=documents:url href=https://url.spec.whatwg.org/#concept-url data-x-internal=url>URL</a>. <a href=references.html#refsDOM>[DOM]</a></p>
-  
 
   <p class=warning>Interactive user agents typically expose the <code id=documents:document-5><a href=#document>Document</a></code> object's
   <a href=https://dom.spec.whatwg.org/#concept-document-url id="documents:the-document's-address" data-x-internal="the-document's-address">URL</a> in their user interface. This is the primary
@@ -67,28 +83,30 @@
     <area shape="poly" coords="130,6,253,96,223,106,130,39"
           href="https://developer.mozilla.org/docs/Web/Guide/Graphics"
           target="_blank" alt="Graphics" />
-    <area shape="poly" coords="253,96,207,241,189,217,223,103"
-          href="https://developer.mozilla.org/docs/Web/HTML"
-          target="_blank" alt="HTML" />
-    <area shape="poly" coords="207,241,54,241,72,217,189,217"
-          href="https://developer.mozilla.org/docs/Web/JavaScript"
-          target="_blank" alt="JavaScript" />
-    <area shape="poly" coords="54,241,6,97,36,107,72,217"
-          href="https://developer.mozilla.org/docs/Web/API"
-          target="_blank" alt="Web APIs" />
+    <area shape="poly" coords="6,97,130,6,130,39,36,107"
+          href="https://developer.mozilla.org/docs/Web/CSS"
+          target="_blank" alt="CSS" />
     <area shape="poly" coords="6,97,130,6,130,39,36,107"
           href="https://developer.mozilla.org/docs/Web/CSS"
           target="_blank" alt="CSS" />
 </map>
 <!-- This url will resolve to the request_uri host - OK -->
 <img usemap="#infographic" src="/media/examples/mdn-info.png" alt="MDN infographic" />
+<img usemap="#infographic2" src="/media/examples/mdn-info.png" alt="MDN infographic2" />
 
 <!-- Taken from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/embed -->
 <embed type="video/webm" src="/media/cc0-videos/flower.mp4" width="250" height="200">
+<embed type="video/webm" src="/media/cc0-videos/flower.mp4" width="250" height="200">
 
 <!-- Taken from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form -->
+<form action="" method="get" class="form-example">...</form>
 <form action="" method="get" class="form-example">...</form>
 <!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe -->
 <iframe id="inlineFrameExample" title="Inline Frame Example" width="300" height="200"
     src="https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik">
 </iframe>
+<iframe title="Inline Frame Example2"
+    src="https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik">
+</iframe>
+   <a href=https://whatwg.org/ class=logo><img width=100 alt=WHATWG crossorigin="" src=https://resources.whatwg.org/logo.svg height=100></a>
+

@@ -15,4 +15,5 @@ t/data/collectMeta.html
 t/data/collectOpenGraph.html
 t/data/links.html
 t/lib/TestUtils.pm
-xt/benchmark.t
+xt/benchmark_trim.pl
+xt/benchmark_xpath.pl
