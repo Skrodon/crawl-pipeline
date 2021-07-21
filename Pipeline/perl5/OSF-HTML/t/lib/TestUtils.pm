@@ -3,10 +3,7 @@ use strict;
 use warnings;
 use utf8;
 
-use Exporter 'import';
-### That's not how exporter should be used:
-### package ...; use parent 'Exporter';
-### Exporter is called via OO, whether you like it or not.
+use parent 'Exporter';
 
 our @EXPORT_OK = qw(slurp);    # symbols to export on request
 
