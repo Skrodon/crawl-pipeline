@@ -10,8 +10,6 @@ use HTML::Inspect;
 
 # Testing collectLinks() thoroughly here
 my $html = slurp("$Bin/data/links.html");
-### You must check the copyrights on external examples.  Include in the HTML
-###   Copyright © WHATWG (Apple, Google, Mozilla, Microsoft). This work is licensed under a Creative Commons Attribution 4.0 International License.
 my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
 my $links     = $inspector->collectLinks();
 

@@ -11,19 +11,14 @@ use Log::Report 'html-inspect';
 
 my $constructor_and_doc = sub {
     my $inspector;
-    like(try { HTML::Inspect->new } => qr/no html/, '_init croaks ok1');
-### why $@?
-
-### use Log::Report 'html-inspect';
-###    like try { HTML::Inspect->new } => qr/no html/, '_init croaks ok1';
-
-    like(($inspector = eval { HTML::Inspect->new(html_ref => "foo"); }  || $@) => qr/Not SCALAR/, '_init croaks ok2');
-    like(($inspector = eval { HTML::Inspect->new(html_ref => \"foo"); } || $@) => qr/Not HTML/,   '_init croaks ok3');
-### In my opinion, you do not need to check internal errors.  Panic()s help for unexpected code flows,
-### which are not intended to be producible in the first place.  Also, I would not have implemented
-### these checks in the first place.
-
-    like(($inspector = eval { HTML::Inspect->new(html_ref => \"<B>FooBar</B>"); } || $@) => qr/is\smandatory/, '_init croaks ok4');
+    try{ HTML::Inspect->new };
+    like($@=> qr/no html/, '_init croaks ok1');
+    try { HTML::Inspect->new(html_ref => "foo") };
+    like($@ => qr/Not SCALAR/, '_init croaks ok2');
+    try { HTML::Inspect->new(html_ref => \"foo") };
+    like($@ => qr/Not HTML/,   '_init croaks ok3');
+    try { HTML::Inspect->new(html_ref => \"<B>FooBar</B>") };
+    like($@ => qr/is\smandatory/, '_init croaks ok4');
     $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc.html', html_ref => \"<B>FooBar</B>");
     isa_ok($inspector => 'HTML::Inspect');
     isa_ok(HTML::Inspect->new(request_uri => URI->new('http://example.com/doc.htm'), html_ref => \"<B>FooBar</B>"),
@@ -36,6 +31,7 @@ my $constructor_and_doc = sub {
 
     like($inspector->doc("hehe") => qr/FooBar/, '$inspector->doc() is a read-only getter');
 };
+
 my $collectMeta = sub {
     my $html         = slurp("$Bin/data/collectMeta.html");
     my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
@@ -101,13 +97,10 @@ my $collectLinks = sub {
     is(ref $links->{a_href} => 'ARRAY', 'collectLinks() returns a HASH reference of ARRAYs');
     note explain $links;
 };
-subtest constructor_and_doc => $constructor_and_doc;
 
+subtest constructor_and_doc => $constructor_and_doc;
 subtest collectMeta      => $collectMeta;
 subtest collectOpenGraph => $collectOpenGraph;
 subtest collectLinks     => $collectLinks;
-### Are you never missing tests this way?  Why not simply:
-###   subtest collectMeta => sub { ... };
-
 
 done_testing;
