@@ -11,12 +11,12 @@ use Log::Report 'html-inspect';
 
 my $constructor_and_doc = sub {
     my $inspector;
-    try{ HTML::Inspect->new };
-    like($@=> qr/no html/, '_init croaks ok1');
+    try { HTML::Inspect->new };
+    like($@ => qr/no html/, '_init croaks ok1');
     try { HTML::Inspect->new(html_ref => "foo") };
     like($@ => qr/Not SCALAR/, '_init croaks ok2');
     try { HTML::Inspect->new(html_ref => \"foo") };
-    like($@ => qr/Not HTML/,   '_init croaks ok3');
+    like($@ => qr/Not HTML/, '_init croaks ok3');
     try { HTML::Inspect->new(html_ref => \"<B>FooBar</B>") };
     like($@ => qr/is\smandatory/, '_init croaks ok4');
     $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc.html', html_ref => \"<B>FooBar</B>");
@@ -99,8 +99,8 @@ my $collectLinks = sub {
 };
 
 subtest constructor_and_doc => $constructor_and_doc;
-subtest collectMeta      => $collectMeta;
-subtest collectOpenGraph => $collectOpenGraph;
-subtest collectLinks     => $collectLinks;
+subtest collectMeta         => $collectMeta;
+subtest collectOpenGraph    => $collectOpenGraph;
+subtest collectLinks        => $collectLinks;
 
 done_testing;

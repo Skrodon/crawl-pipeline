@@ -77,8 +77,9 @@ sub _attributes ($self, $element) {
     return {map { +(lc($_->name) => $_->value) } grep { $_->isa('XML::LibXML::Attr') } $element->attributes};
 }
 
-sub _trimss($string='') {
-    $string =~ s/\s+/ /g;              # reduce spaces
+sub _trimss($string) {
+    $string //= '';
+    $string =~ s/\s+/ /g;              # deduplicate spaces
     $string =~ s/^\s?(.*?)\s?$/$1/;    # trim
     return $string;
 }

@@ -9,7 +9,7 @@ use TestUtils qw(slurp);
 use HTML::Inspect;
 
 # Testing collectLinks() thoroughly here
-my $html = slurp("$Bin/data/links.html");
+my $html      = slurp("$Bin/data/links.html");
 my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
 my $links     = $inspector->collectLinks();
 
