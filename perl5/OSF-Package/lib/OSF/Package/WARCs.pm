@@ -14,7 +14,7 @@ use File::Glob         qw(bsd_glob);
 use POSIX              qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError);
 use JSON               ();
-use File::Slurper      qw(write_binary);
+use File::Slurper      qw(read_binary write_binary);
 
 my $json = JSON->new->pretty;
 
@@ -137,7 +137,7 @@ sub adoptWARC()
         move $adopt, $part
             or next;  # next when race condition
 
-        my $index    = $json->decode("$filebase-index.json");
+        my $index    = $json->decode(read_binary "$filebase-index.json");
         return $self->{OPW_warc} = OSF::WARC::Sink->new(
             filename => $part,
             index    => $index,
@@ -209,7 +209,7 @@ sub batchFinished()
 
     # a next batch process may continue with this file
     $self->orphanWARC;
-    $self->SUPER::batchFinised;
+    $self->SUPER::batchFinished();
 }
 
 1;
