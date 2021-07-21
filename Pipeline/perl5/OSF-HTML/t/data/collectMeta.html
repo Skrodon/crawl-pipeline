@@ -1,25 +1,35 @@
 <!DOCTYPE html>
-<html> <!--
-See
+<html> 
+<!--
+This document was taken and adapted for our tests from https://ogp.me/.
+Some content was taken from https://developer.mozilla.org.
+
+The Open Graph protocol was originally created at Facebook and is inspired by
+Dublin Core, link-rel canonical, Microformats, and RDFa. The specification
+described on this page is available under the Open Web Foundation Agreement,
+Version 0.9. This website is Open Source. 
+-->
+<!--
+See also
 https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta
 https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
 https://html.spec.whatwg.org/multipage/semantics.html#the-meta-element
 -->
   <head>
-    <meta charset="utf-8">
+    <META CHARSET="UTF-8">
     <title>The Open Graph protocol</title>
-    <meta name="description" content="The Open Graph protocol enables...">
+    <Meta name="description" content="        The Open Graph protocol enables... ">
     <!-- these must be skipped by collectMeta -->
-    <meta property="og:title" content="Open Graph protocol">
-    <meta property="og:type" content="website">
+    <metA property="og:title" content="  Open Graph          protocol ">
+    <META PROPERTY="OG:TYPE" CONTENT=" website">
     <meta property="og:url" content="https://ogp.me/">
     <meta property="og:image" content="https://ogp.me/logo.png">
     <!-- ... and so on ... -->
     <meta prefix="fb: https://ogp.me/ns/fb#" property="fb:app_id" content="115190258555800">
     <meta >
     <!-- ... but not these -->
-    <meta name="Алабала" content="ница" турска="паница.">
-    <meta name="generator" content="Хей, гиди Ванчо">
+    <meta name="Алабала" content="ница " турска="паница.">
+    <meta name="generator" content="     Хей,      гиди Ванчо   ">
     <!--
 When the http-equiv attribute is specified on a meta element, the element is a pragma directive.
 https://html.spec.whatwg.org/multipage/semantics.html#attr-meta-http-equiv
