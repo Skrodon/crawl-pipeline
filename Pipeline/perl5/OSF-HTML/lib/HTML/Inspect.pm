@@ -166,20 +166,21 @@ sub _handle_og_meta ($self, $meta) {
 }
 
 
-# Collects all links from document. Returns a hash with keys like $tag_$attr
-# and values an array of links found in such tags and attributes.
+# Collects all links from document. Returns a hash referense with keys like $tag_$attr
+# and values an array of unique links found in such tags and attributes. The links are
+# in their natural order in the document.
 sub collectLinks ($self) {
     return $self->{HI_links} if $self->{HI_links};
     my %links;
     my $base = $self->{HI_base};
 
     while (my ($tag, $attr) = each %attributesWithLinks) {
+        my @seen_in_order;
         foreach my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
-
             # https://en.wikipedia.org/wiki/URI_normalization maybe some day
-            push @{$links{"${tag}_$attr"}}, URI->new_abs($self->_attributes($link)->{$attr}, $base);
+            push @seen_in_order, URI->new_abs($self->_attributes($link)->{$attr}, $base);
         }
-        @{$links{"${tag}_$attr"}} = uniq @{$links{"${tag}_$attr"}};
+        @{$links{"${tag}_$attr"}} = uniq @seen_in_order;
     }
     return $self->{HI_links} = \%links;
 }
