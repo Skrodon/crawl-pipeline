@@ -99,8 +99,8 @@ sub collectMeta ($self, %args) {
         elsif(my $name = $meta->getAttribute('name')) {
             $meta{name}{$name} = $content if defined $content;
         }
-        elsif(my $charset = lc $meta->getAttribute('charset') // '') {
-            $meta{charset} = $charset;
+        elsif(my $charset = $meta->getAttribute('charset')) {
+            $meta{charset} = lc $charset;
         }
     }
     return $self->{HI_meta} = \%meta;
