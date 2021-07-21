@@ -11,7 +11,6 @@ our $VERSION = 0.11;
 # TODO: Add POD. Prepare for CPAN
 use XML::LibXML();
 use URI;
-use URI::WithBase();
 use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
 use List::Util qw(uniq);
@@ -57,8 +56,8 @@ sub _init ($self, $args) {
     );
     $self->{HI_doc}  = $dom->documentElement;
     $self->{HI_base} = $self->{HI_request_uri} =~ s|/[^/]+$|/|r;
-    if(my ($base_tag) = $self->{HI_doc}->findnodes('//base[@href]')) {
-        my $href = $self->_attributes($base_tag)->{href};
+    if(my $base_tag = $self->{HI_doc}->findvalue('//base[@href][position()=1]')) {
+        my $href = $base_tag->getAttribute('href');
         $self->{HI_base} = $href if $href;
     }
 
@@ -71,11 +70,6 @@ sub new { return (bless {}, shift)->_init({@_}); }
 # XML::LibXML::Element, representing the root node of the document and
 # everything in it.
 sub doc { return $_[0]->{HI_doc} }
-
-# attributes must be treated as if they are case-insensitive
-sub _attributes ($self, $element) {
-    return {map { +(lc($_->name) => $_->value) } grep { $_->isa('XML::LibXML::Attr') } $element->attributes};
-}
 
 sub _trimss($string) {
     $string //= '';
@@ -97,16 +91,15 @@ sub _trimss($string) {
 sub collectMeta ($self, %args) {
     return $self->{HI_meta} if $self->{HI_meta};
     my %meta;
-    foreach my $meta ($self->doc->findnodes('//meta')) {
-        my $attrs   = $self->_attributes($meta);
-        my $content = _trimss $attrs->{content};
-        if(my $http = $attrs->{'http-equiv'}) {
+    foreach my $meta ($self->doc->findnodes('//meta[not(@property)]')) {
+        my $content = _trimss $meta->getAttribute('content');
+        if(my $http = $meta->getAttribute('http-equiv')) {
             $meta{'http-equiv'}{lc $http} = $content if defined $content;
         }
-        elsif(my $name = $attrs->{name}) {
+        elsif(my $name = $meta->getAttribute('name')) {
             $meta{name}{$name} = $content if defined $content;
         }
-        elsif(my $charset = $attrs->{charset}) {
+        elsif(my $charset = lc $meta->getAttribute('charset') // '') {
             $meta{charset} = $charset;
         }
     }
@@ -131,12 +124,9 @@ sub collectOpenGraph ($self, %args) {
 
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $meta) {
-    my $attrs = $self->_attributes($meta);
-    my ($prefix, $type, $attr) = split /:/, lc $attrs->{property};
-
+    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
     $attr //= 'content';
-    my $content = _trimss $attrs->{content};
-
+    my $content   = _trimss $meta->getAttribute('content');
     my $namespace = ($self->{HI_og}{$prefix} //= {});
 
     # Handle Types title,type,url
@@ -179,7 +169,7 @@ sub collectLinks ($self) {
         my @seen_in_order;
         foreach my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
             # https://en.wikipedia.org/wiki/URI_normalization maybe some day
-            push @seen_in_order, URI->new_abs($self->_attributes($link)->{$attr}, $base);
+            push @seen_in_order, URI->new_abs($link->getAttribute($attr), $base);
         }
         @{$links{"${tag}_$attr"}} = uniq @seen_in_order;
     }
