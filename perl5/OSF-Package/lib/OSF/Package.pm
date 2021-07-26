@@ -6,7 +6,8 @@ use utf8;
 
 use Log::Report 'osf-package';
 
-use JSON qw(encode_json);
+use JSON ();
+my $json = JSON->new->pretty;
 
 sub new(%) { my $class = shift; (bless {}, $class)->_init( {@_} ) }
 
@@ -23,7 +24,7 @@ sub addFile($$$)
 sub addJson($$$)
 {   my ($self, $product, $name, $data) = @_;
     $name .= '.json' unless $name =~ m!\.json$!;
-    $self->addFile($product, $name, encode_json $data);
+    $self->addFile($product, $name, $json->encode($data));
 }
 
 sub batchFinished() { shift }

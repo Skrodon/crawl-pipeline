@@ -96,8 +96,8 @@ my @simple_food = qw/
 
 # not used yet
 my %composed_food =
-  ( 'getränke' => qr/\bgetr${_a_uml}nke\b/,
-  , 'menü'     => qr/\bmen${_u_uml}\b/,
+  ( 'getränke' => qr/\bgetr${_a_uml}nke\b/i,
+  , 'menü'     => qr/\bmen${_u_uml}\b/i,
   );
 
 sub _init($)
@@ -109,13 +109,17 @@ sub _init($)
 }
 
 sub createFilter()
-{   my $self  = shift;
-    my $size  = $self->filterRequiresText(minimum_words => 300);
-    my $ct    = $self->filterContentType(\@content_types);
-    my $rid   = $self->filterDomain(\@domain_names);
-    my $lang  = $self->filterLanguage('DEU');
-    my $cities1 = $self->filterFullWords(\@simple_city_names);
+{   my $self    = shift;
+    my $size    = $self->filterRequiresText(minimum_words => 300);
+    my $ct      = $self->filterContentType(\@content_types);
+    my $rid     = $self->filterDomain(\@domain_names);
+    my $lang    = $self->filterLanguage('DEU');
+    my $cities1 = $self->filterFullWords(\@simple_city_names, case_sensitive => 1);
     my $cities2 = $self->filterMatchText(\%composed_city_names);
+
+    # Experimental: hits are reported, but not used as filter
+    my $food1   = $self->filterFullWords(\@simple_food);
+    my $food2   = $self->filterMatchText(\%composed_food);
 
     sub {
         my $product = shift;
@@ -127,13 +131,12 @@ sub createFilter()
         && $size->($product)
             or return undef;
 
-        my @hits =
-          ( $cities1->($product)
-          , $cities2->($product)
-          , $rid->($product)
-          );
+        my @hits = ($cities1->($product), $cities2->($product), $rid->($product));
+        @hits or return ();
 
-        @hits ? \@hits : undef;
+        # Experimental: only show hits, but not used to filter
+        push @hits, $food1->($product), $food2->($product);
+        \@hits;
     };
 }
 

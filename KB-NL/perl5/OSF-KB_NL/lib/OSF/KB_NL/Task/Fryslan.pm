@@ -48,6 +48,7 @@ sub createFilter()
     my $origin = $self->filterOrigin('CommonCrawl');
     my $text   = $self->filterRequiresText(minimum_size => 200);
     my $ct     = $self->filterContentType(\@content_types);
+    my $lang   = $self->language('FRY');
     my $rid    = $self->filterDomain(\@domain_names);
     my $words  = $self->filterFullWords(\@words_in_text);
 
@@ -60,7 +61,7 @@ sub createFilter()
         && $text->($product)
             or return undef;
 
-        my @hits = ($words->($product), $rid->($product));
+        my @hits = ($words->($product), $rid->($product), $lang->($product));
         @hits ? \@hits : undef;
     };
 }

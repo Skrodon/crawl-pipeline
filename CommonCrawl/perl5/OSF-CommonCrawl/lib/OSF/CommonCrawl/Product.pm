@@ -16,7 +16,7 @@ sub _init($)
     $self;
 }
 
-sub _id()   { $_[0]->part('request')->recordId }
+sub _id()   { $_[0]->part('request')->recordId =~ s/^urn\:uuid\://r }
 sub _name() { $_[0]->uri->as_string }
 
 sub uri()
