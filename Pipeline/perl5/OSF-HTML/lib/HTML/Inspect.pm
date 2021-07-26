@@ -26,9 +26,9 @@ my %attributesWithLinks = (
     img    => 'src',
     link   => 'href',
     script => 'src',
+    # base is taken separately in _init(), but we want it normalized too
+    base => 'href',
     # more ?..
-    # base is taken separately in _init()
-    # base   => 'href',
 );
 
 # Tag => attribute pairs, considered to contain links. Readonly.
@@ -64,18 +64,19 @@ sub _init ($self, $args) {
     return $self;
 }
 
-sub new { return (bless {}, shift)->_init({@_}); }
+sub new {
+    my $class = shift;
+    return (bless {}, $class)->_init({@_});
+}
 
 # A read-only getter for the parsed document. Returns instance of
 # XML::LibXML::Element, representing the root node of the document and
 # everything in it.
 sub doc { return $_[0]->{HI_doc} }
 
-sub _trimss($string) {
-    $string //= '';
-    $string =~ s/\s+/ /g;              # deduplicate spaces
-    $string =~ s/^\s?(.*?)\s?$/$1/;    # trim
-    return $string;
+# Deduplicate white spaces and trim string.
+sub _trimss {
+    return ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r;
 }
 
 
@@ -114,20 +115,18 @@ sub collectMeta ($self, %args) {
 # https://developers.facebook.com/docs/sharing/webmasters/optimizing
 sub collectOpenGraph ($self, %args) {
     return $self->{HI_og} if $self->{HI_og};
-    $self->{HI_og} = {};
-    foreach my $meta ($self->doc->findnodes('//meta[@property]')) {
-        $self->_handle_og_meta($meta);
-    }
+    my $og = {};
+    $self->_handle_og_meta($og, $_) for ($self->doc->findnodes('//meta[@property]'));
 
-    return $self->{HI_og};
+    return $self->{HI_og} = $og;
 }
 
 # A not so dummy, implementation of collecting OG data from a page
-sub _handle_og_meta ($self, $meta) {
+sub _handle_og_meta ($self, $og, $meta) {
     my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
     $attr //= 'content';
     my $content   = _trimss $meta->getAttribute('content');
-    my $namespace = ($self->{HI_og}{$prefix} //= {});
+    my $namespace = ($og->{$prefix} //= {});
 
     # Handle Types title,type,url
     if($type =~ /^(?:title|type|url)$/i) {
@@ -135,9 +134,8 @@ sub _handle_og_meta ($self, $meta) {
         return;
     }
 
-    # Handle objects, represented as array of possible alternative properties
-    # or overrides.
-    # A new object starts.
+    # Handle objects, represented as array of possible alternative
+    # properties or overrides. Here a new object starts.
     if(!exists $namespace->{$type}) {
         $namespace->{$type} = [ {$attr => $content} ];
         return;
