@@ -11,7 +11,6 @@ our $VERSION = 0.11;
 # TODO: Add POD. Prepare for CPAN
 use XML::LibXML();
 use URI;
-use URI::WithBase();
 use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
 use List::Util qw(uniq);
@@ -27,9 +26,9 @@ my %attributesWithLinks = (
     img    => 'src',
     link   => 'href',
     script => 'src',
+    # base is taken separately in _init(), but we want it normalized too
+    base => 'href',
     # more ?..
-    # base is taken separately in _init()
-    # base   => 'href',
 );
 
 # Tag => attribute pairs, considered to contain links. Readonly.
@@ -57,31 +56,27 @@ sub _init ($self, $args) {
     );
     $self->{HI_doc}  = $dom->documentElement;
     $self->{HI_base} = $self->{HI_request_uri} =~ s|/[^/]+$|/|r;
-    if(my ($base_tag) = $self->{HI_doc}->findnodes('//base[@href]')) {
-        my $href = $self->_attributes($base_tag)->{href};
+    if(my $base_tag = $self->{HI_doc}->findvalue('//base[@href][position()=1]')) {
+        my $href = $base_tag->getAttribute('href');
         $self->{HI_base} = $href if $href;
     }
 
     return $self;
 }
 
-sub new { return (bless {}, shift)->_init({@_}); }
+sub new {
+    my $class = shift;
+    return (bless {}, $class)->_init({@_});
+}
 
 # A read-only getter for the parsed document. Returns instance of
 # XML::LibXML::Element, representing the root node of the document and
 # everything in it.
 sub doc { return $_[0]->{HI_doc} }
 
-# attributes must be treated as if they are case-insensitive
-sub _attributes ($self, $element) {
-    return {map { +(lc($_->name) => $_->value) } grep { $_->isa('XML::LibXML::Attr') } $element->attributes};
-}
-
-sub _trimss($string) {
-    $string //= '';
-    $string =~ s/\s+/ /g;              # deduplicate spaces
-    $string =~ s/^\s?(.*?)\s?$/$1/;    # trim
-    return $string;
+# Deduplicate white spaces and trim string.
+sub _trimss {
+    return ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r;
 }
 
 
@@ -97,17 +92,16 @@ sub _trimss($string) {
 sub collectMeta ($self, %args) {
     return $self->{HI_meta} if $self->{HI_meta};
     my %meta;
-    foreach my $meta ($self->doc->findnodes('//meta')) {
-        my $attrs   = $self->_attributes($meta);
-        my $content = _trimss $attrs->{content};
-        if(my $http = $attrs->{'http-equiv'}) {
+    foreach my $meta ($self->doc->findnodes('//meta[not(@property)]')) {
+        my $content = _trimss $meta->getAttribute('content');
+        if(my $http = $meta->getAttribute('http-equiv')) {
             $meta{'http-equiv'}{lc $http} = $content if defined $content;
         }
-        elsif(my $name = $attrs->{name}) {
+        elsif(my $name = $meta->getAttribute('name')) {
             $meta{name}{$name} = $content if defined $content;
         }
-        elsif(my $charset = $attrs->{charset}) {
-            $meta{charset} = $charset;
+        elsif(my $charset = $meta->getAttribute('charset')) {
+            $meta{charset} = lc $charset;
         }
     }
     return $self->{HI_meta} = \%meta;
@@ -121,23 +115,18 @@ sub collectMeta ($self, %args) {
 # https://developers.facebook.com/docs/sharing/webmasters/optimizing
 sub collectOpenGraph ($self, %args) {
     return $self->{HI_og} if $self->{HI_og};
-    $self->{HI_og} = {};
-    foreach my $meta ($self->doc->findnodes('//meta[@property]')) {
-        $self->_handle_og_meta($meta);
-    }
+    my $og = {};
+    $self->_handle_og_meta($og, $_) for ($self->doc->findnodes('//meta[@property]'));
 
-    return $self->{HI_og};
+    return $self->{HI_og} = $og;
 }
 
 # A not so dummy, implementation of collecting OG data from a page
-sub _handle_og_meta ($self, $meta) {
-    my $attrs = $self->_attributes($meta);
-    my ($prefix, $type, $attr) = split /:/, lc $attrs->{property};
-
+sub _handle_og_meta ($self, $og, $meta) {
+    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
     $attr //= 'content';
-    my $content = _trimss $attrs->{content};
-
-    my $namespace = ($self->{HI_og}{$prefix} //= {});
+    my $content   = _trimss $meta->getAttribute('content');
+    my $namespace = ($og->{$prefix} //= {});
 
     # Handle Types title,type,url
     if($type =~ /^(?:title|type|url)$/i) {
@@ -145,9 +134,8 @@ sub _handle_og_meta ($self, $meta) {
         return;
     }
 
-    # Handle objects, represented as array of possible alternative properties
-    # or overrides.
-    # A new object starts.
+    # Handle objects, represented as array of possible alternative
+    # properties or overrides. Here a new object starts.
     if(!exists $namespace->{$type}) {
         $namespace->{$type} = [ {$attr => $content} ];
         return;
@@ -179,7 +167,7 @@ sub collectLinks ($self) {
         my @seen_in_order;
         foreach my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
             # https://en.wikipedia.org/wiki/URI_normalization maybe some day
-            push @seen_in_order, URI->new_abs($self->_attributes($link)->{$attr}, $base);
+            push @seen_in_order, URI->new_abs($link->getAttribute($attr), $base);
         }
         @{$links{"${tag}_$attr"}} = uniq @seen_in_order;
     }
