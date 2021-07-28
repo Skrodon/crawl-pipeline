@@ -89,18 +89,18 @@ my $collectOpenGraph = sub {
     # note explain $og;
 };
 
-my $collectLinks = sub {
+my $collectReferences = sub {
     my $html      = slurp("$Bin/data/links.html");
     my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
-    my $links     = $inspector->collectLinks();
-    is(ref $links           => 'HASH',  'collectLinks() returns a HASH reference');
-    is(ref $links->{a_href} => 'ARRAY', 'collectLinks() returns a HASH reference of ARRAYs');
-    note explain $links;
+    my $links     = $inspector->collectReferences();
+    is(ref $links           => 'HASH',  'collectReferences() returns a HASH reference');
+    is(ref $links->{a_href} => 'ARRAY', 'collectReferences() returns a HASH reference of ARRAYs');
+#    note explain $links;
 };
 
 subtest constructor_and_doc => $constructor_and_doc;
 subtest collectMeta         => $collectMeta;
 subtest collectOpenGraph    => $collectOpenGraph;
-subtest collectLinks        => $collectLinks;
+subtest collectReferences   => $collectReferences;
 
 done_testing;

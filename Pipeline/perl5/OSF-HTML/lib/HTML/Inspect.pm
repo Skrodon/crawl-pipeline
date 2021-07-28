@@ -17,34 +17,42 @@ use List::Util qw(uniq);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
-my %attributesWithLinks = (
+my %referencing_attributes = (
     a      => 'href',
     area   => 'href',
+    base   => 'href',  # could be kept from the start, would add complexity
     embed  => 'src',
     form   => 'action',
     iframe => 'src',
     img    => 'src',
-    link   => 'href',
+    link   => 'href',  # could use collectLinks(), but probably slower by complexity
     script => 'src',
-    # base is taken separately in _init(), but we want it normalized too
-    base => 'href',
-    # more ?..
 );
 
-# Tag => attribute pairs, considered to contain links. Readonly.
-sub linkAttributes {
-    return %attributesWithLinks;
+sub _refAttributes($thing) { \%referencing_attributes } # for testing only
+
+# Deduplicate white spaces and trim string.
+sub _trimss { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r }
+
+=head1 Constructors
+
+=head2 my $self = $class->new(%options)
+Requires C<request_uri> and C<html_ref>
+=cut
+
+sub new {
+    my $class = shift;
+    return (bless {}, $class)->_init({@_});
 }
-# Initialises an HTML::Inspect instance and returns it.
+
 sub _init ($self, $args) {
     my $html_ref = $args->{html_ref} or panic "no html";
     ref $html_ref eq 'SCALAR'        or panic "Not SCALAR";
     $$html_ref =~ m!\<\s*/?\s*\w+!   or panic "Not HTML";
-    $args->{request_uri}             or panic '"request_uri" is mandatory';
 
-    # make sure we have a canonicalised URL.
-    $self->{HI_request_uri} = ((blessed($args->{request_uri}) // '') eq 'URI' && $args->{request_uri}->canonical)
-      || URI->new($args->{request_uri})->canonical;
+    my $req = $args->{request_uri}   or panic '"request_uri" is mandatory';
+    my $uri = $self->{HI_request_uri} =
+        blessed $req && $req->isa('URI') ? $req : URI->new($req)->canonical;
 
     my $dom = XML::LibXML->load_html(
         string            => $html_ref,
@@ -55,50 +63,71 @@ sub _init ($self, $args) {
         no_xinclude_nodes => 1,
     );
     $self->{HI_doc}  = $dom->documentElement;
-    $self->{HI_base} = $self->{HI_request_uri} =~ s|/[^/]+$|/|r;
+
+    my $base = blessed $uri && $uri->isa('URI') ? $uri : URI->new($uri)->canonical;
     if(my $base_tag = $self->{HI_doc}->findvalue('//base[@href][position()=1]')) {
-        my $href = $base_tag->getAttribute('href');
-        $self->{HI_base} = $href if $href;
+        $self->{HI_base} = $base = $base_tag->getAttribute('href');
+    }
+    else {
+        $self->{HI_base} = $uri;
     }
 
     return $self;
 }
 
-sub new {
-    my $class = shift;
-    return (bless {}, $class)->_init({@_});
-}
+#-------------------------
+=head1 Accessors
 
-# A read-only getter for the parsed document. Returns instance of
-# XML::LibXML::Element, representing the root node of the document and
-# everything in it.
+=head2 my $doc = $self->doc;
+Returns instance of XML::LibXML::Element, representing the root node of the document and
+everything in it.
+=cut
+
 sub doc { return $_[0]->{HI_doc} }
 
-# Deduplicate white spaces and trim string.
-sub _trimss {
-    return ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r;
-}
+=head2 my $uri = $self->requestURI;
+The M<URI> object which represents the C<request_uri> parameter which was passed as
+default base for relative links to C<new()>.
+=cut
 
+sub requestURI { $_[0]->{HI_request_uri} }
 
-# $html->collectMeta(%options)
-# Returns a HASH with all <meta> information of traditional
-# content: each value will only appear once.  Example:
-#  { 'http-equiv' => { 'content-type' => 'text/plain' }
-#    charset => 'UTF-8',
-#    name => { author => , description => }
-# OpenGraph meta-data records use attribute 'property', and are
-# ignored here.
+=head2 my $uri = $self->base;
+The base URI, which is used for relative links in the page.  This is the C<requestURI>
+unless the HTML contains a C<< <base href> >> declaration.  The base URI is normalized.
+=cut
+
+sub base { $_[0]->{HI_base} }
+
+#-------------------------
+=head1 Collecting
+=cut
+
+=head2 my $hash = $html->collectMeta(%options);
+Returns a HASH with all <meta> information of traditional content: each
+value will only appear once.  OpenGraph meta-data records use attribute
+'property', and are ignored here.
+
+Example:
+  { 'http-equiv' => { 'content-type' => 'text/plain' }
+    charset => 'UTF-8',
+    name => { author => , description => }
+  }
+
+=cut
 
 sub collectMeta ($self, %args) {
     return $self->{HI_meta} if $self->{HI_meta};
+
     my %meta;
     foreach my $meta ($self->doc->findnodes('//meta[not(@property)]')) {
-        my $content = _trimss $meta->getAttribute('content');
         if(my $http = $meta->getAttribute('http-equiv')) {
-            $meta{'http-equiv'}{lc $http} = $content if defined $content;
+            my $content = _trimss($meta->getAttribute('content')) // next;
+            $meta{'http-equiv'}{lc $http} = $content;
         }
         elsif(my $name = $meta->getAttribute('name')) {
-            $meta{name}{$name} = $content if defined $content;
+            my $content = _trimss($meta->getAttribute('content')) // next;
+            $meta{name}{$name} = $content;
         }
         elsif(my $charset = $meta->getAttribute('charset')) {
             $meta{charset} = lc $charset;
@@ -107,7 +136,11 @@ sub collectMeta ($self, %args) {
     return $self->{HI_meta} = \%meta;
 }
 
-# Collects all meta elements which have an attribute 'property'
+=head2 my $hash = $self->collectOpenGraph
+Collects all meta elements which have an attribute 'property'.  See website
+about the structure which is returned.
+=cut
+
 # TODO: Implement collection fo all tags specified in this page
 # https://developers.facebook.com/docs/sharing/webmasters
 # https://ogp.me/#types
@@ -115,15 +148,15 @@ sub collectMeta ($self, %args) {
 # https://developers.facebook.com/docs/sharing/webmasters/optimizing
 sub collectOpenGraph ($self, %args) {
     return $self->{HI_og} if $self->{HI_og};
-    my $og = {};
-    $self->_handle_og_meta($og, $_) for ($self->doc->findnodes('//meta[@property]'));
 
+    my $og = {};
+    $self->_handle_og_meta($og, $_) for $self->doc->findnodes('//meta[@property]');
     return $self->{HI_og} = $og;
 }
 
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $og, $meta) {
-    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
+    my ($prefix, $type, $attr) = split /\:/, lc $meta->getAttribute('property');
     $attr //= 'content';
     my $content   = _trimss $meta->getAttribute('content');
     my $namespace = ($og->{$prefix} //= {});
@@ -155,24 +188,50 @@ sub _handle_og_meta ($self, $og, $meta) {
 }
 
 
-# Collects all links from document. Returns a hash referense with keys like $tag_$attr
-# and values an array of unique links found in such tags and attributes. The links are
-# in their natural order in the document.
-sub collectLinks ($self) {
-    return $self->{HI_links} if $self->{HI_links};
-    my %links;
-    my $base = $self->{HI_base};
+=head2 $hash = $self->collectReferences;
+Collects all references from document. Returns a HASH reference with
+keys like C<$tag_$attr> and values an ARRAY of unique URIs found in such
+tags and attributes. The URIs are in their textual order in the document,
+where only the first encounter is recorded.
+=cut
 
-    while (my ($tag, $attr) = each %attributesWithLinks) {
-        my @seen_in_order;
-        foreach my $link ($self->doc->findnodes("//$tag\[\@$attr\]")) {
-            # https://en.wikipedia.org/wiki/URI_normalization maybe some day
-            push @seen_in_order, URI->new_abs($link->getAttribute($attr), $base);
-        }
-        @{$links{"${tag}_$attr"}} = uniq @seen_in_order;
+sub collectReferences($self) {
+    return $self->{HI_refs} if $self->{HI_refs};
+    my $base = $self->base;
+
+    my %refs;
+    while (my ($tag, $attr) = each %referencing_attributes) {
+        my @attr = uniq map URI->new_abs($_->getAttribute($attr), $base)->canonical,
+               $self->doc->findnodes("//$tag\[\@$attr\]");
+        $refs{"${tag}_$attr"} = \@attr if @attr;
     }
-    return $self->{HI_links} = \%links;
+
+    return $self->{HI_refs} = \%refs;
 }
 
+=head2 $hash = $self->collectLinks;
+Collect all C<< <link> >> relations from the document.  The returned HASH
+contains the relation (the C<rel> attribute, required) to an ARRAY of
+link elements with that value.  The ARRAY elements are HASHes of all
+attributes of the link and and all lower-cased.  The added C<href_uri>
+key will be a normalized, absolute translation of the C<href> attribute.
+=cut
+
+sub collectLinks($self) {
+    return $self->{HI_links} if $self->{HI_links};
+    my $base = $self->base;
+
+    my %links;
+    foreach my $link ($self->doc->findnodes('//link[@rel]')) {
+        my %attrs = map +(lc($_->name) => $_->value),
+            grep $_->isa('XML::LibXML::Attr'),
+                $link->attributes;
+        $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical
+            if $attrs{href};
+        push @{$links{$attrs{rel}}}, \%attrs;
+    }
+
+    return $self->{HI_links} = \%links;
+}
 
 1;
