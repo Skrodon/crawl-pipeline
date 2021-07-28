@@ -17,24 +17,33 @@ sub httpResponse()
     $self->{OWR_res} ||= HTTP::Response->parse(${$self->refBody});
 }
 
-sub contentType($)
+sub contentType($)   # Returns a MIME::Type smart object
 {   my $self = shift;
-    $self->{OWR_ct} ||=
-        $mt->type($self->httpResponse->content_type || 'application/octet-stream');
+    $self->{OWR_ct}
+      ||= $mt->type($self->httpResponse->content_type)
+      ||  'application/octet-stream';
+}
+
+my %html_mimes = map +($_ => 1),
+    qw!text/html text/xhtml application/xml!;
+
+sub isHTML()
+{   my $self = shift;
+    $html_mimes{$self->contentType};
+}
+
+sub decodedHtmlContent()
+{   $_[0]->{OWR_dec} ||= $_[0]->httpResponse->decoded_content(ref => 1, alt_charset => 'cp-1252');
 }
 
 sub inspectHTML()
 {   my $self = shift;
     return $self->{OWR_html} if exists $self->{OWR_html};
 
-    my $ct = $self->contentType;
-    $ct eq 'text/html' || $ct eq 'text/xhtml'
+    $self->isHTML
         or return $self->{OWR_html} = undef;
 
-    my $resp = $self->httpResponse;
-    my $html = $resp->decoded_content(ref => 1, alt_charset => 'cp-1252');
-
-    my $headers = $resp->headers;
+    my $headers = $self->httpResponse->headers;
     my $base
         = $headers->header('Content-Location')
        || $headers->header('Content-Base')
@@ -42,9 +51,20 @@ sub inspectHTML()
        || $self->uri;               # from WARC meta
 
     $self->{OWR_html} = HTML::Inspect->new(
-        html_ref    => $html,
-        request_url => $base,
+        html_ref    => $self->decodedHtmlContent,
+        request_uri => $base,
     );
+}
+
+sub isHTML5()
+{   my $self = shift;
+    return $self->{OWR_is5} if exists $self->{OWR_is5};
+
+    $self->isHTML    # any HTML based on mime-type
+        or return $self->{OWR_is5} = 0;
+
+    my $text = $self->decodedHtmlContent;
+    $self->{OWR_is5} = $$text =~ m#^\W*\<!DOCTYPE\s+html[>\s]#;
 }
 
 1;

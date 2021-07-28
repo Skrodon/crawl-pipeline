@@ -48,7 +48,7 @@ sub createFilter()
     my $origin = $self->filterOrigin('CommonCrawl');
     my $text   = $self->filterRequiresText(minimum_size => 200);
     my $ct     = $self->filterContentType(\@content_types);
-    my $lang   = $self->language('FRY');
+    my $lang   = $self->filterLanguage('FRY');
     my $rid    = $self->filterDomain(\@domain_names);
     my $words  = $self->filterFullWords(\@words_in_text);
 
