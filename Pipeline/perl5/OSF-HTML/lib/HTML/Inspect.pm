@@ -116,6 +116,18 @@ sub collectMeta ($self, %args) {
 sub collectOpenGraph ($self, %args) {
     return $self->{HI_og} if $self->{HI_og};
     my $og = {};
+    # Find explicitly defined prefixes if we have such. A prefix may be an
+    # object — article, video, etc...
+    $og->{prefixes} = {};
+    for my $tag ($self->doc->findnodes('//html[@prefix] | head[@prefix]')) {
+        my %prefixes = split /:?\s+/, $tag->getAttribute('prefix');
+        # merge prefixes
+        keys %{$og->{prefixes}} ? ($og->{prefixes} = {%{$og->{prefixes}}, %prefixes}) : ($og->{prefixes} = \%prefixes);
+    }
+    if(!exists $og->{prefixes}{og}) {
+        $og->{prefixes}{og} = 'http://ogp.me/ns#';
+    }
+
     $self->_handle_og_meta($og, $_) for ($self->doc->findnodes('//meta[@property]'));
 
     return $self->{HI_og} = $og;
@@ -123,33 +135,37 @@ sub collectOpenGraph ($self, %args) {
 
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $og, $meta) {
-    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
-    $attr //= 'content';
-    my $content   = _trimss $meta->getAttribute('content');
-    my $namespace = ($og->{$prefix} //= {});
-
-    # Handle Types title,type,url
-    if($type =~ /^(?:title|type|url)$/i) {
-        $namespace->{$type} = $content;
-        return;
+    my ($prefix, $type_or_attr, $attr) = split /:/, lc $meta->getAttribute('property');
+    my $content = _trimss $meta->getAttribute('content');
+    my $ns      = ($og->{$prefix} //= {});
+    if(!defined $attr) {
+        if(!exists $ns->{$type_or_attr}) {
+            $ns->{$type_or_attr} = $content;
+        }
+        elsif(ref $ns->{$type_or_attr} eq 'ARRAY') {
+            push @{$ns->{$type_or_attr}}, {url => $content};
+        }
+        else {
+            my $first_content = $ns->{$type_or_attr};
+            $ns->{$type_or_attr} = [ $first_content, {url => $content} ];
+        }
     }
-
-    # Handle objects, represented as array of possible alternative
-    # properties or overrides. Here a new object starts.
-    if(!exists $namespace->{$type}) {
-        $namespace->{$type} = [ {$attr => $content} ];
-        return;
-    }
-
-    # Continue adding properties to this object.
-    my $arr = $namespace->{$type};
-    if(!exists $arr->[-1]{$attr}) {
-        $arr->[-1]{$attr} = $content;
-    }
-
-    # Alternates for this object
     else {
-        push @$arr, {$attr => $content};
+        if(!exists $ns->{$type_or_attr}) {
+            $ns->{$type_or_attr}{$attr} = $content;
+        }
+        elsif(ref $ns->{$type_or_attr} eq 'HASH') {
+            $ns->{$type_or_attr}{$attr} = $content;
+        }
+        elsif(ref $ns->{$type_or_attr} eq 'ARRAY') {
+            $ns->{$type_or_attr}[-1]{$attr} = $content;
+        }
+        elsif(!ref $ns->{$type_or_attr}) {
+            my $url = $ns->{$type_or_attr};
+            $ns->{$type_or_attr}        = {};
+            $ns->{$type_or_attr}{url}   = $url;
+            $ns->{$type_or_attr}{$attr} = $content;
+        }
     }
     return;
 }
