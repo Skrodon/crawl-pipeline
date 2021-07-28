@@ -7,6 +7,7 @@ use warnings;
 use strict;
 use utf8;
 
+use JSON ();
 use OSF::Package::Zip  ();
 
 my $collect       = $ENV{PLANNER_LC_COLLECT}
@@ -14,51 +15,58 @@ my $collect       = $ENV{PLANNER_LC_COLLECT}
 
 my @content_types = qw(text/html text/xhtml);
 
-sub init($)
+my $json = JSON->new->utf8->convert_blessed->pretty;
+
+sub _init($)
 {   my ($self, $args) = @_;
-
-    # Exclude
-    $args->{accept_content_types} ||= \@content_types;
-
-    # Search
-
     $self->{OPTL_packer} = OSF::Package::Zip->new(directory => $collect);
-    $self->SUPER::init($args);
+    $self->SUPER::_init($args);
 }
 
 sub packer(){ $_[0]->{OPTL_packer} }
 sub index() { $_[0]->{OPTL_index} ||= {} }
 
-sub exclude($)
-{   my ($self, $product) = @_;
-    return 1 if $self->SUPER::exclude($product);
+sub createFilter()
+{   my $self = shift;
 
-    0;
+    my $ct = $self->filterContentType(\@content_types);
+    sub {
+        my $product = shift;
+        $ct->($product) or return;
+        [];    # no specific data kept from filter action
+    };
 }
 
+my $p = 0;
 sub save($$)
 {   my ($self, $product, $hits) = @_;
     my $response = $product->part('response') or return;
     my $html     = $response->inspectHTML or return;
 
-use Data::Dumper;
-warn Dumper $html->collectMeta;
-exit 0;
-#   $self->index->{$product->name} = $response->extractLinks;
+#my $meta = $html->collectMeta;
+#my $links = $html->collectLinks;
+#use Data::Dumper;
+#warn Dumper $meta;
+#warn $meta->{name}{keywords};
+#warn $product->uri;
+#exit 0;
+    $self->index->{$product->name} =
+      { meta  => $html->collectMeta
+      , links => $html->collectLinks
+      , date  => $response->date
+      };
 }
 
-sub finish(%)
-{   my ($self, %args) = @_;
+sub batchFinished()
+{   my $self  = shift;
 
-    my $batch = $args{batch} or die;
-    my $name  = $batch->name;
+#use Data::Dumper;
+print $json->convert_blessed(1)->encode($self->index);
+return;
+    my $name  = $self->batch->name;
+    $self->packer->addJSON(undef, "$name.links", $self->index // {});
 
-    my $index = $self->index;
-    keys %$index or return;
-
-    $self->packer->addJSON(undef, "$name.links", $index);
-
-    $self->SUPER::finish(%args);
+    $self->SUPER::batchFinished;
 }
 
 1;

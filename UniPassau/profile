@@ -1,6 +1,6 @@
 # Where the WARCs files are prepared.  Must be on the same file-system
 # as the published directory to avoid copying.
-: ${UP_COLLECT:=$PUBLISH/UniPassay/Food.tmp}
+: ${UP_COLLECT:=$BIGDISK/UniPassau/Food.tmp}
 
 # Where UniPassau can download its files for this project.
 : ${UP_PUBLISH:=$PUBLISH/UniPassau/Food}

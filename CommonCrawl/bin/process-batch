@@ -24,4 +24,4 @@ $cc->processProducts;
 
 $cc->showStats;
 
-$cc->finish;
+$cc->batchFinished;

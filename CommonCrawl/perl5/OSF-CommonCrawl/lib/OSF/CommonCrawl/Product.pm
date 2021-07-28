@@ -16,7 +16,7 @@ sub _init($)
     $self;
 }
 
-sub _id()   { $_[0]->part('request')->setId }
+sub _id()   { $_[0]->part('request')->recordId =~ s/^urn\:uuid\://r }
 sub _name() { $_[0]->uri->as_string }
 
 sub uri()
@@ -59,9 +59,14 @@ sub _ct()
     $ct;
 }
 
-sub _textRef()
+sub _refText()
 {   my $part = $_[0]->part('text') or return;
-    $part->bodyRef;
+    $part->refBody;
+}
+
+sub _rs()
+{   my $part = $_[0]->part('response') or return;
+    $part->httpResponse->code;
 }
 
 1;

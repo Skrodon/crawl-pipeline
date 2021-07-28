@@ -8,6 +8,7 @@ use Log::Report 'osf-pipeline';
 
 use JSON            ();
 use List::MoreUtils qw(uniq);
+use List::Util      qw(first);
 
 my $json = JSON->new->utf8;
 
@@ -36,6 +37,8 @@ sub new(%)
 sub _init($)
 {   my ($self, $args) = @_;
     $self->{OPT_name} = $args->{name} || ref $self;
+    $self->{OPT_filter} = $self->createFilter;
+    $self->{OPT_batch}  = $args->{batch} or panic;
     $self;
 }
 
@@ -43,9 +46,11 @@ sub _init($)
 =section Accessors
 
 =method name
+=method batch
 =cut
 
-sub name() { $_[0]->{OPT_name} }
+sub name()  { $_[0]->{OPT_name} }
+sub batch() { $_[0]->{OPT_batch} }
 
 #---------------
 =section Actions
@@ -55,14 +60,62 @@ sub name() { $_[0]->{OPT_name} }
 
 sub take($%)
 {   my ($self, $product, %args) = @_;
-
-    # write
-    $self->save($product, my $hits);
+    my $hits = $self->{OPT_filter}->($product) or return;
+    $self->save($product, $hits);
     1;
 }
 
 #---------------
 =section Filter construction
+
+=method createFilter
+This method is called when batch processing starts.  It needs to be extended
+but a method which returns a sub.  See existing Task implementations for
+examples.
+=cut
+
+sub createFilter() { panic "needs to be extended" }
+
+=method filterOrigin $name|\@names, %options
+Returns a CODE which returns true when the C<$product> passed as first
+parameter originates from one of the named data sources.
+=cut
+
+sub filterOrigin($%)
+{   my ($self, $names, %options) = @_;
+    my @names = ref $names eq 'ARRAY' ? @$names : $names;
+
+    if(@names==1)
+    {   my $origin = shift @names;
+        return sub { $_[0]->origin eq $origin };
+    }
+
+    sub {
+        my $origin = shift->origin;
+        first { $origin eq $_ } @names;
+    };
+}
+
+=method filterLanguage $lang|\@langs, %options
+Returns a CODE which returns true when the C<$product> passed as first
+parameter contains text is mainly written in any of the languages.
+The languages are specified as ISO-639-3.
+=cut
+
+sub filterLanguage($%)
+{   my ($self, $langs, %options) = @_;
+
+    my @langs = map lc, ref $langs eq 'ARRAY' ? @$langs : $langs;
+    if(@langs==1)
+    {   my $lang = shift @langs;
+        return sub { ($_[0]->language // '') eq $lang };
+    }
+
+    sub {
+        my $language = shift->language // return;
+        first { $language eq $_ } @langs;
+    };
+}
 
 =method filterRequiresText %options
 Returns a CODE which returns a descriptive HASH when the product has
@@ -137,7 +190,7 @@ sub filterDomain($)
     sub {
         my $hostname = reverse lc($_[0]->uri->host);
         $hostname =~ $match or return ();
-        +{ rule => 'domain name', name => reverse $1 };
+        +{ rule => 'domain name', name => scalar reverse $1 };
     };
 }
 
@@ -153,10 +206,10 @@ sub filterFullWords($%)
     my $any   = join '|', map quotemeta, @$words;
 
     if($args{case_sensitive})
-    {   my $match = qr!\b(?:$any)\b!;
+    {   my $match = qr!\b($any)\b!;
         return sub {
-            my $ref_text = $_[0]->refText;
-            my @words = $$ref_text =~ /$match/m;
+            my $ref_text = $_[0]->refPlainText;
+            my @words = $$ref_text =~ /$match/g;
             @words or return ();
 
             map +{ rule => 'full word', word => $_ },
@@ -164,15 +217,17 @@ sub filterFullWords($%)
         };
     }
     else
-    {   my $match = qr!\b(?:$any)\b!i;
-        my %words = map +(lc($_) => $_), @$words;  # right capitization
+    {   my $match = qr!\b(?i:$any)\b!;
+
+        # Preferred capitization returned
+        my %words = map +(lc($_) => $_), @$words;
 
         return sub {
-            my $ref_text = $_[0]->refText;
-            my @words = $$ref_text =~ /$match/im;
+            my $ref_text = $_[0]->refPlainText;
+            my @words = $$ref_text =~ /$match/g;
             @words or return ();
 
-            map +{ rule => 'full word', word => $words{$_} },
+            map +{ rule => 'full word-i', word => $words{$_} },
                 uniq(map lc, @words);
         };
     }
@@ -181,9 +236,6 @@ sub filterFullWords($%)
 =method filterMatchText \%regexps, %options;
 The keys are the names for the regexes, used for logging.  The $1 of
 the regex is collected in the log.
-
-=option  case_sensitive BOOLEAN
-=default case_sensitive <false>
 =cut
 
 sub filterMatchText($%)
@@ -191,7 +243,7 @@ sub filterMatchText($%)
     keys %$regexes or return sub { () };
 
     sub {
-        my $text = $_[0]->refText or return ();
+        my $text = $_[0]->refPlainText or return ();
         my @hits;
         foreach my $label (keys %$regexes)
         {   my @matches = $$text =~ /$regexes->{$label}/g;
@@ -205,4 +257,11 @@ sub filterMatchText($%)
     };
 }
 
+=method batchFinished
+For some tasks, action must be taken when one batch has been processed.  Mainly
+to help the packagers switch between batches (which are handled by separate
+processes).
+=cut
+
+sub batchFinished() { shift }
 1;

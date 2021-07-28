@@ -16,7 +16,7 @@ OSF::Pipeline::Batch - run a pipeline in batch mode
 =chapter SYNOPSIS
   my $pipe = OSF::Pipeline::Batch->new(...)
   $pipe->processProducts(...);
-  $pipe->finish;
+  $pipe->batchFinished;
 
 =chapter DESCRIPTION
 Batch pipelines read static products from a source, usually from
