@@ -36,7 +36,7 @@ my $collectMeta = sub {
     my $html         = slurp("$Bin/data/collectMeta.html");
     my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $expectedMeta = {
-        charset      => 'UTF-8',
+        charset      => 'utf-8',
         name         => {Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
         'http-equiv' => {'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
     };

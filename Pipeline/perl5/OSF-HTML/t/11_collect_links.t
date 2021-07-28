@@ -51,6 +51,7 @@ is_deeply(
             bless(do { \(my $o = 'https://developer.mozilla.org/docs/Web/Guide/Graphics') }, 'URI::https'),
             bless(do { \(my $o = 'https://developer.mozilla.org/docs/Web/CSS') },            'URI::https')
         ],
+        'base_href'   => [ bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/') },                  'URI::https') ],
         'embed_src'   => [ bless(do { \(my $o = 'https://html.spec.whatwg.org/media/cc0-videos/flower.mp4') }, 'URI::https') ],
         'form_action' => [ bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/') },                  'URI::https') ],
         'iframe_src'  => [
