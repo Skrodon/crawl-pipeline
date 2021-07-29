@@ -20,16 +20,16 @@ use List::Util qw(uniq);
 my %referencing_attributes = (
     a      => 'href',
     area   => 'href',
-    base   => 'href',  # could be kept from the start, would add complexity
+    base   => 'href',     # could be kept from the start, would add complexity
     embed  => 'src',
     form   => 'action',
     iframe => 'src',
     img    => 'src',
-    link   => 'href',  # could use collectLinks(), but probably slower by complexity
+    link   => 'href',     # could use collectLinks(), but probably slower by complexity
     script => 'src',
 );
 
-sub _refAttributes($thing) { \%referencing_attributes } # for testing only
+sub _refAttributes($thing) { \%referencing_attributes }    # for testing only
 
 # Deduplicate white spaces and trim string.
 sub _trimss { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r }
@@ -89,9 +89,8 @@ sub _init ($self, $args) {
     ref $html_ref eq 'SCALAR'        or panic "Not SCALAR";
     $$html_ref =~ m!\<\s*/?\s*\w+!   or panic "Not HTML";
 
-    my $req = $args->{request_uri}   or panic '"request_uri" is mandatory';
-    my $uri = $self->{HI_request_uri} =
-        blessed $req && $req->isa('URI') ? $req : URI->new($req)->canonical;
+    my $req = $args->{request_uri} or panic '"request_uri" is mandatory';
+    my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req)->canonical;
 
     my $dom = XML::LibXML->load_html(
         string            => $html_ref,
@@ -101,7 +100,7 @@ sub _init ($self, $args) {
         no_network        => 1,
         no_xinclude_nodes => 1,
     );
-    $self->{HI_doc}  = $dom->documentElement;
+    $self->{HI_doc} = $dom->documentElement;
 
     my $base = blessed $uri && $uri->isa('URI') ? $uri : URI->new($uri)->canonical;
     if(my $base_tag = $self->{HI_doc}->findvalue('//base[@href][position()=1]')) {
@@ -115,6 +114,7 @@ sub _init ($self, $args) {
 }
 
 #-------------------------
+
 =head1 Accessors
 
 =head2 doc
@@ -143,6 +143,7 @@ sub requestURI { $_[0]->{HI_request_uri} }
 
     my $uri = $self->base;
 
+Readonly accessor.
 The base URI, which is used for relative links in the page.  This is the
 C<requestURI> unless the HTML contains a C<< <base href> >> declaration.  The
 base URI is normalized.
@@ -151,6 +152,7 @@ base URI is normalized.
 sub base { $_[0]->{HI_base} }
 
 #-------------------------
+
 =head1 Collecting
 
 =head2 collectMeta 
@@ -238,60 +240,84 @@ sub collectOpenGraph ($self, %args) {
     my $og = {};
     # Find explicitly defined prefixes if we have such. A prefix may be an
     # object — article, video, etc...
-    $og->{prefixes} = {};
     for my $tag ($self->doc->findnodes('//html[@prefix] | head[@prefix]')) {
         my %prefixes = split /:?\s+/, $tag->getAttribute('prefix');
         # merge prefixes
         keys %{$og->{prefixes}} ? ($og->{prefixes} = {%{$og->{prefixes}}, %prefixes}) : ($og->{prefixes} = \%prefixes);
     }
-    if(!exists $og->{prefixes}{og}) {
-        $og->{prefixes}{og} = 'http://ogp.me/ns#';
-    }
 
-    $self->_handle_og_meta($og, $_) for ($self->doc->findnodes('//meta[@property]'));
-
-    my $og = {};
     $self->_handle_og_meta($og, $_) for $self->doc->findnodes('//meta[@property]');
     return $self->{HI_og} = $og;
 }
 
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $og, $meta) {
-    my ($prefix, $type_or_attr, $attr) = split /:/, lc $meta->getAttribute('property');
+    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
     my $content = _trimss $meta->getAttribute('content');
     my $ns      = ($og->{$prefix} //= {});
-    if(!defined $attr) {
-        if(!exists $ns->{$type_or_attr}) {
-            $ns->{$type_or_attr} = $content;
-        }
-        elsif(ref $ns->{$type_or_attr} eq 'ARRAY') {
-            push @{$ns->{$type_or_attr}}, {url => $content};
-        }
-        else {
-            my $first_content = $ns->{$type_or_attr};
-            $ns->{$type_or_attr} = [ $first_content, {url => $content} ];
-        }
+    if($prefix ne 'og') {
+        $self->_handle_other_prefix($ns, $type, $content);
+    }
+    elsif(!defined $attr) {
+        $self->_handle_no_attr($ns, $type, $content);
     }
     else {
-        if(!exists $ns->{$type_or_attr}) {
-            $ns->{$type_or_attr}{$attr} = $content;
-        }
-        elsif(ref $ns->{$type_or_attr} eq 'HASH') {
-            $ns->{$type_or_attr}{$attr} = $content;
-        }
-        elsif(ref $ns->{$type_or_attr} eq 'ARRAY') {
-            $ns->{$type_or_attr}[-1]{$attr} = $content;
-        }
-        elsif(!ref $ns->{$type_or_attr}) {
-            my $url = $ns->{$type_or_attr};
-            $ns->{$type_or_attr}        = {};
-            $ns->{$type_or_attr}{url}   = $url;
-            $ns->{$type_or_attr}{$attr} = $content;
-        }
+        $self->_handle_attr($ns, $type, $attr, $content);
     }
     return;
 }
 
+# Handle cases like og:audio:author, where we have the namespace, type and
+# attribute.
+sub _handle_attr ($self, $ns, $type, $attr, $content) {
+
+    if(!exists $ns->{$type} || ref $ns->{$type} eq 'HASH') {
+        $ns->{$type}{$attr} = $content;
+    }
+    elsif(ref $ns->{$type} eq 'ARRAY') {
+        $ns->{$type}[-1]{$attr} = $content;
+    }
+    elsif(!ref $ns->{$type}) {
+        my $url = $ns->{$type};
+        $ns->{$type}        = {};
+        $ns->{$type}{url}   = $url;
+        $ns->{$type}{$attr} = $content;
+    }
+    return;
+}
+
+# Handle cases like og:image or og:audio, where we have to introduce an 'url'
+# atribute if we have other atributes of the same object later in the data.
+sub _handle_no_attr ($self, $ns, $type, $content) {
+
+    if(!exists $ns->{$type}) {
+        $ns->{$type} = $content;
+    }
+    elsif(ref $ns->{$type} eq 'ARRAY') {
+        push @{$ns->{$type}}, {url => $content};
+    }
+    else {
+        my $first_content = $ns->{$type};
+        $ns->{$type} = [ $first_content, {url => $content} ];
+    }
+    return;
+}
+
+# Handle cases like audio:author or image:width, where the object is in separate
+# namespace, named after its type.
+sub _handle_other_prefix ($self, $type, $attr, $content) {
+    if(!exists $type->{$attr}) {
+        $type->{$attr} = $content;
+    }
+    elsif(ref $type->{$attr} eq 'ARRAY') {
+        push @{$type->{$attr}}, $content;
+    }
+    else {
+        my $first_content = $type->{$attr};
+        $type->{$attr} = [ $first_content, $content ];
+    }
+    return;
+}
 
 =head2 collectReferences 
 
@@ -309,8 +335,7 @@ sub collectReferences($self) {
 
     my %refs;
     while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attr = uniq map URI->new_abs($_->getAttribute($attr), $base)->canonical,
-               $self->doc->findnodes("//$tag\[\@$attr\]");
+        my @attr = uniq map URI->new_abs($_->getAttribute($attr), $base)->canonical, $self->doc->findnodes("//$tag\[\@$attr\]");
         $refs{"${tag}_$attr"} = \@attr if @attr;
     }
 
@@ -334,11 +359,8 @@ sub collectLinks($self) {
 
     my %links;
     foreach my $link ($self->doc->findnodes('//link[@rel]')) {
-        my %attrs = map +(lc($_->name) => $_->value),
-            grep $_->isa('XML::LibXML::Attr'),
-                $link->attributes;
-        $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical
-            if $attrs{href};
+        my %attrs = map +(lc($_->name) => $_->value), grep $_->isa('XML::LibXML::Attr'), $link->attributes;
+        $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
         push @{$links{$attrs{rel}}}, \%attrs;
     }
 
@@ -347,7 +369,7 @@ sub collectLinks($self) {
 
 =head1 SEE ALSO
 
-L<URI>, L<XML::LibXML>
+L<URI>, L<XML::LibXML>, L<Log::Report>
 
 =head1 AUTHORS and COPYRIGHT
     
@@ -368,7 +390,7 @@ The Artistic License 2.0 (GPL Compatible)
 The full text of the license can be found in the LICENSE file included with
 this module.
 
-This distribution contains other free software  nd content which belongs to
+This distribution contains other free software  and content which belongs to
 their respective authors.
 =cut
 
