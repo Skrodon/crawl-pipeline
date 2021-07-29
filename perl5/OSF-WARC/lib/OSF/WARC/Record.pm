@@ -30,6 +30,7 @@ sub head()    { $_[0]->{OWR_head} }
 sub header($) { $_[0]->{OWR_head}{$_[1]} } # $self, $field
 sub uri()     { $_[0]->header('WARC-Target-URI') }
 sub compressed() { $_[0]->{OWR_compr} }
+sub date      { $_[0]->header('WARC-Date') }
 
 sub recordId()
 {   $_[0]->{OWR_id} ||=

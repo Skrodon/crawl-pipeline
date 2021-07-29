@@ -14,10 +14,11 @@
   - "make"
   - follow the instructions
 
-## Notes
+## Submodules
 
 The Pipeline/OSF-HTML part contains a submodule with example files for the OpenGraph protocol.
 https://github.com/niallkennedy/open-graph-protocol-examples
+
 How to work with submodules?
-https://git-scm.com/book/en/v2/Git-Tools-Submodules
-https://www.vogella.com/tutorials/GitSubmodules/article.html
+  - https://git-scm.com/book/en/v2/Git-Tools-Submodules
+  - https://www.vogella.com/tutorials/GitSubmodules/article.html

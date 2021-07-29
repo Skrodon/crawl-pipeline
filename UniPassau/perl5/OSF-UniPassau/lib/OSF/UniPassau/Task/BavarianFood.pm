@@ -131,8 +131,8 @@ sub createFilter()
         && $size->($product)
             or return undef;
 
+#XXX No selection on cities anymore, only informative hits
         my @hits = ($cities1->($product), $cities2->($product), $rid->($product));
-        @hits or return ();
 
         # Experimental: only show hits, but not used to filter
         push @hits, $food1->($product), $food2->($product);
