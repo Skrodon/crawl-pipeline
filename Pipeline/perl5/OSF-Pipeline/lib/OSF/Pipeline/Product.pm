@@ -46,5 +46,19 @@ in the response text.
 sub language()    { $_[0]->{OPP_lang} ||= $_[0]->_lang }
 sub _lang()       { undef }
 
+=method reportError $exception
+Add a processing error report to the list of reported errors.  No-one is
+looking into the errors at the moment.  The C<$exception> is a
+M<Log::Report::Exception> which stringifies in an error text.
+=cut
+
+sub reportError($) { push @{$_[0]->{OPP_errors}}, $_[1] }
+
+=method errors
+Returns all reported processing exceptions (M<Log::Report::Exception> objects)
+=cut
+
+sub errors() { @{$_[0]->{OPP_errors} || {} } }
+
 1;
 

@@ -1,6 +1,8 @@
 package OSF::Planner::Task::LinkCollector;
 use parent 'OSF::Pipeline::Task';
 
+use Log::Report 'osf-planner';
+
 ### Collects ALL links from HTML/XHTML
 
 use warnings;
@@ -37,24 +39,24 @@ sub createFilter()
     };
 }
 
-my $p = 0;
 sub save($$)
 {   my ($self, $product, $hits) = @_;
     my $response = $product->part('response') or return;
-    my $html     = $response->inspectHTML or return;
 
-#my $meta = $html->collectMeta;
-#my $links = $html->collectLinks;
-#use Data::Dumper;
-#warn Dumper $meta;
-#warn $meta->{name}{keywords};
-#warn $product->uri;
-#exit 0;
-    $self->index->{$product->name} =
-      { meta  => $html->collectMeta
-      , links => $html->collectLinks
-      , date  => $response->date
-      };
+    my $data = try {
+       my $html     = $response->inspectHTML or return;
+         +{ meta  => $html->collectMeta
+          , links => $html->collectLinks
+          , refs  => $html->collectReferences
+          , date  => $response->date
+          };
+    };
+
+    if(my $fatal = $@->wasFatal)
+    {   $product->reportError($@);
+    }
+
+    $self->index->{$product->name} = $data;
 }
 
 sub batchFinished()
