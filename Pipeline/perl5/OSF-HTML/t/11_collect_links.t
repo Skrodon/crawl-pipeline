@@ -16,7 +16,7 @@ my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/
 ### collectReferences
 ###
 
-my $refs      = $inspector->collectReferences;
+my $refs = $inspector->collectReferences;
 #note explain $refs;
 
 # Have we collected all links that we support?
@@ -32,8 +32,7 @@ while (my ($t, $a) = each %$ref_attributes) {
 # See all deduplicated links from the parsed document.
 # Are all links absolute(and canonical) URI instance?
 is_deeply(
-    $refs =>
-    {
+    $refs => {
         'a_href' => [
             bless(do { \(my $o = 'https://whatwg.org/') },                                                       'URI::https'),
             bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/structured-data.html') },               'URI::https'),
@@ -96,53 +95,52 @@ is_deeply(
 my $links = $inspector->collectLinks;
 #note explain $links;
 
-is_deeply
-   $links,
+is_deeply $links,
   {
     icon => [
-      {
-        crossorigin => 'use-credentials',
-        href => 'https://resources.whatwg.org/logo.svg',
-        href_uri => bless( do{\(my $o = 'https://resources.whatwg.org/logo.svg')}, 'URI::https' ),
-        rel => 'icon'
-      },
-      {
-        href => 'https://resources.whatwg.org/logo.svg',
-        href_uri => bless( do{\(my $o = 'https://resources.whatwg.org/logo.svg')}, 'URI::https' ),
-        rel => 'icon'
-      }
+        {
+            crossorigin => 'use-credentials',
+            href        => 'https://resources.whatwg.org/logo.svg',
+            href_uri    => bless(do { \(my $o = 'https://resources.whatwg.org/logo.svg') }, 'URI::https'),
+            rel         => 'icon'
+        },
+        {
+            href     => 'https://resources.whatwg.org/logo.svg',
+            href_uri => bless(do { \(my $o = 'https://resources.whatwg.org/logo.svg') }, 'URI::https'),
+            rel      => 'icon'
+        }
     ],
     stylesheet => [
-      {
-        crossorigin => 'anonymous',
-        href => 'https://resources.whatwg.org/spec.css',
-        href_uri => bless( do{\(my $o = 'https://resources.whatwg.org/spec.css')}, 'URI::https' ),
-        rel => 'stylesheet'
-      },
-      {
-        crossorigin => '',
-        href => 'https://resources.whatwg.org/standard.css',
-        href_uri => bless( do{\(my $o = 'https://resources.whatwg.org/standard.css')}, 'URI::https' ),
-        rel => 'stylesheet'
-      },
-      {
-        href => 'https://resources.whatwg.org/standard-shared-with-dev.css',
-        href_uri => bless( do{\(my $o = 'https://resources.whatwg.org/standard-shared-with-dev.css')}, 'URI::https' ),
-        rel => 'stylesheet'
-      },
-      {
-        href => 'https://resources.whatwg.org/standard-shared-with-dev.css',
-        href_uri => bless( do{\(my $o = 'https://resources.whatwg.org/standard-shared-with-dev.css')}, 'URI::https' ),
-        rel => 'stylesheet'
-      },
-      {
-        crossorigin => '',
-        href => '/styles.css',
-        href_uri => bless( do{\(my $o = 'https://html.spec.whatwg.org/styles.css')}, 'URI::https' ),
-        rel => 'stylesheet'
-      }
+        {
+            crossorigin => 'anonymous',
+            href        => 'https://resources.whatwg.org/spec.css',
+            href_uri    => bless(do { \(my $o = 'https://resources.whatwg.org/spec.css') }, 'URI::https'),
+            rel         => 'stylesheet'
+        },
+        {
+            crossorigin => '',
+            href        => 'https://resources.whatwg.org/standard.css',
+            href_uri    => bless(do { \(my $o = 'https://resources.whatwg.org/standard.css') }, 'URI::https'),
+            rel         => 'stylesheet'
+        },
+        {
+            href     => 'https://resources.whatwg.org/standard-shared-with-dev.css',
+            href_uri => bless(do { \(my $o = 'https://resources.whatwg.org/standard-shared-with-dev.css') }, 'URI::https'),
+            rel      => 'stylesheet'
+        },
+        {
+            href     => 'https://resources.whatwg.org/standard-shared-with-dev.css',
+            href_uri => bless(do { \(my $o = 'https://resources.whatwg.org/standard-shared-with-dev.css') }, 'URI::https'),
+            rel      => 'stylesheet'
+        },
+        {
+            crossorigin => '',
+            href        => '/styles.css',
+            href_uri    => bless(do { \(my $o = 'https://html.spec.whatwg.org/styles.css') }, 'URI::https'),
+            rel         => 'stylesheet'
+        }
     ]
   },
-   'all link elements are collected';
+  'all link elements are collected';
 
 done_testing;

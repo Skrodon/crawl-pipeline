@@ -29,10 +29,23 @@ my %referencing_attributes = (
     script => 'src',
 );
 
-sub _refAttributes($thing) { \%referencing_attributes }    # for testing only
+# Precompiled xpath expressions to be reused by instances of this class.
+# Not much more faster than literal string passing but still faster.
+# See xt/benchmark_collectOpenGraph.pl
+my $X_BASE          = XML::LibXML::XPathExpression->new('//base[@href][1]');
+my $x_prefixes      = '//html[@prefix] | head[@prefix]';
+my $X_PREFIXES      = XML::LibXML::XPathExpression->new($x_prefixes);
+my $x_meta_property = '//meta[@property]';
+my $X_META_PROPERTY = XML::LibXML::XPathExpression->new($x_meta_property);
+my $X_NOT_PROPERTY  = XML::LibXML::XPathExpression->new('//meta[not(@property) and (@http-equiv or @name or @charset)]');
+my $X_LINK_REL      = XML::LibXML::XPathExpression->new('//link[@rel]');
+my %X_REF_ATTRS;
+$X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
+  for (keys %referencing_attributes);
+sub _refAttributes($thing) { return \%referencing_attributes }    # for testing only
 
 # Deduplicate white spaces and trim string.
-sub _trimss { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r }
+sub _trimss { return ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r }
 
 =encoding utf-8
 
@@ -101,9 +114,10 @@ sub _init ($self, $args) {
         no_xinclude_nodes => 1,
     );
     $self->{HI_doc} = $dom->documentElement;
-
+    $self->{HI_xpc} = XML::LibXML::XPathContext->new($self->{HI_doc});
     my $base = blessed $uri && $uri->isa('URI') ? $uri : URI->new($uri)->canonical;
-    if(my $base_tag = $self->{HI_doc}->findvalue('//base[@href][position()=1]')) {
+
+    if(my $base_tag = $self->{HI_xpc}->findvalue($X_BASE)) {
         $self->{HI_base} = $base = $base_tag->getAttribute('href');
     }
     else {
@@ -128,6 +142,20 @@ document and everything in it.
 
 sub doc { return $_[0]->{HI_doc} }
 
+=head2 xpc
+
+    my $xpath_context = $self->xpc
+
+Readonly accessor.
+Returns instance of XML::LibXML::XPathContext, representing the XPATH context
+with attached root node of the document and everything in it. Using find,
+findvalue and L<XML::LibXML::XPathContext/findnodes> is slightly faster than
+C<$doc-E<gt>findnodes($xpath_expression)>.
+
+=cut
+
+sub xpc { return $_[0]->{HI_xpc} }
+
 =head2 requestURI
 
     my $uri = $self->requestURI;
@@ -137,7 +165,7 @@ The L<URI> object which represents the C<request_uri> parameter which was
 passed as default base for relative links to C<new()>.
 =cut
 
-sub requestURI { $_[0]->{HI_request_uri} }
+sub requestURI { return $_[0]->{HI_request_uri} }
 
 =head2 base
 
@@ -149,7 +177,7 @@ C<requestURI> unless the HTML contains a C<< <base href> >> declaration.  The
 base URI is normalized.
 =cut
 
-sub base { $_[0]->{HI_base} }
+sub base { return $_[0]->{HI_base} }
 
 #-------------------------
 
@@ -176,7 +204,7 @@ sub collectMeta ($self, %args) {
     return $self->{HI_meta} if $self->{HI_meta};
 
     my %meta;
-    foreach my $meta ($self->doc->findnodes('//meta[not(@property)]')) {
+    foreach my $meta ($self->xpc->findnodes($X_NOT_PROPERTY)) {
         if(my $http = $meta->getAttribute('http-equiv')) {
             my $content = _trimss($meta->getAttribute('content')) // next;
             $meta{'http-equiv'}{lc $http} = $content;
@@ -240,13 +268,14 @@ sub collectOpenGraph ($self, %args) {
     my $og = {};
     # Find explicitly defined prefixes if we have such. A prefix may be an
     # object — article, video, etc...
-    for my $tag ($self->doc->findnodes('//html[@prefix] | head[@prefix]')) {
+    #//html[@prefix] | head[@prefix]
+    for my $tag ($self->xpc->findnodes($X_PREFIXES)) {
         my %prefixes = split /:?\s+/, $tag->getAttribute('prefix');
         # merge prefixes
         keys %{$og->{prefixes}} ? ($og->{prefixes} = {%{$og->{prefixes}}, %prefixes}) : ($og->{prefixes} = \%prefixes);
     }
-
-    $self->_handle_og_meta($og, $_) for $self->doc->findnodes('//meta[@property]');
+    # //meta[@property]
+    $self->_handle_og_meta($og, $_) for $self->doc->findnodes($X_META_PROPERTY);
     return $self->{HI_og} = $og;
 }
 
@@ -256,20 +285,20 @@ sub _handle_og_meta ($self, $og, $meta) {
     my $content = _trimss $meta->getAttribute('content');
     my $ns      = ($og->{$prefix} //= {});
     if($prefix ne 'og') {
-        $self->_handle_other_prefix($ns, $type, $content);
+        _handle_other_prefix($ns, $type, $content);
     }
     elsif(!defined $attr) {
-        $self->_handle_no_attr($ns, $type, $content);
+        _handle_no_attr($ns, $type, $content);
     }
     else {
-        $self->_handle_attr($ns, $type, $attr, $content);
+        _handle_attr($ns, $type, $attr, $content);
     }
     return;
 }
 
 # Handle cases like og:audio:author, where we have the namespace, type and
 # attribute.
-sub _handle_attr ($self, $ns, $type, $attr, $content) {
+sub _handle_attr ($ns, $type, $attr, $content) {
 
     if(!exists $ns->{$type} || ref $ns->{$type} eq 'HASH') {
         $ns->{$type}{$attr} = $content;
@@ -288,7 +317,7 @@ sub _handle_attr ($self, $ns, $type, $attr, $content) {
 
 # Handle cases like og:image or og:audio, where we have to introduce an 'url'
 # atribute if we have other atributes of the same object later in the data.
-sub _handle_no_attr ($self, $ns, $type, $content) {
+sub _handle_no_attr ($ns, $type, $content) {
 
     if(!exists $ns->{$type}) {
         $ns->{$type} = $content;
@@ -305,7 +334,7 @@ sub _handle_no_attr ($self, $ns, $type, $content) {
 
 # Handle cases like audio:author or image:width, where the object is in separate
 # namespace, named after its type.
-sub _handle_other_prefix ($self, $type, $attr, $content) {
+sub _handle_other_prefix ($type, $attr, $content) {
     if(!exists $type->{$attr}) {
         $type->{$attr} = $content;
     }
@@ -335,7 +364,8 @@ sub collectReferences($self) {
 
     my %refs;
     while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attr = uniq map URI->new_abs($_->getAttribute($attr), $base)->canonical, $self->doc->findnodes("//$tag\[\@$attr\]");
+        my @attr = uniq map { URI->new_abs($_->getAttribute($attr), $base)->canonical }
+          $self->xpc->findnodes($X_REF_ATTRS{"${tag}_$attr"});
         $refs{"${tag}_$attr"} = \@attr if @attr;
     }
 
@@ -358,8 +388,9 @@ sub collectLinks($self) {
     my $base = $self->base;
 
     my %links;
-    foreach my $link ($self->doc->findnodes('//link[@rel]')) {
-        my %attrs = map +(lc($_->name) => $_->value), grep $_->isa('XML::LibXML::Attr'), $link->attributes;
+    use Data::Dumper;
+    foreach my $link ($self->xpc->findnodes($X_LINK_REL)) {
+        my %attrs = map { $_->name => $_->value } grep { $_->isa('XML::LibXML::Attr') } $link->attributes;
         $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
         push @{$links{$attrs{rel}}}, \%attrs;
     }

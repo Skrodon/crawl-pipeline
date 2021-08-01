@@ -271,17 +271,17 @@ subtest 'audio.html'          => \&audio;
 subtest 'book-isbn10.html'    => \&book_isbn10;
 # rest of the files are tested as one
 my $test_files = {
-    'canadian.html' =>{
-    'og' => {
-        'image'  => 'http://examples.opengraphprotocol.us/media/images/50.png',
-        'locale' => 'en_CA',
-        'title'  => 'Canadian, eh?',
-        'type'   => 'website',
-        'url'    => 'http://examples.opengraphprotocol.us/canadian.html'
+    'canadian.html' => {
+        'og' => {
+            'image'  => 'http://examples.opengraphprotocol.us/media/images/50.png',
+            'locale' => 'en_CA',
+            'title'  => 'Canadian, eh?',
+            'type'   => 'website',
+            'url'    => 'http://examples.opengraphprotocol.us/canadian.html'
+        },
+        'prefixes' => {'og' => 'http://ogp.me/ns#'}
     },
-    'prefixes' => {'og' => 'http://ogp.me/ns#'}
-}, 
-    'error.html' => {},
+    'error.html'       => {},
     'image-array.html' => {
         'og' => {
             'image' => [
