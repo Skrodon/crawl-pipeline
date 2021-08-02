@@ -35,6 +35,9 @@
 # Avoid this file
 ^MANIFEST\.SKIP
 
+# Avoid opengraph protocol example files. We will not redistribute them.
+^t/data/open-graph-protocol-examples
+
 # Avoid temp and backup files.
 ~$
 \.old$

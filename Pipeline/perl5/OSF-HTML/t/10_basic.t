@@ -54,39 +54,47 @@ my $collectOpenGraph = sub {
     is($og->{og}{title} => 'Open Graph protocol', 'content is trimmed');
     is_deeply(
         $og => {
-            'fb' => {'app_id' => [ {'content' => '115190258555800'} ]},
-            'og' => {
-                'image' => [
-                    {'content' => 'https://ogp.me/logo.png'},
-                    {
-                        'alt'        => 'A shiny red apple with a bite taken out',
-                        'content'    => 'https://example.com/ogp.jpg',
-                        'height'     => '300',
-                        'secure_url' => 'https://secure.example.com/ogp.jpg',
-                        'type'       => 'image/jpeg',
-                        'width'      => '400'
-                    },
-                    {'content' => 'HTTPS://EXAMPLE.COM/ROCK.JPG'},
-                    {'content' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'}
-                ],
-                'profile' => [ {'first_name' => "Перко", 'last_name' => "Наумов", 'username' => "наумов"} ],
-                'title'   => 'Open Graph protocol',
-                'type'    => 'website',
-                'url'     => 'https://ogp.me/',
-                'video'   => [
-                    {
-                        'content'    => 'https://example.com/movie.swf',
-                        'height'     => '300',
-                        'secure_url' => 'https://secure.example.com/movie.swf',
-                        'type'       => 'application/x-shockwave-flash',
-                        'width'      => '400'
-                    }
-                ]
-            }
-        },
+       'fb' => {
+         'app_id' => '115190258555800'
+       },
+       'og' => {
+         'image' => [
+           'https://ogp.me/logo.png',
+           {
+             'alt' => 'A shiny red apple with a bite taken out',
+             'height' => '300',
+             'secure_url' => 'https://secure.example.com/ogp.jpg',
+             'type' => 'image/jpeg',
+             'url' => 'https://example.com/ogp.jpg',
+             'width' => '400'
+           },
+           {
+             'url' => 'HTTPS://EXAMPLE.COM/ROCK.JPG'
+           },
+           {
+             'url' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'
+           }
+         ],
+         'profile' => {
+           'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
+           'last_name' => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
+           'username' => "\x{43d}\x{430}\x{443}\x{43c}\x{43e}\x{432}"
+         },
+         'title' => 'Open Graph protocol',
+         'type' => 'website',
+         'url' => 'https://ogp.me/',
+         'video' => {
+           'height' => '300',
+           'secure_url' => 'https://secure.example.com/movie.swf',
+           'type' => 'application/x-shockwave-flash',
+           'url' => 'https://example.com/movie.swf',
+           'width' => '400'
+         }
+       },
+     },
         'all OG meta tags are parsed properly'
     );
-    # note explain $og;
+    note explain $og;
 };
 
 my $collectReferences = sub {
