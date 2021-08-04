@@ -81,6 +81,39 @@ returns different logical parts of it into self explanatory structures of data,
 which can further be used for document analisys as part of a bigger pipline.
 See C<t/*.t> files for examples of use and returned results.
 
+=encoding utf-8
+
+=head1 NAME
+
+HTML::Inspect - Inspect a HTML document
+
+=head1 SYNOPSIS
+
+
+    my $html         = slurp("t/data/collectMeta.html");
+    my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+    my $collectedMeta = $inspector->collectMeta();
+    # $collectedMeta is:
+    #{
+    #    charset      => 'utf-8',
+    #    name         => {
+    #        Алабала => 'ница',
+    #        generator => "Хей, гиди Ванчо",
+    #        description => 'The Open Graph protocol enables...'
+    #    },
+    #    'http-equiv' => {
+    #        'content-type' => 'text/html;charset=utf-8',
+    #        refresh => '3;url=https://www.mozilla.org'
+    #    }
+    #};
+
+=head1 DESCRIPTION
+
+HTML::Inspect uses L<XML::LibXML> to parse a document as fast as possible and
+returns different logical parts of it into self explanatory structures of data,
+which can further be used for document analisys as part of a bigger pipline.
+See C<t/*.t> files for examples of use and returned results.
+
 =head1 Constructors
 
 =head2 new
@@ -116,6 +149,7 @@ sub _init ($self, $args) {
     );
     $self->{HI_doc} = $dom->documentElement;
     $self->{HI_xpc} = XML::LibXML::XPathContext->new($self->{HI_doc});
+
     my $base = blessed $uri && $uri->isa('URI') ? $uri : URI->new($uri)->canonical;
 
     if(my $base_tag = $self->{HI_xpc}->findvalue($X_BASE)) {
@@ -154,6 +188,13 @@ with attached root node of the document and everything in it. Using find,
 findvalue and L<XML::LibXML::XPathContext/findnodes> is slightly faster than
 C<$doc-E<gt>findnodes($xpath_expression)>.
 
+=head2 requestURI
+
+    my $uri = $self->requestURI;
+
+Readonly accessor.
+The L<URI> object which represents the C<request_uri> parameter which was
+passed as default base for relative links to C<new()>.
 =cut
 
 sub xpc { return $_[0]->{HI_xpc} }
@@ -167,6 +208,14 @@ Retuns the corresponding namespace for a prefix.
     my $ns = HTML::Inspect->prefix2ns('og'); # https://ogp.me/ns#
     my $ns = HTML::Inspect->prefix2ns('video'); #https://ogp.me/ns/video# 
 
+=head2 base
+
+    my $uri = $self->base;
+
+Readonly accessor.
+The base URI, which is used for relative links in the page.  This is the
+C<requestURI> unless the HTML contains a C<< <base href> >> declaration.  The
+base URI is normalized.
 =cut
 
 sub prefix2ns ($self, $prefix) {
@@ -309,6 +358,7 @@ sub collectOpenGraph ($self, %args) {
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $og, $meta) {
     my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
+<<<<<<< HEAD
     my $curie   = $self->prefix2ns($prefix);
     my $ns      = ($og->{$curie} //= {});
     my $content = _trimss $meta->getAttribute('content');
