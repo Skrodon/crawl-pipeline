@@ -38,7 +38,6 @@ my $X_LINK_REL      = XML::LibXML::XPathExpression->new('//link[@rel]');
 my %X_REF_ATTRS;
 $X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
   for (keys %referencing_attributes);
-
 # Types which may be met more than once in a document. These are usually alternatives of each other.
 my $ARRAY_TYPES = qr/image|video|audio/;
 
@@ -78,40 +77,7 @@ HTML::Inspect - Inspect a HTML document
 
 HTML::Inspect uses L<XML::LibXML> to parse a document as fast as possible and
 returns different logical parts of it into self explanatory structures of data,
-which can further be used for document analisys as part of a bigger pipline.
-See C<t/*.t> files for examples of use and returned results.
-
-=encoding utf-8
-
-=head1 NAME
-
-HTML::Inspect - Inspect a HTML document
-
-=head1 SYNOPSIS
-
-
-    my $html         = slurp("t/data/collectMeta.html");
-    my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
-    my $collectedMeta = $inspector->collectMeta();
-    # $collectedMeta is:
-    #{
-    #    charset      => 'utf-8',
-    #    name         => {
-    #        Алабала => 'ница',
-    #        generator => "Хей, гиди Ванчо",
-    #        description => 'The Open Graph protocol enables...'
-    #    },
-    #    'http-equiv' => {
-    #        'content-type' => 'text/html;charset=utf-8',
-    #        refresh => '3;url=https://www.mozilla.org'
-    #    }
-    #};
-
-=head1 DESCRIPTION
-
-HTML::Inspect uses L<XML::LibXML> to parse a document as fast as possible and
-returns different logical parts of it into self explanatory structures of data,
-which can further be used for document analisys as part of a bigger pipline.
+which can further be used for document analisys as part of a bigger pipeline.
 See C<t/*.t> files for examples of use and returned results.
 
 =head1 Constructors
@@ -187,14 +153,6 @@ Returns instance of XML::LibXML::XPathContext, representing the XPATH context
 with attached root node of the document and everything in it. Using find,
 findvalue and L<XML::LibXML::XPathContext/findnodes> is slightly faster than
 C<$doc-E<gt>findnodes($xpath_expression)>.
-
-=head2 requestURI
-
-    my $uri = $self->requestURI;
-
-Readonly accessor.
-The L<URI> object which represents the C<request_uri> parameter which was
-passed as default base for relative links to C<new()>.
 =cut
 
 sub xpc { return $_[0]->{HI_xpc} }
@@ -207,16 +165,8 @@ Retuns the corresponding namespace for a prefix.
     my $ns = $self->prefix2ns('og'); # https://ogp.me/ns#
     my $ns = HTML::Inspect->prefix2ns('og'); # https://ogp.me/ns#
     my $ns = HTML::Inspect->prefix2ns('video'); #https://ogp.me/ns/video# 
-
-=head2 base
-
-    my $uri = $self->base;
-
-Readonly accessor.
-The base URI, which is used for relative links in the page.  This is the
-C<requestURI> unless the HTML contains a C<< <base href> >> declaration.  The
-base URI is normalized.
 =cut
+
 
 sub prefix2ns ($self, $prefix) {
 # Default and known namespaces for collectOpenGraph() when we have a document
@@ -270,8 +220,8 @@ sub base { return $_[0]->{HI_base} }
 
     my $hash = $html->collectMeta(%options);
 
-Returns a HASH with all <meta> information of traditional content: each
-value will only appear once.  OpenGraph meta-data records use attribute
+Returns a HASH reference with all <meta> information of traditional content:
+each value will only appear once. OpenGraph meta-data records use attribute
 'property', and are ignored here.
 
 Example:
@@ -307,13 +257,14 @@ sub collectMeta ($self, %args) {
 
     my $hash = $self->collectOpenGraph();
 
-Collects all meta elements which have an attribute 'property'.  See website
-about the structure which is returned. 
+Collects all meta elements which have an attribute C<property>.  See
+t/12_collect_opengraph.t for examples of the HASH reference structure which is
+returned. 
 
 Example
 
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article-offset.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(request_uri => 'http://example.com/article-offset.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     
    # {
@@ -492,7 +443,6 @@ sub collectLinks($self) {
     my $base = $self->base;
 
     my %links;
-    use Data::Dumper;
     foreach my $link ($self->xpc->findnodes($X_LINK_REL)) {
         my %attrs = map { $_->name => $_->value } grep { $_->isa('XML::LibXML::Attr') } $link->attributes;
         $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
