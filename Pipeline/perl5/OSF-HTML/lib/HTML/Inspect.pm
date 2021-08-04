@@ -358,7 +358,6 @@ sub collectOpenGraph ($self, %args) {
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $og, $meta) {
     my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
-<<<<<<< HEAD
     my $curie   = $self->prefix2ns($prefix);
     my $ns      = ($og->{$curie} //= {});
     my $content = _trimss $meta->getAttribute('content');
