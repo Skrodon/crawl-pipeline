@@ -245,6 +245,55 @@ sub collectMeta ($self, %args) {
     return $self->{HI_meta} = \%meta;
 }
 
+=head2 collectReferences 
+
+    $hash = $self->collectReferences;
+
+Collects all references from document. Returns a HASH reference with
+keys like C<$tag_$attr> and values an ARRAY of unique URIs found in such
+tags and attributes. The URIs are in their textual order in the document,
+where only the first encounter is recorded.
+=cut
+
+sub collectReferences($self) {
+    return $self->{HI_refs} if $self->{HI_refs};
+    my $base = $self->base;
+
+    my %refs;
+    while (my ($tag, $attr) = each %referencing_attributes) {
+        my @attr = uniq map { URI->new_abs($_->getAttribute($attr), $base)->canonical }
+          $self->xpc->findnodes($X_REF_ATTRS{"${tag}_$attr"});
+        $refs{"${tag}_$attr"} = \@attr if @attr;
+    }
+
+    return $self->{HI_refs} = \%refs;
+}
+
+=head2 collectLinks 
+
+    $hash = $self->collectLinks;
+
+Collect all C<< <link> >> relations from the document.  The returned HASH
+contains the relation (the C<rel> attribute, required) to an ARRAY of
+link elements with that value.  The ARRAY elements are HASHes of all
+attributes of the link and and all lower-cased.  The added C<href_uri>
+key will be a normalized, absolute translation of the C<href> attribute.
+=cut
+
+sub collectLinks($self) {
+    return $self->{HI_links} if $self->{HI_links};
+    my $base = $self->base;
+
+    my %links;
+    foreach my $link ($self->xpc->findnodes($X_LINK_REL)) {
+        my %attrs = map { $_->name => $_->value } grep { $_->isa('XML::LibXML::Attr') } $link->attributes;
+        $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
+        push @{$links{$attrs{rel}}}, \%attrs;
+    }
+
+    return $self->{HI_links} = \%links;
+}
+
 =head2 collectOpenGraph
 
     my $hash = $self->collectOpenGraph();
@@ -393,55 +442,6 @@ sub _handle_other_prefix ($type, $attr, $content) {
         $type->{$attr} = [ $first_content, $content ];
     }
     return;
-}
-
-=head2 collectReferences 
-
-    $hash = $self->collectReferences;
-
-Collects all references from document. Returns a HASH reference with
-keys like C<$tag_$attr> and values an ARRAY of unique URIs found in such
-tags and attributes. The URIs are in their textual order in the document,
-where only the first encounter is recorded.
-=cut
-
-sub collectReferences($self) {
-    return $self->{HI_refs} if $self->{HI_refs};
-    my $base = $self->base;
-
-    my %refs;
-    while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attr = uniq map { URI->new_abs($_->getAttribute($attr), $base)->canonical }
-          $self->xpc->findnodes($X_REF_ATTRS{"${tag}_$attr"});
-        $refs{"${tag}_$attr"} = \@attr if @attr;
-    }
-
-    return $self->{HI_refs} = \%refs;
-}
-
-=head2 collectLinks 
-
-    $hash = $self->collectLinks;
-
-Collect all C<< <link> >> relations from the document.  The returned HASH
-contains the relation (the C<rel> attribute, required) to an ARRAY of
-link elements with that value.  The ARRAY elements are HASHes of all
-attributes of the link and and all lower-cased.  The added C<href_uri>
-key will be a normalized, absolute translation of the C<href> attribute.
-=cut
-
-sub collectLinks($self) {
-    return $self->{HI_links} if $self->{HI_links};
-    my $base = $self->base;
-
-    my %links;
-    foreach my $link ($self->xpc->findnodes($X_LINK_REL)) {
-        my %attrs = map { $_->name => $_->value } grep { $_->isa('XML::LibXML::Attr') } $link->attributes;
-        $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
-        push @{$links{$attrs{rel}}}, \%attrs;
-    }
-
-    return $self->{HI_links} = \%links;
 }
 
 =head1 SEE ALSO
