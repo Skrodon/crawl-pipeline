@@ -54,7 +54,6 @@ HTML::Inspect - Inspect a HTML document
 
 =head1 SYNOPSIS
 
-
     my $html         = slurp("t/data/collectMeta.html");
     my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $collectedMeta = $inspector->collectMeta();
