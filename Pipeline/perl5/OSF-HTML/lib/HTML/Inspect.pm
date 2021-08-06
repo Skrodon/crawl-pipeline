@@ -44,7 +44,7 @@ my $ARRAY_TYPES = qr/image|video|audio/;
 
 
 # Deduplicate white spaces and trim string.
-sub _trimss { return ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r }
+sub _trimss { return ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z//r }
 
 =encoding utf-8
 
