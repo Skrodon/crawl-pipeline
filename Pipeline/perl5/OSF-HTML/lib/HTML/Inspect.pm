@@ -8,11 +8,11 @@ use feature qw (:5.20 lexical_subs signatures);
 
 our $VERSION = 0.11;
 
-use XML::LibXML();
+use XML::LibXML  ();
 use URI;
 use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
-use List::Util qw(uniq);
+use List::Util   qw(uniq);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
@@ -27,6 +27,7 @@ my %referencing_attributes = (
     link   => 'href',     # could use collectLinks(), but probably slower by complexity
     script => 'src',
 );
+sub _refAttributes($thing) { return \%referencing_attributes }    # for testing only
 
 # Precompiled xpath expressions to be reused by instances of this class.
 # Not much more faster than literal string passing but still faster.
@@ -40,8 +41,6 @@ $X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->
   for (keys %referencing_attributes);
 # Types which may be met more than once in a document. These are usually alternatives of each other.
 my $ARRAY_TYPES = qr/image|video|audio/;
-
-sub _refAttributes($thing) { return \%referencing_attributes }    # for testing only
 
 
 # Deduplicate white spaces and trim string.
@@ -98,12 +97,12 @@ sub new {
 }
 
 sub _init ($self, $args) {
-    my $html_ref = $args->{html_ref} or panic "no html";
-    ref $html_ref eq 'SCALAR'        or panic "Not SCALAR";
-    $$html_ref =~ m!\<\s*/?\s*\w+!   or panic "Not HTML";
+    my $html_ref = $args->{html_ref} or panic "html_ref is required";
+    ref $html_ref eq 'SCALAR'        or panic "html_ref not SCALAR";
+    $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '".substr($$html_ref, 0, 20)."'";
 
-    my $req = $args->{request_uri} or panic '"request_uri" is mandatory';
-    my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req)->canonical;
+    my $req = $args->{request_uri}   or panic '"request_uri" is mandatory';
+    my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req);
 
     my $dom = XML::LibXML->load_html(
         string            => $html_ref,
@@ -113,18 +112,11 @@ sub _init ($self, $args) {
         no_network        => 1,
         no_xinclude_nodes => 1,
     );
-    $self->{HI_doc} = $dom->documentElement;
-    $self->{HI_xpc} = XML::LibXML::XPathContext->new($self->{HI_doc});
+    my $doc = $self->{HI_doc} = $dom->documentElement;
+    my $xpc = $self->{HI_xpc} = XML::LibXML::XPathContext->new($doc);
 
-    my $base = blessed $uri && $uri->isa('URI') ? $uri : URI->new($uri)->canonical;
-
-    if(my $base_tag = $self->{HI_xpc}->findvalue($X_BASE)) {
-        $self->{HI_base} = $base = $base_tag->getAttribute('href');
-    }
-    else {
-        $self->{HI_base} = $uri;
-    }
-
+    my $base_elem = $xpc->findvalue($X_BASE);
+    $self->{HI_base} = $base_elem ? $base_elem->getAttribute('href') : $uri->canonical;
 
     return $self;
 }

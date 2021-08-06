@@ -12,9 +12,9 @@ use Log::Report 'html-inspect';
 my $constructor_and_doc = sub {
     my $inspector;
     try { HTML::Inspect->new };
-    like($@ => qr/no html/, '_init croaks ok1');
+    like($@ => qr/html_ref is required/, '_init croaks ok1');
     try { HTML::Inspect->new(html_ref => "foo") };
-    like($@ => qr/Not SCALAR/, '_init croaks ok2');
+    like($@ => qr/html_ref not SCALAR/, '_init croaks ok2');
     try { HTML::Inspect->new(html_ref => \"foo") };
     like($@ => qr/Not HTML/, '_init croaks ok3');
     try { HTML::Inspect->new(html_ref => \"<B>FooBar</B>") };
