@@ -12,15 +12,17 @@ use Log::Report 'html-inspect';
 my $constructor_and_doc = sub {
     my $inspector;
     try { HTML::Inspect->new };
-    like($@ => qr/no html/, '_init croaks ok1');
+    like($@ => qr/html_ref is required/, '_init croaks ok1');
     try { HTML::Inspect->new(html_ref => "foo") };
-    like($@ => qr/Not SCALAR/, '_init croaks ok2');
+    like($@ => qr/html_ref not SCALAR/, '_init croaks ok2');
     try { HTML::Inspect->new(html_ref => \"foo") };
     like($@ => qr/Not HTML/, '_init croaks ok3');
     try { HTML::Inspect->new(html_ref => \"<B>FooBar</B>") };
     like($@ => qr/is\smandatory/, '_init croaks ok4');
-    $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc.html', html_ref => \"<B>FooBar</B>");
+    my $req_uri = 'http://example.com/doc.html';
+    $inspector = HTML::Inspect->new(request_uri => $req_uri, html_ref => \"<B>FooBar</B>");
     isa_ok($inspector => 'HTML::Inspect');
+    is($req_uri => $inspector->requestURI, 'requestURI ok');
     isa_ok(HTML::Inspect->new(request_uri => URI->new('http://example.com/doc.htm'), html_ref => \"<B>FooBar</B>"),
         'HTML::Inspect');
     isa_ok(HTML::Inspect->new(request_uri => URI->new('http://example.com/doc.htm')->canonical, html_ref => \"<B>FooBar</B>"),
@@ -36,57 +38,65 @@ my $collectMeta = sub {
     my $html         = slurp("$Bin/data/collectMeta.html");
     my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $expectedMeta = {
-        charset      => 'utf-8',
-        name         => {Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
-        'http-equiv' => {'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
+        charset => 'utf-8',
+        name    =>
+          {empty => '', Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
+        'http-equiv' =>
+          {'content-disposition' => '', 'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
     };
     my $collectedMeta = $inspector->collectMeta();
-    is_deeply($collectedMeta => $expectedMeta, 'OHI_meta, parsed ok');
-    is($collectedMeta => $inspector->collectMeta(), 'collectMeta() returns already parsed OHI_meta');
+    is_deeply($collectedMeta => $expectedMeta, 'HI_meta, parsed ok');
+    is($collectedMeta => $inspector->collectMeta(), 'collectMeta() returns already parsed HI_meta');
+    note explain $collectedMeta;
 };
 
 my $collectOpenGraph = sub {
     my $html = slurp("$Bin/data/collectOpenGraph.html");
 
-    my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
-    my $og        = $inspector->collectOpenGraph();
-    is(ref $og          => 'HASH',                'collectOpenGraph() returns a HASH reference');
-    is($og->{og}{title} => 'Open Graph protocol', 'content is trimmed');
+    my $i  = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+    my $og = $i->collectOpenGraph();
+    is(ref $og                           => 'HASH',                 'collectOpenGraph() returns a HASH reference');
+    is($og->{$i->prefix2ns('og')}{title} => 'Open Graph protocol',  'content is trimmed');
+    is($og                               => $i->collectOpenGraph(), 'collectOpenGraph() returns alrady parsed Graph data');
     is_deeply(
         $og => {
-            'fb' => {'app_id' => [ {'content' => '115190258555800'} ]},
-            'og' => {
+            $i->prefix2ns('fb') => {'app_id' => '115190258555800'},
+            $i->prefix2ns('og') => {
                 'image' => [
-                    {'content' => 'https://ogp.me/logo.png'},
+                    {'url' => 'https://ogp.me/logo.png'},
                     {
                         'alt'        => 'A shiny red apple with a bite taken out',
-                        'content'    => 'https://example.com/ogp.jpg',
                         'height'     => '300',
                         'secure_url' => 'https://secure.example.com/ogp.jpg',
                         'type'       => 'image/jpeg',
+                        'url'        => 'https://example.com/ogp.jpg',
                         'width'      => '400'
                     },
-                    {'content' => 'HTTPS://EXAMPLE.COM/ROCK.JPG'},
-                    {'content' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'}
+                    {'url' => 'HTTPS://EXAMPLE.COM/ROCK.JPG'},
+                    {'url' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'}
                 ],
-                'profile' => [ {'first_name' => "Перко", 'last_name' => "Наумов", 'username' => "наумов"} ],
-                'title'   => 'Open Graph protocol',
-                'type'    => 'website',
-                'url'     => 'https://ogp.me/',
-                'video'   => [
+                'profile' => {
+                    'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
+                    'last_name'  => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
+                    'username'   => "\x{43d}\x{430}\x{443}\x{43c}\x{43e}\x{432}"
+                },
+                'title' => 'Open Graph protocol',
+                'type'  => 'website',
+                'url'   => 'https://ogp.me/',
+                'video' => [
                     {
-                        'content'    => 'https://example.com/movie.swf',
                         'height'     => '300',
                         'secure_url' => 'https://secure.example.com/movie.swf',
                         'type'       => 'application/x-shockwave-flash',
+                        'url'        => 'https://example.com/movie.swf',
                         'width'      => '400'
                     }
                 ]
-            }
+            },
         },
         'all OG meta tags are parsed properly'
     );
-    # note explain $og;
+    note explain $og;
 };
 
 my $collectReferences = sub {
