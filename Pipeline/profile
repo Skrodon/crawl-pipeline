@@ -13,12 +13,12 @@ for TASK in $_T
 do
     if [ ${PIPELINE_TASK["$TASK"]:-on} = 'on' ]
     then PIPELINE_TASKS+=" $TASK"
-         unset PIPELINE_TASK["$TASK"]
     fi
+    unset PIPELINE_TASK["$TASK"]
 done
 
 if [ "${PIPELINE_TASK[*]}" != '' ]
-then echo "ERROR: unknown pipeline task: #${PIPELINE_TASK[@]}#" >&2
+then echo "ERROR: unknown pipeline task: #${!PIPELINE_TASK[@]}#" >&2
      exit 1
 fi
 

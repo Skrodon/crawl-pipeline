@@ -8,12 +8,11 @@ use feature qw (:5.20 lexical_subs signatures);
 
 our $VERSION = 0.11;
 
-# TODO: Add POD. Prepare for CPAN
-use XML::LibXML();
+use XML::LibXML  ();
 use URI;
 use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
-use List::Util qw(uniq);
+use List::Util   qw(uniq);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
@@ -28,11 +27,24 @@ my %referencing_attributes = (
     link   => 'href',     # could use collectLinks(), but probably slower by complexity
     script => 'src',
 );
+sub _refAttributes($thing) { return \%referencing_attributes }    # for testing only
 
-sub _refAttributes($thing) { \%referencing_attributes }    # for testing only
+# Precompiled xpath expressions to be reused by instances of this class.
+# Not much more faster than literal string passing but still faster.
+# See xt/benchmark_collectOpenGraph.pl
+my $X_BASE          = XML::LibXML::XPathExpression->new('//base[@href][1]');
+my $X_META_PROPERTY = XML::LibXML::XPathExpression->new('//meta[@property]');
+my $X_NOT_PROPERTY  = XML::LibXML::XPathExpression->new('//meta[not(@property) and (@http-equiv or @name or @charset)]');
+my $X_LINK_REL      = XML::LibXML::XPathExpression->new('//link[@rel]');
+my %X_REF_ATTRS;
+$X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
+  for (keys %referencing_attributes);
+# Types which may be met more than once in a document. These are usually alternatives of each other.
+my $ARRAY_TYPES = qr/image|video|audio/;
+
 
 # Deduplicate white spaces and trim string.
-sub _trimss { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r }
+sub _trimss { return ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z//r }
 
 =encoding utf-8
 
@@ -41,7 +53,6 @@ sub _trimss { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z$//r }
 HTML::Inspect - Inspect a HTML document
 
 =head1 SYNOPSIS
-
 
     my $html         = slurp("t/data/collectMeta.html");
     my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
@@ -64,7 +75,7 @@ HTML::Inspect - Inspect a HTML document
 
 HTML::Inspect uses L<XML::LibXML> to parse a document as fast as possible and
 returns different logical parts of it into self explanatory structures of data,
-which can further be used for document analisys as part of a bigger pipline.
+which can further be used for document analisys as part of a bigger pipeline.
 See C<t/*.t> files for examples of use and returned results.
 
 =head1 Constructors
@@ -85,12 +96,12 @@ sub new {
 }
 
 sub _init ($self, $args) {
-    my $html_ref = $args->{html_ref} or panic "no html";
-    ref $html_ref eq 'SCALAR'        or panic "Not SCALAR";
-    $$html_ref =~ m!\<\s*/?\s*\w+!   or panic "Not HTML";
+    my $html_ref = $args->{html_ref} or panic "html_ref is required";
+    ref $html_ref eq 'SCALAR'        or panic "html_ref not SCALAR";
+    $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '".substr($$html_ref, 0, 20)."'";
 
-    my $req = $args->{request_uri} or panic '"request_uri" is mandatory';
-    my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req)->canonical;
+    my $req = $args->{request_uri}   or panic '"request_uri" is mandatory';
+    my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req);
 
     my $dom = XML::LibXML->load_html(
         string            => $html_ref,
@@ -100,15 +111,11 @@ sub _init ($self, $args) {
         no_network        => 1,
         no_xinclude_nodes => 1,
     );
-    $self->{HI_doc} = $dom->documentElement;
+    my $doc = $self->{HI_doc} = $dom->documentElement;
+    my $xpc = $self->{HI_xpc} = XML::LibXML::XPathContext->new($doc);
 
-    my $base = blessed $uri && $uri->isa('URI') ? $uri : URI->new($uri)->canonical;
-    if(my $base_tag = $self->{HI_doc}->findvalue('//base[@href][position()=1]')) {
-        $self->{HI_base} = $base = $base_tag->getAttribute('href');
-    }
-    else {
-        $self->{HI_base} = $uri;
-    }
+    my $base_elem = $xpc->findvalue($X_BASE);
+    $self->{HI_base} = $base_elem ? $base_elem->getAttribute('href') : $uri->canonical;
 
     return $self;
 }
@@ -128,6 +135,51 @@ document and everything in it.
 
 sub doc { return $_[0]->{HI_doc} }
 
+=head2 xpc
+
+    my $xpath_context = $self->xpc
+
+Readonly accessor.
+Returns instance of XML::LibXML::XPathContext, representing the XPATH context
+with attached root node of the document and everything in it. Using find,
+findvalue and L<XML::LibXML::XPathContext/findnodes> is slightly faster than
+C<$doc-E<gt>findnodes($xpath_expression)>.
+=cut
+
+sub xpc { return $_[0]->{HI_xpc} }
+
+=head2 prefix2ns
+
+Readonly static accessor.
+Retuns the corresponding namespace for a prefix.
+
+    my $ns = $self->prefix2ns('og'); # https://ogp.me/ns#
+    my $ns = HTML::Inspect->prefix2ns('og'); # https://ogp.me/ns#
+    my $ns = HTML::Inspect->prefix2ns('video'); #https://ogp.me/ns/video# 
+=cut
+
+
+sub prefix2ns ($self, $prefix) {
+# Default and known namespaces for collectOpenGraph() when we have a document
+# with no explicitly defined prefix(namespace), but then in the document it is
+# used. These cases are very common.
+    state %PREFIXES = (
+        fb      => 'https://ogp.me/ns/fb#',
+        og      => 'https://ogp.me/ns#',
+        image   => 'https://ogp.me/ns/image#',
+        music   => 'https://ogp.me/ns/music#',
+        video   => 'https://ogp.me/ns/video#',
+        article => 'https://ogp.me/ns/article#',
+        book    => 'https://ogp.me/ns/book#',
+        profile => 'https://ogp.me/ns/profile#',
+        # From https://ogp.me/ : "No additional properties other than the basic
+        # ones. Any non-marked up webpage should be treated as og:type website."
+        website => 'https://ogp.me/ns/website#',
+    );
+
+    return $PREFIXES{$prefix};
+}
+
 =head2 requestURI
 
     my $uri = $self->requestURI;
@@ -137,7 +189,7 @@ The L<URI> object which represents the C<request_uri> parameter which was
 passed as default base for relative links to C<new()>.
 =cut
 
-sub requestURI { $_[0]->{HI_request_uri} }
+sub requestURI { return $_[0]->{HI_request_uri} }
 
 =head2 base
 
@@ -149,7 +201,7 @@ C<requestURI> unless the HTML contains a C<< <base href> >> declaration.  The
 base URI is normalized.
 =cut
 
-sub base { $_[0]->{HI_base} }
+sub base { return $_[0]->{HI_base} }
 
 #-------------------------
 
@@ -159,8 +211,8 @@ sub base { $_[0]->{HI_base} }
 
     my $hash = $html->collectMeta(%options);
 
-Returns a HASH with all <meta> information of traditional content: each
-value will only appear once.  OpenGraph meta-data records use attribute
+Returns a HASH reference with all <meta> information of traditional content:
+each value will only appear once. OpenGraph meta-data records use attribute
 'property', and are ignored here.
 
 Example:
@@ -176,147 +228,20 @@ sub collectMeta ($self, %args) {
     return $self->{HI_meta} if $self->{HI_meta};
 
     my %meta;
-    foreach my $meta ($self->doc->findnodes('//meta[not(@property)]')) {
+    foreach my $meta ($self->xpc->findnodes($X_NOT_PROPERTY)) {
         if(my $http = $meta->getAttribute('http-equiv')) {
-            my $content = _trimss($meta->getAttribute('content')) // next;
-            $meta{'http-equiv'}{lc $http} = $content;
+            my $content = $meta->getAttribute('content') // next;
+            $meta{'http-equiv'}{lc $http} = _trimss($content);
         }
         elsif(my $name = $meta->getAttribute('name')) {
-            my $content = _trimss($meta->getAttribute('content')) // next;
-            $meta{name}{$name} = $content;
+            my $content = $meta->getAttribute('content') // next;
+            $meta{name}{$name} = _trimss($content);
         }
         elsif(my $charset = $meta->getAttribute('charset')) {
             $meta{charset} = lc $charset;
         }
     }
     return $self->{HI_meta} = \%meta;
-}
-
-=head2 collectOpenGraph
-
-    my $hash = $self->collectOpenGraph();
-
-Collects all meta elements which have an attribute 'property'.  See website
-about the structure which is returned. 
-
-Example
-
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article-offset.html', html_ref => \$html);
-    my $og   = $i->collectOpenGraph();
-    #{
-    #    'article' => {
-    #        'author'         => 'http://example.com/profile.html',
-    #        'published_time' => '1972-06-17T20:23:45-05:00',
-    #        'section'        => 'Front page',
-    #        'tag'            => 'Watergate'
-    #    },
-    #    'og' => {
-    #        'image' => {
-    #            'height'     => '50',
-    #            'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/images/50.png',
-    #            'type'       => 'image/png',
-    #            'url'        => 'http://examples.opengraphprotocol.us/media/images/50.png',
-    #            'width'      => '50'
-    #        },
-    #        'locale'    => 'en_US',
-    #        'site_name' => 'Open Graph protocol examples',
-    #        'title'     => '5 Held in Plot to Bug Office',
-    #        'type'      => 'article',
-    #        'url'       => 'http://examples.opengraphprotocol.us/article-offset.html'
-    #    },
-    #    'prefixes' => {'article' => 'http://ogp.me/ns/article#', 'og' => 'http://ogp.me/ns#'}
-    #}
-
-=cut
-
-# TODO: Implement collection fo all tags specified in this page
-# https://developers.facebook.com/docs/sharing/webmasters
-# https://ogp.me/#types
-# See also: https://developers.facebook.com/docs/sharing/webmasters/crawler
-# https://developers.facebook.com/docs/sharing/webmasters/optimizing
-sub collectOpenGraph ($self, %args) {
-    return $self->{HI_og} if $self->{HI_og};
-    my $og = {};
-    # Find explicitly defined prefixes if we have such. A prefix may be an
-    # object — article, video, etc...
-    for my $tag ($self->doc->findnodes('//html[@prefix] | head[@prefix]')) {
-        my %prefixes = split /:?\s+/, $tag->getAttribute('prefix');
-        # merge prefixes
-        keys %{$og->{prefixes}} ? ($og->{prefixes} = {%{$og->{prefixes}}, %prefixes}) : ($og->{prefixes} = \%prefixes);
-    }
-
-    $self->_handle_og_meta($og, $_) for $self->doc->findnodes('//meta[@property]');
-    return $self->{HI_og} = $og;
-}
-
-# A not so dummy, implementation of collecting OG data from a page
-sub _handle_og_meta ($self, $og, $meta) {
-    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
-    my $content = _trimss $meta->getAttribute('content');
-    my $ns      = ($og->{$prefix} //= {});
-    if($prefix ne 'og') {
-        $self->_handle_other_prefix($ns, $type, $content);
-    }
-    elsif(!defined $attr) {
-        $self->_handle_no_attr($ns, $type, $content);
-    }
-    else {
-        $self->_handle_attr($ns, $type, $attr, $content);
-    }
-    return;
-}
-
-# Handle cases like og:audio:author, where we have the namespace, type and
-# attribute.
-sub _handle_attr ($self, $ns, $type, $attr, $content) {
-
-    if(!exists $ns->{$type} || ref $ns->{$type} eq 'HASH') {
-        $ns->{$type}{$attr} = $content;
-    }
-    elsif(ref $ns->{$type} eq 'ARRAY') {
-        $ns->{$type}[-1]{$attr} = $content;
-    }
-    elsif(!ref $ns->{$type}) {
-        my $url = $ns->{$type};
-        $ns->{$type}        = {};
-        $ns->{$type}{url}   = $url;
-        $ns->{$type}{$attr} = $content;
-    }
-    return;
-}
-
-# Handle cases like og:image or og:audio, where we have to introduce an 'url'
-# atribute if we have other atributes of the same object later in the data.
-sub _handle_no_attr ($self, $ns, $type, $content) {
-
-    if(!exists $ns->{$type}) {
-        $ns->{$type} = $content;
-    }
-    elsif(ref $ns->{$type} eq 'ARRAY') {
-        push @{$ns->{$type}}, {url => $content};
-    }
-    else {
-        my $first_content = $ns->{$type};
-        $ns->{$type} = [ $first_content, {url => $content} ];
-    }
-    return;
-}
-
-# Handle cases like audio:author or image:width, where the object is in separate
-# namespace, named after its type.
-sub _handle_other_prefix ($self, $type, $attr, $content) {
-    if(!exists $type->{$attr}) {
-        $type->{$attr} = $content;
-    }
-    elsif(ref $type->{$attr} eq 'ARRAY') {
-        push @{$type->{$attr}}, $content;
-    }
-    else {
-        my $first_content = $type->{$attr};
-        $type->{$attr} = [ $first_content, $content ];
-    }
-    return;
 }
 
 =head2 collectReferences 
@@ -335,7 +260,8 @@ sub collectReferences($self) {
 
     my %refs;
     while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attr = uniq map URI->new_abs($_->getAttribute($attr), $base)->canonical, $self->doc->findnodes("//$tag\[\@$attr\]");
+        my @attr = uniq map { URI->new_abs($_->getAttribute($attr), $base)->canonical }
+          $self->xpc->findnodes($X_REF_ATTRS{"${tag}_$attr"});
         $refs{"${tag}_$attr"} = \@attr if @attr;
     }
 
@@ -358,13 +284,163 @@ sub collectLinks($self) {
     my $base = $self->base;
 
     my %links;
-    foreach my $link ($self->doc->findnodes('//link[@rel]')) {
-        my %attrs = map +(lc($_->name) => $_->value), grep $_->isa('XML::LibXML::Attr'), $link->attributes;
+    foreach my $link ($self->xpc->findnodes($X_LINK_REL)) {
+        my %attrs = map { $_->name => $_->value } grep { $_->isa('XML::LibXML::Attr') } $link->attributes;
         $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
         push @{$links{$attrs{rel}}}, \%attrs;
     }
 
     return $self->{HI_links} = \%links;
+}
+
+=head2 collectOpenGraph
+
+    my $hash = $self->collectOpenGraph();
+
+Collects all meta elements which have an attribute C<property>.  See
+t/12_collect_opengraph.t for examples of the HASH reference structure which is
+returned. 
+
+Example
+
+    my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
+    my $i    = HTML::Inspect->new(request_uri => 'http://example.com/article-offset.html', html_ref => \$html);
+    my $og   = $i->collectOpenGraph();
+    
+   # {
+   #   'https://ogp.me/ns#' => {
+   #     'image' => [
+   #       {
+   #         'height' => '50',
+   #         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/images/50.png',
+   #         'type' => 'image/png',
+   #         'url' => 'http://examples.opengraphprotocol.us/media/images/50.png',
+   #         'width' => '50'
+   #       }
+   #     ],
+   #     'locale' => 'en_US',
+   #     'site_name' => 'Open Graph protocol examples',
+   #     'title' => 'John Doe profile page',
+   #     'type' => 'profile',
+   #     'url' => 'http://examples.opengraphprotocol.us/profile.html'
+   #   },
+   #   'https://ogp.me/ns/profile#' => {
+   #     'first_name' => 'John',
+   #     'gender' => 'male',
+   #     'last_name' => 'Doe',
+   #     'username' => 'johndoe'
+   #   }
+   # }
+
+=cut
+
+# TODO: Implement collection fo all tags specified in this page
+# https://developers.facebook.com/docs/sharing/webmasters
+# https://ogp.me/#types
+# See also: https://developers.facebook.com/docs/sharing/webmasters/crawler
+# https://developers.facebook.com/docs/sharing/webmasters/optimizing
+sub collectOpenGraph ($self, %args) {
+    return $self->{HI_og} if $self->{HI_og};
+    my $og = {};
+    $self->_handle_og_meta($og, $_) for $self->doc->findnodes($X_META_PROPERTY);
+    return $self->{HI_og} = $og;
+}
+
+# A not so dummy, implementation of collecting OG data from a page
+sub _handle_og_meta ($self, $og, $meta) {
+    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
+    my $curie   = $self->prefix2ns($prefix);
+    my $ns      = ($og->{$curie} //= {});
+    my $content = _trimss $meta->getAttribute('content');
+    if($prefix ne 'og') {
+        # warn "_handle_other_prefix(" . $meta->getAttribute('property');
+        _handle_other_prefix($ns, $type, $content);
+    }
+    elsif(!defined $attr) {
+        # warn "_handle_no_attr(" . $meta->getAttribute('property');
+        _handle_no_attr($ns, $type, $content);
+    }
+    else {
+        # warn "_handle_attr(" . $meta->getAttribute('property');
+        _handle_attr($ns, $type, $attr, $content);
+    }
+    return;
+}
+
+# Handle cases like og:audio:author, where we have the namespace, type and
+# attribute.
+sub _handle_attr ($ns, $type, $attr, $content) {
+    if(!exists $ns->{$type}) {
+        if($type =~ $ARRAY_TYPES) {
+            $ns->{$type} = [ {$attr => $content} ];
+        }
+        else {
+            $ns->{$type} = {$attr => $content};
+        }
+        return;
+    }
+    # An already defined object of type $type.
+    my $ns_type = $ns->{$type};
+    if(ref $ns_type eq 'ARRAY') {
+        if(!exists $ns_type->[-1]{$attr}) {
+            $ns_type->[-1]{$attr} = $content;
+        }
+        # Starting a new object
+        else {
+            push @$ns_type, {$attr => $content};
+        }
+    }
+    else {
+        $ns_type->{$attr} = $content;
+    }
+    return;
+}
+
+# Handle cases like og:image or og:audio, where we have to introduce an 'url'
+# atribute if we have other atributes of the same object later in the data.
+sub _handle_no_attr ($ns, $type, $content) {
+
+    # Handle og properties
+    if(!exists $ns->{$type}) {
+        # There is no way to have image as an og property and as an array
+        # object at the same time, so the first image in the image array is a
+        # property of the default type(website).
+        if($type =~ $ARRAY_TYPES) {
+            $ns->{$type} = [ {url => $content} ];
+        }
+        # this is a property of og
+        else {
+            $ns->{$type} = $content;
+        }
+        return;
+    }
+    # An already deined object of type $type.
+    my $ns_type = $ns->{$type};
+
+    if(ref $ns_type eq 'ARRAY') {
+        push @$ns_type, {url => $content};
+    }
+    else {
+        my $first_content = $ns_type;
+        $ns_type = [ $first_content, {url => $content} ];
+    }
+    return;
+}
+
+# Handle cases like audio:author or image:width, where the object is in separate
+# namespace, named after its type.
+sub _handle_other_prefix ($type, $attr, $content) {
+    if(!exists $type->{$attr}) {
+        $type->{$attr} = $content;
+    }
+    elsif(ref $type->{$attr} eq 'ARRAY') {
+        push @{$type->{$attr}}, $content;
+    }
+    else {
+        my $first_content = $type->{$attr};
+        $type->{$attr} = [ $first_content, $content ];
+    }
+    return;
 }
 
 =head1 SEE ALSO
