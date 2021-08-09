@@ -37,13 +37,14 @@ fi
 
 source "$PROFILE"
 
-#
-### The "run" wrapper to be used for cron
-#
+# Shut-up cron for now.  Tasks which are running are allowed to keep
+# on running.  Cleanups will get delayed one more release, or are part
+# of the regular cleanup schemes.
 
-[ -f $BIN/run ] && chmod u+w $BIN/run
-cp $REPO/install/run $BIN/run
-chmod u=rx $BIN/run
+# When someone has disabled a cron by hand, it will temporarily get two #s
+TMP_CRON="${TMPDIR:-/tmp}/$$.crontab.new"
+crontab -l >"$TMP_CRON"
+sed '/\$RUN/s/^/#/' "$TMP_CRON" | crontab
 
 #
 ### Some configuration checks
@@ -74,4 +75,42 @@ fi
 ### Update all plugins
 #
 
+#
+### Crontab
+#
 
+# The "run" wrapper to be used for cron: it
+[ -f $BIN/run ] && chmod u+w $BIN/run
+cp $REPO/install/run $BIN/run
+chmod u=rx $BIN/run
+
+if ! grep '^RUN=' "$TMP_CRON" >/dev/null
+then cat <<__HEAD >>"$TMP_CRON"
+
+# The following lines are maintained by "make install".  Your changes to the
+# start times are preserved.  Most configuration via $HOME/etc/crawl-profile.
+RUN=$BIN/run
+
+__HEAD
+
+fi
+
+for PROJECT in $(ls "$REPO")
+do  for CRON in $REPO/$PROJECT/bin/cron.*
+    do  [ -f "$CRON" ] || continue
+        grep "\$RUN '$PROJECT' '$CRON'" "$TMP_CRON" >/dev/null && continue
+
+        STAMPS=$(sed -n 's/# DEFAULT_SCHEDULE="\(.*\)".*/\1/p' "$CRON")
+        cat <<__STARTER >>"$TMP_CRON"
+$STAMPS \$RUN '$PROJECT' '$CRON'
+__STARTER
+
+        echo "Please, configure new crontab entry for '$CRON'"
+    done
+
+done
+
+crontab <"$TMP_CRON"
+rm -f "$TMP_CRON"
+
+echo "Done"

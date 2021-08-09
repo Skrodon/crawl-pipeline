@@ -1,5 +1,5 @@
 #!/bin/bash
-# This is run every 5 minutes
+# DEFAULT_SCHEDULE="*/5 * * * *"
 
 set -e
 

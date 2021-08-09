@@ -1,4 +1,5 @@
 #!/bin/bash
+# DEFAULT_SCHEDULE="10 0 * * *"
 
 function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
 

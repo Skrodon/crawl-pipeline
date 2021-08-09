@@ -20,4 +20,5 @@ export MAILTO="info@example.com"
 # You may switch pipeline tasks of by uncommenting these
 #PIPELINE_TASK["OSF::KB_NL::Task::Fryslan"]=off
 #PIPELINE_TASK["OSF::Planner::Task::LinkCollector"]=off
+#PIPELINE_TASK["OSF::UniPassau::Task::BavarianFood"=off
 
