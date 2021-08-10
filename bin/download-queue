@@ -32,6 +32,8 @@ then log "Cache is full (size $CACHED, max $CACHE_SIZE)"
      exit 0
 fi
 
+[ -d "$LOGS"  ] || mkdir -p "$LOGS"
+
 [ -d "$LOCKS" ] || mkdir -p "$LOCKS"
 LOCK_DEST="$LOCKS/$QUEUE-$$-locker"
 touch "$LOCK_DEST"

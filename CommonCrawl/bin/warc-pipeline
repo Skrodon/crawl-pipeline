@@ -17,10 +17,13 @@ function log() { printf "[%s] %s\n" "$(date +'%F %T')" "$*"; }
 SHORT_SLEEP=1   # relax the system
 LONG_SLEEP=10   # nothing to do: either empty or full
 
-while :
+STOP=0
+trap "STOP=1; echo 'Waiting for processes to terminate' >&2" SIGINT
+
+while [ $STOP = 0 ]
 do
     PREPARED=$(ls "$PROCESS_DIRS" | wc -l)
-    if [ $PREPARED -ge $MAX_PROCESSES_PARALLEL ]
+    if [ $PREPARED -ge $MAX_CC_PARALLEL ]
     then sleep $LONG_SLEEP
          continue
     fi
@@ -47,12 +50,11 @@ do
         process-batch "$BATCH_DIR" &
         echo $! >"$BATCH_DIR/processing.pid"
         log "Started processing $BATCH_LABEL in $BATCH_DIR, process $!"
-exit
 
         sleep $SHORT_SLEEP    # some time to get the processes started
 
         PREPARED=$(ls "$PROCESS_DIRS" | wc -l)
-        [ $PREPARED -ge $MAX_PROCESSES_PARALLEL ] && break
+        [ $PREPARED -ge $MAX_CC_PARALLEL ] && break
 
     done
 

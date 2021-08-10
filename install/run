@@ -44,9 +44,9 @@ source $PROJECT_ROOT/profile
 if [ ! -t 0 ]
 then
     LOGDIR="$LOGS/$PROJECT"
-    [ -d "$LOGDIR" ] || mkdir $LOGDIR
+    [ -d "$LOGDIR" ] || mkdir -p $LOGDIR
 
-    LOG="$LOGDIR/$(date +%F)-$COMMAND.log"
+    LOG="$LOGDIR/$(date +%F)-${COMMAND##*/}.log"
     exec >>$LOG 2>&1
 fi
 

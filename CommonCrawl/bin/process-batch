@@ -8,6 +8,7 @@ use strict;
 
 use OSF::CommonCrawl::Batch  ();
 use File::Basename  qw(basename);
+use File::Remove    qw(remove);
 
 @ARGV==1
    or die "Usage: $0 <dir>\n";
@@ -25,3 +26,6 @@ $cc->processProducts;
 $cc->showStats;
 
 $cc->batchFinished;
+
+# When removed, the next will start
+remove \1, $workdir;

@@ -1,6 +1,12 @@
 #!/bin/bash
 
+set -e
+
 REPO=/home/markov/osf-crawl
 BATCH=/data/pipeline/CommonCrawl/batch-testset
+BATCH_RUN="$BATCH.run"
 
-run CommonCrawl process-batch $BATCH
+[ -d "$BATCH_RUN" ] || cp -r "$BATCH" "$BATCH_RUN"
+[ -f "$BATCH_RUN/process.pid" ] && unlink "$BATCH_RUN/process.pid"
+
+run CommonCrawl process-batch "$BATCH_RUN"
