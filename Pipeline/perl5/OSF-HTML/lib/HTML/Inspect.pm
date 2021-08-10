@@ -8,11 +8,11 @@ use feature qw (:5.20 lexical_subs signatures);
 
 our $VERSION = 0.11;
 
-use XML::LibXML  ();
+use XML::LibXML ();
 use URI;
 use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
-use List::Util   qw(uniq);
+use List::Util qw(uniq);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
@@ -39,8 +39,8 @@ my $X_LINK_REL      = XML::LibXML::XPathExpression->new('//link[@rel]');
 my %X_REF_ATTRS;
 $X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
   for (keys %referencing_attributes);
-# Types which may be met more than once in a document. These are usually alternatives of each other.
-my $ARRAY_TYPES = qr/image|video|audio/;
+# Types which may be met more than once in a document. These are often alternatives of each other.
+my $ARRAY_TYPES = qr/image|video|audio|music/;
 
 
 # Deduplicate white spaces and trim string.
@@ -98,9 +98,9 @@ sub new {
 sub _init ($self, $args) {
     my $html_ref = $args->{html_ref} or panic "html_ref is required";
     ref $html_ref eq 'SCALAR'        or panic "html_ref not SCALAR";
-    $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '".substr($$html_ref, 0, 20)."'";
+    $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '" . substr($$html_ref, 0, 20) . "'";
 
-    my $req = $args->{request_uri}   or panic '"request_uri" is mandatory';
+    my $req = $args->{request_uri} or panic '"request_uri" is mandatory';
     my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req);
 
     my $dom = XML::LibXML->load_html(
@@ -177,7 +177,7 @@ sub prefix2ns ($self, $prefix) {
         website => 'https://ogp.me/ns/website#',
     );
 
-    return $PREFIXES{$prefix};
+    return exists $PREFIXES{$prefix}?$PREFIXES{$prefix}:"https://ogp.me/ns/$prefix#";
 }
 
 =head2 requestURI

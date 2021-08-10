@@ -97,6 +97,15 @@ my $collectOpenGraph = sub {
         'all OG meta tags are parsed properly'
     );
     note explain $og;
+
+    # music namespace and unknown prefix
+    $html = slurp("$Bin/data/collectOpenGraph-music.html");
+
+    $i  = HTML::Inspect->new(request_uri => 'https://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF', html_ref => \$html);
+    $og = $i->collectOpenGraph();
+    is(ref $og                           => 'HASH',                 'collectOpenGraph() returns a HASH reference');
+    is($og->{$i->prefix2ns('og')}{title} => 'Under Pressure - Remastered 2011',  'right title');
+    note explain $og;
 };
 
 my $collectReferences = sub {
