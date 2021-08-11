@@ -22,6 +22,7 @@ my $refs = $inspector->collectReferences;
 # Have we collected all links that we support?
 my $ref_attributes = $inspector->_refAttributes;
 while (my ($t, $a) = each %$ref_attributes) {
+    next if("${t}_$a" eq "object_data");
     ok $refs->{"${t}_$a"}, "${t}_$a were found in document";
 
     # Are the refs deduplicated?
@@ -45,7 +46,8 @@ is_deeply(
             bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/dom.html#elements-in-the-dom') },       'URI::https'),
             bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors') }, 'URI::https'),
             bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/dom.html#element-definitions') },       'URI::https'),
-            bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/dom.html#document') },                  'URI::https'),
+            bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/#documents') },                         'URI::https'),
+            bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/#document') },                          'URI::https'),
             bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/references.html#refsDOM') },            'URI::https'),
             bless(do { \(my $o = 'https://dom.spec.whatwg.org/#concept-document-url') },                         'URI::https')
         ],
@@ -57,7 +59,7 @@ is_deeply(
         ],
         'base_href'   => [ bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/') },                  'URI::https') ],
         'embed_src'   => [ bless(do { \(my $o = 'https://html.spec.whatwg.org/media/cc0-videos/flower.mp4') }, 'URI::https') ],
-        'form_action' => [ bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/dom.html') },          'URI::https') ],
+        'form_action' => [ bless(do { \(my $o = 'https://html.spec.whatwg.org/multipage/') },                  'URI::https') ],
         'iframe_src'  => [
             bless(
                 do {
@@ -88,6 +90,7 @@ is_deeply(
     'all references are collected'
 );
 
+note explain $refs;
 ###
 ### collectLinks
 ###

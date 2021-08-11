@@ -48,6 +48,12 @@ my $collectMeta = sub {
     is_deeply($collectedMeta => $expectedMeta, 'HI_meta, parsed ok');
     is($collectedMeta => $inspector->collectMeta(), 'collectMeta() returns already parsed HI_meta');
     note explain $collectedMeta;
+    $html          = slurp("$Bin/data/collectMeta-no-charset.html");
+    $inspector     = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+    $collectedMeta = $inspector->collectMeta();
+    is_deeply($collectedMeta => {}, 'no-charset HI_meta, parsed ok');
+    is($inspector->base => 'http://example.com/', 'right base');
+    note explain $collectedMeta;
 };
 
 my $collectOpenGraph = sub {
@@ -98,23 +104,16 @@ my $collectOpenGraph = sub {
     );
     note explain $og;
 
-    # music namespace and unknown prefix
-    $html = slurp("$Bin/data/collectOpenGraph-music.html");
-
-    $i  = HTML::Inspect->new(request_uri => 'https://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF', html_ref => \$html);
-    $og = $i->collectOpenGraph();
-    is(ref $og                           => 'HASH',                 'collectOpenGraph() returns a HASH reference');
-    is($og->{$i->prefix2ns('og')}{title} => 'Under Pressure - Remastered 2011',  'right title');
-    note explain $og;
 };
 
 my $collectReferences = sub {
     my $html      = slurp("$Bin/data/links.html");
     my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
     my $links     = $inspector->collectReferences();
-    is(ref $links           => 'HASH',  'collectReferences() returns a HASH reference');
-    is(ref $links->{a_href} => 'ARRAY', 'collectReferences() returns a HASH reference of ARRAYs');
-#    note explain $links;
+    is(ref $links           => 'HASH',                          'collectReferences() returns a HASH reference');
+    is(ref $links->{a_href} => 'ARRAY',                         'collectReferences() returns a HASH reference of ARRAYs');
+    is($links               => $inspector->collectReferences(), 'same reference');
+    # note explain $links;
 };
 
 subtest constructor_and_doc => $constructor_and_doc;

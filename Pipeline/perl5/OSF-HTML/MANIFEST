@@ -13,7 +13,10 @@ t/90pod.t
 t/91perl-critic.t
 t/92perltidy.t
 t/93manifest.t
+t/data/collectMeta-empty.html
+t/data/collectMeta-no-charset.html
 t/data/collectMeta.html
+t/data/collectOpenGraph-music.html
 t/data/collectOpenGraph.html
 t/data/links.html
 t/lib/TestUtils.pm

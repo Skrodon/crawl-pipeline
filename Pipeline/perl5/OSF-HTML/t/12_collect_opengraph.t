@@ -8,10 +8,20 @@ use Test::More;
 use TestUtils qw(slurp);
 use HTML::Inspect;
 
-# Testing collectOpenGraph() thoroughly here
-unless (-d "$Bin/data/open-graph-protocol-examples") {
-    plan(skip_all => 'OpenGraph example data is not redistributed with this module.');
+# Tests are run at the pottom of this file!
+
+# music namespace and unknown prefix
+sub music {
+
+    my $html = slurp("$Bin/data/collectOpenGraph-music.html");
+
+    my $i  = HTML::Inspect->new(request_uri => 'https://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF', html_ref => \$html);
+    my $og = $i->collectOpenGraph();
+    is(ref $og                           => 'HASH',                             'collectOpenGraph() returns a HASH reference');
+    is($og->{$i->prefix2ns('og')}{title} => 'Under Pressure - Remastered 2011', 'right title');
+    note explain $og;
 }
+
 
 # article-offset.html
 sub article_offset {
@@ -271,13 +281,6 @@ sub book_isbn10 {
 # this file is structuraly the same as book-isbn10.html, so we skip it.
 
 
-subtest 'article-offset.html' => \&article_offset;
-subtest 'article-utc.html'    => \&article_utc;
-subtest 'article.html'        => \&article;
-subtest 'audio-array.html'    => \&audio_array;
-subtest 'audio-url.html'      => \&audio_url;
-subtest 'audio.html'          => \&audio;
-subtest 'book-isbn10.html'    => \&book_isbn10;
 # rest of the files are tested as one
 my $test_files = {
     'canadian.html' => {
@@ -539,15 +542,36 @@ my $test_files = {
         },
     },
 };
-for my $filename (sort keys %$test_files) {
-    # run only some tests
-    # next unless $filename =~/canadian|error|image|min|nomedia|palin|profile|required|video/;
-    my $file = "$Bin/data/open-graph-protocol-examples/$filename";
-    ok(-f $file, "$filename found");
-    my $html = slurp($file);
-    my $i    = HTML::Inspect->new(request_uri => "http://examples.opengraphprotocol.us/$filename", html_ref => \$html);
-    my $og   = $i->collectOpenGraph();
-    note explain $og;
-    is_deeply($og => $test_files->{$filename}, "Right structure for $filename");
+
+sub rest_of_files {
+    for my $filename (sort keys %$test_files) {
+        # run only some tests
+        # next unless $filename =~/canadian|error|image|min|nomedia|palin|profile|required|video/;
+        my $file = "$Bin/data/open-graph-protocol-examples/$filename";
+        ok(-f $file, "$filename found");
+        my $html = slurp($file);
+        my $i    = HTML::Inspect->new(request_uri => "http://examples.opengraphprotocol.us/$filename", html_ref => \$html);
+        my $og   = $i->collectOpenGraph();
+        # note explain $og;
+        is_deeply($og => $test_files->{$filename}, "Right structure for $filename");
+    }
+
+}
+
+subtest music => \&music;
+
+# Testing collectOpenGraph() thoroughly here
+SKIP: {
+    unless (-d "$Bin/data/open-graph-protocol-examples") {
+        skip('OpenGraph example data is not redistributed with this module.');
+    }
+    subtest 'article-offset.html' => \&article_offset;
+    subtest 'article-utc.html'    => \&article_utc;
+    subtest 'article.html'        => \&article;
+    subtest 'audio-array.html'    => \&audio_array;
+    subtest 'audio-url.html'      => \&audio_url;
+    # subtest 'audio.html'          => \&audio;
+    subtest 'book-isbn10.html' => \&book_isbn10;
 }
 done_testing;
+

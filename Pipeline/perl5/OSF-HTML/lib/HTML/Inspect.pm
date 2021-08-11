@@ -25,6 +25,7 @@ my %referencing_attributes = (
     iframe => 'src',
     img    => 'src',
     link   => 'href',     # could use collectLinks(), but probably slower by complexity
+    object => 'data',
     script => 'src',
 );
 sub _refAttributes($thing) { return \%referencing_attributes }    # for testing only
@@ -40,7 +41,7 @@ my %X_REF_ATTRS;
 $X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
   for (keys %referencing_attributes);
 # Types which may be met more than once in a document. These are often alternatives of each other.
-my $ARRAY_TYPES = qr/image|video|audio|music/;
+my $ARRAY_TYPES = qr/image|video|audio|album|musician/x;
 
 
 # Deduplicate white spaces and trim string.
@@ -114,7 +115,7 @@ sub _init ($self, $args) {
     my $doc = $self->{HI_doc} = $dom->documentElement;
     my $xpc = $self->{HI_xpc} = XML::LibXML::XPathContext->new($doc);
 
-    my $base_elem = $xpc->findvalue($X_BASE);
+    my ($base_elem) = $xpc->findnodes($X_BASE);
     $self->{HI_base} = $base_elem ? $base_elem->getAttribute('href') : $uri->canonical;
 
     return $self;
@@ -177,7 +178,7 @@ sub prefix2ns ($self, $prefix) {
         website => 'https://ogp.me/ns/website#',
     );
 
-    return exists $PREFIXES{$prefix}?$PREFIXES{$prefix}:"https://ogp.me/ns/$prefix#";
+    return exists $PREFIXES{$prefix} ? $PREFIXES{$prefix} : "https://ogp.me/ns/$prefix#";
 }
 
 =head2 requestURI
@@ -348,11 +349,15 @@ sub collectOpenGraph ($self, %args) {
 
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $og, $meta) {
-    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
+    my ($prefix, $type, $attr) = split /:/, lc($meta->getAttribute('property')), 3;
     my $curie   = $self->prefix2ns($prefix);
     my $ns      = ($og->{$curie} //= {});
     my $content = _trimss $meta->getAttribute('content');
-    if($prefix ne 'og') {
+    # this handles cases like:
+    # <meta property="google" content="notranslate">
+    $type //= 'content';
+    #TODO: What other objects we have to handle like og or music namespaces?
+    if($prefix !~ m'^(?:og|music|twitter|al)') {
         # warn "_handle_other_prefix(" . $meta->getAttribute('property');
         _handle_other_prefix($ns, $type, $content);
     }
@@ -370,9 +375,14 @@ sub _handle_og_meta ($self, $og, $meta) {
 # Handle cases like og:audio:author, where we have the namespace, type and
 # attribute.
 sub _handle_attr ($ns, $type, $attr, $content) {
+    # handle cases like <meta property="og:restrictions:country:allowed" content="CA">
+    my @sub_attr = split /:/, $attr;
     if(!exists $ns->{$type}) {
         if($type =~ $ARRAY_TYPES) {
             $ns->{$type} = [ {$attr => $content} ];
+        }
+        elsif(@sub_attr > 1) {
+            $ns->{$type}{$sub_attr[0]} = [ {$sub_attr[1] => $content} ];
         }
         else {
             $ns->{$type} = {$attr => $content};
@@ -389,6 +399,9 @@ sub _handle_attr ($ns, $type, $attr, $content) {
         else {
             push @$ns_type, {$attr => $content};
         }
+    }
+    elsif(ref $ns_type eq 'HASH' && @sub_attr > 1) {
+        push @{$ns->{$type}{$sub_attr[0]}}, {$sub_attr[1] => $content};
     }
     else {
         $ns_type->{$attr} = $content;
