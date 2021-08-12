@@ -32,6 +32,16 @@ my $constructor_and_doc = sub {
     like($inspector->doc => qr|<b>FooBar</b>|, '$inspector->doc, lowercased ok');
 
     like($inspector->doc("hehe") => qr/FooBar/, '$inspector->doc() is a read-only getter');
+    my $i = HTML::Inspect->new(
+        request_uri => $req_uri,
+        prefixes    => {bar => 'https://example.com/ns/bar#'},
+        html_ref    => \q|<meta property=bar:site_name content="SomeThing">
+        <B prefix="foo: https://example.com/ns/foo#">FooBar</B>|
+    );
+    note 'HI_doc_prefixes:', explain($i->_doc_prefixes);
+    is($i->prefix2ns('bar') => 'https://example.com/ns/bar#', 'right prefix');
+    is($i->prefix2ns('foo') => 'https://example.com/ns/foo#', 'right prefix');
+    is($i->prefix2ns('baz') => 'https://ogp.me/ns/baz#',      'right prefix');
 };
 
 my $collectMeta = sub {
@@ -42,7 +52,9 @@ my $collectMeta = sub {
         name    =>
           {empty => '', Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
         'http-equiv' =>
-          {'content-disposition' => '', 'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
+          {'content-disposition' => '', 'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'},
+        'prefixes' => {'fb' => 'https://ogp.me/ns/fb#'}
+
     };
     my $collectedMeta = $inspector->collectMeta();
     is_deeply($collectedMeta => $expectedMeta, 'HI_meta, parsed ok');

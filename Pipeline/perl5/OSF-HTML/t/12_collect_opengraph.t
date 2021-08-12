@@ -28,7 +28,7 @@ sub article_offset {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article-offset.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+    note explain $og;
     is_deeply(
         $og => {
             $i->prefix2ns('article') => {
@@ -74,7 +74,7 @@ sub article_utc {
                 'section'        => 'Front page',
                 'tag'            => 'Watergate'
             },
-            'https://ogp.me/ns#' => {
+            'http://ogp.me/ns#' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -109,7 +109,7 @@ sub article {
                 'section'        => 'Front page',
                 'tag'            => 'Watergate'
             },
-            'https://ogp.me/ns#' => {
+            'http://ogp.me/ns#' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -135,10 +135,10 @@ sub audio_array {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/audio-array.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/audio-array.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+    note explain $og;
     is_deeply(
         $og => {
-            'https://ogp.me/ns#' => {
+            'http://ogp.me/ns#' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/1khz.mp3',
@@ -179,7 +179,7 @@ sub audio_url {
     # note explain $og;
     is_deeply(
         $og => {
-            'https://ogp.me/ns#' => {
+            'http://ogp.me/ns#' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/250hz.mp3',
@@ -215,7 +215,7 @@ sub audio {
     # note explain $og;
     is_deeply(
         $og => {
-            'https://ogp.me/ns#' => {
+            'http://ogp.me/ns#' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/250hz.mp3',
@@ -248,7 +248,8 @@ sub book_isbn10 {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/book-isbn10.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/book-isbn10.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+
+    note explain $og, 'doc_prefixes', explain $i->_doc_prefixes;
     is_deeply(
         $og => {
             $i->prefix2ns('book') => {
@@ -257,7 +258,7 @@ sub book_isbn10 {
                 'release_date' => '2011-10-24',
                 'tag'          => [ 'Steve Jobs', 'Apple', 'Pixar' ]
             },
-            'https://ogp.me/ns#' => {
+            'http://ogp.me/ns#' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -284,7 +285,7 @@ sub book_isbn10 {
 # rest of the files are tested as one
 my $test_files = {
     'canadian.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image'  => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
             'locale' => 'en_CA',
             'title'  => 'Canadian, eh?',
@@ -294,7 +295,7 @@ my $test_files = {
     },
     'error.html'       => {},
     'image-array.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image' => [
                 {
                     'height'     => '75',
@@ -319,7 +320,7 @@ my $test_files = {
         },
     },
     'image-toosmall.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'description' => 'Will an indexer accept a 1x1 transparent PNG?',
             'image'       => [
                 {
@@ -338,7 +339,7 @@ my $test_files = {
         },
     },
     'image-url.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -356,7 +357,7 @@ my $test_files = {
         },
     },
     'image.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -377,7 +378,7 @@ my $test_files = {
     ,
     'min.html' => {'https://ogp.me/ns#' => {'description' => 'Content not on page', 'site_name' => 'Open Graph protocol examples'}},
     'nomedia.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'description' => 'Required and optional properties without associated media.',
             'determiner'  => 'the',
             'image'       => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
@@ -390,7 +391,7 @@ my $test_files = {
     },
     'plain.html'   => {},
     'profile.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -406,20 +407,19 @@ my $test_files = {
             'type'      => 'profile',
             'url'       => 'http://examples.opengraphprotocol.us/profile.html'
         },
-        HTML::Inspect->prefix2ns('profile') =>
-          {'first_name' => 'John', 'gender' => 'male', 'last_name' => 'Doe', 'username' => 'johndoe'}
+        'http://ogp.me/ns/profile#' => {'first_name' => 'John', 'gender' => 'male', 'last_name' => 'Doe', 'username' => 'johndoe'}
       }
 
     ,
     'required.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image' => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
             'title' => 'Minimum required properties',
             'url'   => 'http://examples.opengraphprotocol.us/required.html'
         },
     },
     'video-array.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -462,7 +462,7 @@ my $test_files = {
         },
     },
     'video-movie.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'description' =>
               "L'arriv\x{e9}e d'un train en gare de La Ciotat is an 1895 French short black-and-white silent documentary film directed and produced by Auguste and Louis Lumi\x{e8}re. Its first public showing took place in January 1896.",
             'image' => [
@@ -505,7 +505,7 @@ my $test_files = {
                 }
             ]
         },
-        HTML::Inspect->prefix2ns('video') => {
+        'http://ogp.me/ns/video#' => {
             'director'     => 'http://examples.opengraphprotocol.us/profile.html',
             'duration'     => '50',
             'release_date' => '1895-12-28',
@@ -513,7 +513,7 @@ my $test_files = {
         }
     },
     'video.html' => {
-        'https://ogp.me/ns#' => {
+        'http://ogp.me/ns#' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -570,8 +570,9 @@ SKIP: {
     subtest 'article.html'        => \&article;
     subtest 'audio-array.html'    => \&audio_array;
     subtest 'audio-url.html'      => \&audio_url;
-    # subtest 'audio.html'          => \&audio;
-    subtest 'book-isbn10.html' => \&book_isbn10;
+    subtest 'audio.html'          => \&audio;
+    subtest 'book-isbn10.html'    => \&book_isbn10;
+    subtest 'rest of files'       => \&rest_of_files;
 }
 done_testing;
 

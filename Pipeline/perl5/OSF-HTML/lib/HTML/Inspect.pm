@@ -14,6 +14,22 @@ use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
 use List::Util qw(uniq);
 
+# Default and known namespaces for collectOpenGraph() when we have a document
+# with no explicitly defined prefix(namespace), but then in the document it is
+# used. These cases are very common.
+my %PREFIXES = (
+    fb      => 'https://ogp.me/ns/fb#',
+    og      => 'https://ogp.me/ns#',
+    image   => 'https://ogp.me/ns/image#',
+    music   => 'https://ogp.me/ns/music#',
+    video   => 'https://ogp.me/ns/video#',
+    article => 'https://ogp.me/ns/article#',
+    book    => 'https://ogp.me/ns/book#',
+    profile => 'https://ogp.me/ns/profile#',
+    # From https://ogp.me/ : "No additional properties other than the basic
+    # ones. Any non-marked up webpage should be treated as og:type website."
+    website => 'https://ogp.me/ns/website#',
+);
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
 my %referencing_attributes = (
@@ -35,8 +51,10 @@ sub _refAttributes($thing) { return \%referencing_attributes }    # for testing 
 # See xt/benchmark_collectOpenGraph.pl
 my $X_BASE          = XML::LibXML::XPathExpression->new('//base[@href][1]');
 my $X_META_PROPERTY = XML::LibXML::XPathExpression->new('//meta[@property]');
-my $X_NOT_PROPERTY  = XML::LibXML::XPathExpression->new('//meta[not(@property) and (@http-equiv or @name or @charset)]');
-my $X_LINK_REL      = XML::LibXML::XPathExpression->new('//link[@rel]');
+# Any element can have a prefix
+my $X_PREFIXES     = XML::LibXML::XPathExpression->new('//*[@prefix]');
+my $X_NOT_PROPERTY = XML::LibXML::XPathExpression->new('//meta[not(@property) and (@http-equiv or @name or @charset)]');
+my $X_LINK_REL     = XML::LibXML::XPathExpression->new('//link[@rel]');
 my %X_REF_ATTRS;
 $X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
   for (keys %referencing_attributes);
@@ -85,9 +103,19 @@ See C<t/*.t> files for examples of use and returned results.
 
     my $self = $class->new(%options)
 
-Arguments: C<request_uri> and C<html_ref>. C<request_uri> is an absolute url as
-a string or an L<URI> instance. C<html_ref> is areference to the valid HTML
-string. Both argunebts are mandatory.
+Arguments: C<request_uri>, C<html_ref> and C<prefixes>. C<request_uri> is an
+absolute url as a string or an L<URI> instance. C<html_ref> is areference to
+the valid HTML string. First two arguments are mandatory. C<prefixes> is a HASH
+reference which is merged with the known defaults prefixes. Not defined
+prefixes are guessed in the form: C<'baz' => 'https://ogp.me/ns/baz#'>.
+
+    my $i = HTML::Inspect->new(
+        request_uri => $req_uri,
+        prefixes    => {bar => 'https://example.com/ns/bar#'},
+        html_ref    => \q|<meta property=bar:site_name content="SomeThing">
+        <B prefix="foo: https://example.com/ns/foo#">FooBar</B>|
+    );
+
 
 =cut
 
@@ -117,10 +145,17 @@ sub _init ($self, $args) {
 
     my ($base_elem) = $xpc->findnodes($X_BASE);
     $self->{HI_base} = $base_elem ? $base_elem->getAttribute('href') : $uri->canonical;
-
+    # Build prefixes hash.
+    $self->{HI_prefixes} = {%PREFIXES, %{$args->{prefixes} // {}}, %{$self->_doc_prefixes // {}}};
     return $self;
 }
 
+# Returns all prefixes found in this document.
+sub _doc_prefixes ($self) {
+    return $self->{HI_doc_prefixes} if $self->{HI_doc_prefixes};
+    my %prefixes = map { $_->getAttribute('prefix') =~ /(\w+):\s*?(\S+)/g } $self->xpc->findnodes($X_PREFIXES);
+    return %prefixes ? ($self->{HI_doc_prefixes} = \%prefixes) : undef;
+}
 #-------------------------
 
 =head1 Accessors
@@ -151,34 +186,25 @@ sub xpc { return $_[0]->{HI_xpc} }
 
 =head2 prefix2ns
 
-Readonly static accessor.
+Readonly accessor.
 Retuns the corresponding namespace for a prefix.
 
     my $ns = $self->prefix2ns('og'); # https://ogp.me/ns#
-    my $ns = HTML::Inspect->prefix2ns('og'); # https://ogp.me/ns#
-    my $ns = HTML::Inspect->prefix2ns('video'); #https://ogp.me/ns/video# 
+
+    my $i = HTML::Inspect->new(
+        request_uri => $req_uri,
+        prefixes    => {bar => 'https://example.com/ns/bar#'},
+        html_ref    => \q|<meta property=bar:site_name content="SomeThing">
+        <B prefix="foo: https://example.com/ns/foo#">FooBar</B>|
+    );
+    is($i->prefix2ns('bar') => 'https://example.com/ns/bar#', 'right prefix');
+    is($i->prefix2ns('foo') => 'https://example.com/ns/foo#', 'right prefix');
+    is($i->prefix2ns('baz') => 'https://ogp.me/ns/baz#',      'right prefix');
 =cut
 
 
 sub prefix2ns ($self, $prefix) {
-# Default and known namespaces for collectOpenGraph() when we have a document
-# with no explicitly defined prefix(namespace), but then in the document it is
-# used. These cases are very common.
-    state %PREFIXES = (
-        fb      => 'https://ogp.me/ns/fb#',
-        og      => 'https://ogp.me/ns#',
-        image   => 'https://ogp.me/ns/image#',
-        music   => 'https://ogp.me/ns/music#',
-        video   => 'https://ogp.me/ns/video#',
-        article => 'https://ogp.me/ns/article#',
-        book    => 'https://ogp.me/ns/book#',
-        profile => 'https://ogp.me/ns/profile#',
-        # From https://ogp.me/ : "No additional properties other than the basic
-        # ones. Any non-marked up webpage should be treated as og:type website."
-        website => 'https://ogp.me/ns/website#',
-    );
-
-    return exists $PREFIXES{$prefix} ? $PREFIXES{$prefix} : "https://ogp.me/ns/$prefix#";
+    return $self->{HI_prefixes}{$prefix} // "https://ogp.me/ns/$prefix#";
 }
 
 =head2 requestURI
@@ -241,6 +267,9 @@ sub collectMeta ($self, %args) {
         elsif(my $charset = $meta->getAttribute('charset')) {
             $meta{charset} = lc $charset;
         }
+    }
+    if(my $prefs = $self->_doc_prefixes) {
+        $meta{prefixes} = $prefs;
     }
     return $self->{HI_meta} = \%meta;
 }
