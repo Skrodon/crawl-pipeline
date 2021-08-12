@@ -375,7 +375,8 @@ sub _handle_og_meta ($self, $og, $meta) {
 # Handle cases like og:audio:author, where we have the namespace, type and
 # attribute.
 sub _handle_attr ($ns, $type, $attr, $content) {
-    # handle cases like <meta property="og:restrictions:country:allowed" content="CA">
+    # handle cases like <meta property="og:restrictions:country:allowed"
+    # content="CA">. See elsif(@sub_attr > 1)
     my @sub_attr = split /:/, $attr;
     if(!exists $ns->{$type}) {
         if($type =~ $ARRAY_TYPES) {

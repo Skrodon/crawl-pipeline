@@ -78,7 +78,11 @@ my $collectOpenGraph = sub {
                         'url'        => 'https://example.com/ogp.jpg',
                         'width'      => '400'
                     },
-                    {'url' => 'HTTPS://EXAMPLE.COM/ROCK.JPG'},
+                    {
+                        'url'        => 'HTTPS://EXAMPLE.COM/ROCK.png',
+                        'type'       => 'image/png',
+                        'secure_url' => 'https://secure.example.com/ROCK.png',
+                    },
                     {'url' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'}
                 ],
                 'profile' => {

@@ -13,8 +13,10 @@ view-source:https://html.spec.whatwg.org/multipage/dom.html
     -->
     <!-- Duplicate links will be deduplicated. 
          First occurence takes precedence. -->
+
+    <!-- Any subsequent base tag is ignored. -->
     <bAse hRef="https://html.spec.whatwg.org/multipage/">
-    <base hRef="https://html.spec.whatwg.org/multipage/">
+    <base hRef="https://dom.spec.whatwg.org/multipage/">
     <script src=/link-fixup.js defer=""></script>
     <META CHARSET=UTF-8>
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name=viewport>
@@ -27,6 +29,10 @@ view-source:https://html.spec.whatwg.org/multipage/dom.html
     <link REL=icon href=https://resources.whatwg.org/logo.svg crossorigin="use-credentials">
     <link rel=icon href=https://resources.whatwg.org/logo.svg>
     <link rel=stylesheet href=/styles.css crossorigin="">
+    <!-- missing href attribute 
+See also https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+    -->
+    <link rel=first>
     <script>
        function toggleStatus(div) {
          div.parentNode.classList.toggle('wrapped');

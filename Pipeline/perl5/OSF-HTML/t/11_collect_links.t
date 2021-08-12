@@ -18,7 +18,6 @@ my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/
 
 my $refs = $inspector->collectReferences;
 #note explain $refs;
-
 # Have we collected all links that we support?
 my $ref_attributes = $inspector->_refAttributes;
 while (my ($t, $a) = each %$ref_attributes) {
@@ -98,6 +97,7 @@ note explain $refs;
 my $links = $inspector->collectLinks;
 #note explain $links;
 
+is($links => $inspector->collectLinks, 'Subequent calls returns same links');
 is_deeply $links,
   {
     icon => [
@@ -141,8 +141,9 @@ is_deeply $links,
             href        => '/styles.css',
             href_uri    => bless(do { \(my $o = 'https://html.spec.whatwg.org/styles.css') }, 'URI::https'),
             rel         => 'stylesheet'
-        }
-    ]
+        },
+    ],
+    first => [ {rel => 'first'}, ],
   },
   'all link elements are collected';
 
