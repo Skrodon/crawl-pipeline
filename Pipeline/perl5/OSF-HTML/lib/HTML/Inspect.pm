@@ -286,8 +286,8 @@ sub collectLinks($self) {
     my %links;
     foreach my $link ($self->xpc->findnodes($X_LINK_REL)) {
         my %attrs = map { $_->name => $_->value } grep { $_->isa('XML::LibXML::Attr') } $link->attributes;
-        $attrs{href_uri} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
-        push @{$links{$attrs{rel}}}, \%attrs;
+        $attrs{href} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
+        push @{$links{delete $attrs{rel}}}, \%attrs;
     }
 
     return $self->{HI_links} = \%links;
