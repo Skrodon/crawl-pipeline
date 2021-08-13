@@ -10,7 +10,7 @@ then echo "ERROR: requires (new) CommonCrawl release label" >&2
 fi
 
 case "$1" in
-"CC-MAIN-20[0-9][0-9]-[0-5][0-9]")
+CC-MAIN-20[0-9][0-9]-[0-5][0-9])
     CC_RELEASE="$1";;
 20[0-9][0-9]-[0-5][0-9])
     CC_RELEASE="CC-MAIN-$1";;
@@ -28,7 +28,7 @@ log "** collecting CRAWL files TODO in $CRAWL_PATHS_LIST"
 
 if [ ! -d "$CRAWL_PATHS_LIST" ]
 then
-    OUT="$CRAWL_PATHS_TODO/CRAWL.paths.gz"
+    OUT="$CRAWL_PATHS_TODO/$CC_RELEASE-CRAWL.paths.gz"
     if [ ! -f "$OUT" ]
     then log "Collecting crawl path index from AWS"
          $AWS_CP "$S3_ROOT/warc.paths.gz" "$OUT"
@@ -57,7 +57,7 @@ log "** collecting WAT files TODO in $WAT_PATHS_LIST"
 
 if [ ! -d "$WAT_PATHS_LIST" ]
 then
-    OUT="$WAT_PATHS_TODO/WAT.paths.gz"
+    OUT="$WAT_PATHS_TODO/$CC_RELEASE-WAT.paths.gz"
     if [ ! -f "$OUT" ]
     then log "Collecting WAT path index from AWS"
          $AWS_CP "$S3_ROOT/wat.paths.gz" "$OUT"
@@ -85,7 +85,7 @@ log "** collecting WET files TODO in $WET_PATHS_LIST"
 
 if [ ! -d "$WET_PATHS_LIST" ]
 then
-    OUT="$WET_PATHS_TODO/WET.paths.gz"
+    OUT="$WET_PATHS_TODO/$CC_RELEASE-WET.paths.gz"
     if [ ! -f "$OUT" ]
     then log "Collecting WET path index from AWS"
          $AWS_CP "$S3_ROOT/wet.paths.gz" "$OUT"
@@ -104,6 +104,7 @@ then
        done
 
     mv "$TODO" "$WET_PATHS_LIST"
+    rm "$OUT"
 fi
 
 log "Release $CC_RELEASE initialized"

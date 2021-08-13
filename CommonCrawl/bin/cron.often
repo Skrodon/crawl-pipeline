@@ -11,18 +11,23 @@ then log "No CommonCrawl release initiated yet"
      exit 0
 fi
 
-# Fill each of the incoming queues for the pipelin
+# Fill each of the incoming queues for the pipeline
+#
+# When downloading cannot keep-up with pipeline processing speed,
+# you will get multiple parallel downloaders automatically, because
+# cron will start a new set every few minutes.
+
 download-queue CRAWL				\
     "$CRAWL_PATHS_TODO/$CC_RELEASE"	\
     "$CRAWL_WARC_CACHE"				\
-    "$CRAWL_WARC_CACHE_SIZE"
+    "$CRAWL_WARC_CACHE_SIZE"		&
 
 download-queue WAT					\
     "$WAT_PATHS_TODO/$CC_RELEASE"	\
     "$WAT_WARC_CACHE"				\
-    "$WAT_WARC_CACHE_SIZE"
+    "$WAT_WARC_CACHE_SIZE"			&
 
-download-queue WET				\
+download-queue WET					\
     "$WET_PATHS_TODO/$CC_RELEASE"	\
     "$WET_WARC_CACHE"				\
-    "$WET_WARC_CACHE_SIZE"
+    "$WET_WARC_CACHE_SIZE"			&

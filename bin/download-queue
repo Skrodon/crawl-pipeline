@@ -17,6 +17,11 @@ PATHS_TODO="$2"
 CACHE_DIR="$3"
 CACHE_SIZE="$4"
 
+# Stop running after this many minutes to avoid a total explosion og
+# parallel loads.
+MAX_RUN=600
+RUN_START=$(date +%s)
+
 if [ ! -d "$PATHS_TODO" ]
 then log "No plan for queue $QUEUE in $PATHS_TODO"
      exit 0
@@ -38,26 +43,33 @@ fi
 LOCK_DEST="$LOCKS/$QUEUE-$$-locker"
 touch "$LOCK_DEST"
 
-ls "$PATHS_TODO" | while read BATCH_LABEL
+ls -1 "$PATHS_TODO" | while read BATCH_LABEL
     do TODO="$PATHS_TODO/$BATCH_LABEL"
 
-       LOCK="$LOCKS/$BATCH_LABEL.lock"
-       if ! ln -s "$LOCK_DEST" "$LOCK" 2>/dev/null
-       then log "$BATCH_LABEL is currently locked.  Next..."
+       LOCK="$LOCKS/$QUEUE-$BATCH_LABEL.lock"
+       if ! ln "$LOCK_DEST" "$LOCK" 2>/dev/null
+       then log "$QUEUE-$BATCH_LABEL is currently locked.  Next..."
             continue
        fi
 
-       AWS_PATH=$(cat "$TODO")
+       AWS_PATH=$(cat "$TODO" 2>/dev/null || :)
+       if [ -z "$AWS_PATH" ]   # race condition under low load
+       then rm -f "$LOCK"
+            continue
+       fi
+
        DEST="$CACHE_DIR/$BATCH_LABEL-$QUEUE.warc.gz"
 
        DOWNLOAD="$DEST.downloading"
        rm -f "$DOWNLOAD"    # broken downloads
 
        log "Collecting $AWS_PATH into $DOWNLOAD"
+       START=$(date +%s)
        $AWS_CP "$AWS_PATH" "$DOWNLOAD" >/dev/null
+       END=$(date +%s)
 
        SIZE=$(ls -lhk "$DOWNLOAD" | perl -ane 'print $F[4]')
-       log "Got $BATCH_LABEL, size $SIZE"
+       log "Got $BATCH_LABEL-$QUEUE, size $SIZE in $(($END-$START))s"
 
        log "$BATCH_LABEL-$QUEUE available in $DEST"
        mv "$DOWNLOAD" "$DEST"
@@ -69,6 +81,8 @@ ls "$PATHS_TODO" | while read BATCH_LABEL
        CACHED=$(ls "$CACHE_DIR" | wc -l)
        [ $CACHED -lt $CACHE_SIZE ] || break
 
+       [ $(($END-$RUN_START)) -lt $MAX_RUN ] || break
     done
 
+log "READY $QUEUE $(ls $CACHE_DIR | wc -l)"
 rm $LOCK_DEST

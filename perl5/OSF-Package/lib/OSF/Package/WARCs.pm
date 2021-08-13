@@ -160,19 +160,21 @@ sub publishWARC()
     my $unique  = $part_fn =~ m!.*/(.*?).warc.gz-part$! ? $1 : panic $part_fn;
 
     # Publish the index file in compressed form
+
     my $tmpindex = $self->_saveIndex($warc);
     gzip $tmpindex, "$tmpindex.gz"
         or fault __x"Cannot gzip {fn}", fn => $tmpindex, _code => $GzipError;
 
+    unlink $tmpindex;   # gzip() does not cleanup source
+
     my $index_fn = $self->publish . "/$unique.index.json.gz";
-    move $tmpindex, $index_fn
+    move "$tmpindex.gz", $index_fn
         or fault __x"Cannot publish WARC index from {from} to {to}", from => $tmpindex, to => $index_fn;
 
     # Publish the WARC file
     my $warc_fn = $self->publish . "/$unique.warc.gz";
     move $part_fn, $warc_fn
         or fault __x"Cannot publish WARC from {from} to {to}", from => $part_fn, to => $warc_fn;
-
 
     $self;
 }

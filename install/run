@@ -58,7 +58,7 @@ then log "Ending $PROJECT $COMMAND: success"
 else log "Ending $PROJECT $COMMAND: FAILED"
 
      # No flooding of emails to ops when something goes wrong
-     MAILBLOCK="$LOCKS/$PROJECT.$COMMAND.mail-lock"
+     MAILBLOCK="$LOCKS/$PROJECT.${COMMAND##*/}.mail-lock"
 
      if [ ! -f "$MAILBLOCK" ]
      then touch "$MAILBLOCK"
