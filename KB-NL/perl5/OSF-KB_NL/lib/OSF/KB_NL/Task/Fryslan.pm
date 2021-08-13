@@ -45,6 +45,7 @@ sub _init($)
 
 sub createFilter()
 {   my $self  = shift;
+    my $is_ok  = $self->filterStatus(sub {$_[0]==200});
     my $origin = $self->filterOrigin('CommonCrawl');
     my $text   = $self->filterRequiresText(minimum_size => 200);
     my $ct     = $self->filterContentType(\@content_types);
@@ -55,7 +56,7 @@ sub createFilter()
     sub {
         my $product = shift;
 
-           is_success($product->responseStatus)
+           $is_ok->($product)
         && $origin->($product)
         && $ct->($product)
         && $text->($product)

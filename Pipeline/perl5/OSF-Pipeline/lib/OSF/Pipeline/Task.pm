@@ -72,12 +72,33 @@ sub take($%)
 This method is called when batch processing starts.  It needs to be extended
 but a method which returns a sub.  See existing Task implementations for
 examples.
+Documented in full in https://github.com/Skrodon/temporary-documentation/wiki
 =cut
 
 sub createFilter() { panic "needs to be extended" }
 
+=method filterStatus $which, %options
+Returns the CODE which returns a Hit when the Product has a response with matching
+status.  The CODE C<$which> selects the product when the code matches will be
+called with the response code, and should return true when selected.
+=cut
+
+# It is quite complicated to translate HTTP::Status C<:is> qualifications into an
+# efficient sub.  Therefore, tasks need to produce the C<$which> sub, like
+#      $self->filterStatus(sub {$_[0]==200});
+#      $self->filterStatus(sub {is_success $_[0]});
+
+sub filterStatus($%)
+{   my ($self, $which, %options) = @_;
+
+    sub {
+        my $code = $_[0]->responseStatus;
+        $which->($code} ? +{ rule => 'response status', code => $code } : ();
+    };
+}
+
 =method filterOrigin $name|\@names, %options
-Returns a CODE which returns true when the C<$product> passed as first
+Returns a CODE which returns a Hit when the C<$product> passed as first
 parameter originates from one of the named data sources.
 =cut
 
@@ -87,17 +108,17 @@ sub filterOrigin($%)
 
     if(@names==1)
     {   my $origin = shift @names;
-        return sub { $_[0]->origin eq $origin };
+        return sub { $_[0]->origin eq $origin ? +{ rule => 'origin', origin => $origin } : () };
     }
 
     sub {
         my $origin = shift->origin;
-        first { $origin eq $_ } @names;
+        first { $origin eq $_ } @names ? { rule => 'origin', origin => $origin } : ();
     };
 }
 
 =method filterLanguage $lang|\@langs, %options
-Returns a CODE which returns true when the C<$product> passed as first
+Returns a CODE which returns a Hit when the C<$product> passed as first
 parameter contains text is mainly written in any of the languages.
 The languages are specified as ISO-639-3.
 =cut
@@ -108,18 +129,18 @@ sub filterLanguage($%)
     my @langs = map lc, ref $langs eq 'ARRAY' ? @$langs : $langs;
     if(@langs==1)
     {   my $lang = shift @langs;
-        return sub { ($_[0]->language // '') eq $lang };
+        return sub { ($_[0]->language // '') eq $lang ? +{ rule => 'language', lang => $lang } : () };
     }
 
     sub {
-        my $language = shift->language // return;
-        first { $language eq $_ } @langs;
+        my $language = shift->language // return ();
+        first { $language eq $_ } @langs ? +{ rule => 'language', lang => $language } : ();
     };
 }
 
 =method filterRequiresText %options
-Returns a CODE which returns a descriptive HASH when the product has
-a text extract and fulfils the (optional) size restriction.
+Returns a CODE which returns a Hit when the product has a text extract
+and fulfils the (optional) size restriction.
 
 =option  minimum_size INTEGER
 =default minimum_size <undef>
@@ -168,8 +189,8 @@ sub filterContentType($)
     my %types = map +(lc $_ => 1), @$types;
 
     sub {
-        my $ct = $_[0]->contentType;
-        $types{lc $ct} or return ();
+        my $ct = lc($_[0]->contentType);
+        $types{$ct} or return ();
         +{ rule => 'content type', type => $ct };
     };
 }
