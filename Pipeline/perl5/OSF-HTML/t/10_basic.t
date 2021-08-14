@@ -120,6 +120,51 @@ my $collectOpenGraph = sub {
     );
     note explain $og;
 
+    # ARRAY_TYPES
+    $i = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \<<'HTMLOG')->arrayTypes(qr/song/);
+    <!-- See https://developers.facebook.com/docs/opengraph/music/ -->
+    <meta property="og:title" content="Greatest Hits II"/>
+    <meta property="og:type" content="music.album"/>
+    <meta property="og:url" content="http://open.spotify.com/album/7rq68qYz66mNdPfidhIEFa"/>
+    <meta property="og:image" content="http://o.scdn.co/image/e4c7b06c20c17156e46bbe9a71eb0703281cf345"/>
+    <meta property="og:site_name" content="Spotify"/>
+    <meta property="fb:app_id" content="174829003346"/>
+    <meta property="og:description" content="Greatest Hits II, an album by Queen on Spotify."/>
+
+    <meta property="music:release_date" content="2011-04-19">
+    <meta property="music:musician" content="http://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d">
+    <meta property="music:song" content="http://open.spotify.com/track/0pfHfdUNVwlXA0WDXznm2C">
+    <meta property="music:song:disc" content="1">
+    <meta property="music:song:track" content="1">
+    <meta property="music:song" content="http://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF">
+    <meta property="music:song:disc" content="1">
+    <meta property="music:song:track" content="2">
+HTMLOG
+
+    $og = $i->collectOpenGraph();
+    is_deeply(
+        $og => {
+            'https://ogp.me/ns#' => {
+                'description' => 'Greatest Hits II, an album by Queen on Spotify.',
+                'image'       => 'http://o.scdn.co/image/e4c7b06c20c17156e46bbe9a71eb0703281cf345',
+                'site_name'   => 'Spotify',
+                'title'       => 'Greatest Hits II',
+                'type'        => 'music.album',
+                'url'         => 'http://open.spotify.com/album/7rq68qYz66mNdPfidhIEFa'
+            },
+            'https://ogp.me/ns/fb#'    => {'app_id' => '174829003346'},
+            'https://ogp.me/ns/music#' => {
+                'musician'     => 'http://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d',
+                'release_date' => '2011-04-19',
+                'song'         => [
+                    {'disc' => '1', 'track' => '1', 'url' => 'http://open.spotify.com/track/0pfHfdUNVwlXA0WDXznm2C'},
+                    {'disc' => '1', 'track' => '2', 'url' => 'http://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF'}
+                ]
+            }
+        },
+        'Only song array type is recognised.'
+    );
+    note explain $og;
 };
 
 my $collectReferences = sub {

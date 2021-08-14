@@ -58,8 +58,11 @@ my $X_LINK_REL     = XML::LibXML::XPathExpression->new('//link[@rel]');
 my %X_REF_ATTRS;
 $X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
   for (keys %referencing_attributes);
-# Types which may be met more than once in a document. These are often alternatives of each other.
-my $ARRAY_TYPES = qr/image|video|audio|album|musician/x;
+
+# Types which may be met more than once in a document. These are often
+# alternatives of each other. These are the default ones which we know about.
+# See sub arrayTypes{...}.
+my $ARRAY_TYPES = qr/image|video|audio|album|musician|song/ix;
 
 
 # Deduplicate white spaces and trim string.
@@ -130,7 +133,7 @@ sub _init ($self, $args) {
     $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '" . substr($$html_ref, 0, 20) . "'";
 
     my $req = $args->{request_uri} or panic '"request_uri" is mandatory';
-    my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req);
+    my $uri = $self->{HI_request_uri} = blessed($req) && $req->isa('URI') ? $req : URI->new($req);
 
     my $dom = XML::LibXML->load_html(
         string            => $html_ref,
@@ -229,6 +232,26 @@ base URI is normalized.
 =cut
 
 sub base { return $_[0]->{HI_base} }
+
+=head2 arrayTypes
+
+A chainable get/set accessor.
+Returns a Regexp which is used to guess if the currently inspected object is of
+a type which is represented in the graph as an array of objects of this type.
+The defult regexp is: C</image|video|audio|album|musician|song/i>.
+
+    my $inspector = HTML::Inspect->new(...)->arrayTypes(qr/musician|album|song/);
+    $inspector->arrayTypes; # qr/musician|album|song/
+=cut
+
+sub arrayTypes {
+    if($_[1]) {
+        $_[0]->{HI_array_types} = $_[1];
+        return $_[0];
+    }
+    return $_[0]->{HI_array_types} if $_[0]->{HI_array_types};
+    return $_[0]->{HI_array_types} = $ARRAY_TYPES;    # defaults
+}
 
 #-------------------------
 
@@ -388,27 +411,27 @@ sub _handle_og_meta ($self, $og, $meta) {
     #TODO: What other objects we have to handle like og or music namespaces?
     if($prefix !~ m'^(?:og|music|twitter|al)') {
         # warn "_handle_other_prefix(" . $meta->getAttribute('property');
-        _handle_other_prefix($ns, $type, $content);
+        $self->_handle_other_prefix($ns, $type, $content);
     }
     elsif(!defined $attr) {
         # warn "_handle_no_attr(" . $meta->getAttribute('property');
-        _handle_no_attr($ns, $type, $content);
+        $self->_handle_no_attr($ns, $type, $content);
     }
     else {
         # warn "_handle_attr(" . $meta->getAttribute('property');
-        _handle_attr($ns, $type, $attr, $content);
+        $self->_handle_attr($ns, $type, $attr, $content);
     }
     return;
 }
 
 # Handle cases like og:audio:author, where we have the namespace, type and
 # attribute.
-sub _handle_attr ($ns, $type, $attr, $content) {
+sub _handle_attr ($self, $ns, $type, $attr, $content) {
     # handle cases like <meta property="og:restrictions:country:allowed"
     # content="CA">. See elsif(@sub_attr > 1)
     my @sub_attr = split /:/, $attr;
     if(!exists $ns->{$type}) {
-        if($type =~ $ARRAY_TYPES) {
+        if($type =~ $self->arrayTypes) {
             $ns->{$type} = [ {$attr => $content} ];
         }
         elsif(@sub_attr > 1) {
@@ -441,14 +464,14 @@ sub _handle_attr ($ns, $type, $attr, $content) {
 
 # Handle cases like og:image or og:audio, where we have to introduce an 'url'
 # atribute if we have other atributes of the same object later in the data.
-sub _handle_no_attr ($ns, $type, $content) {
+sub _handle_no_attr ($self, $ns, $type, $content) {
 
     # Handle og properties
     if(!exists $ns->{$type}) {
         # There is no way to have image as an og property and as an array
         # object at the same time, so the first image in the image array is a
         # property of the default type(website).
-        if($type =~ $ARRAY_TYPES) {
+        if($type =~ $self->arrayTypes) {
             $ns->{$type} = [ {url => $content} ];
         }
         # this is a property of og
@@ -472,7 +495,7 @@ sub _handle_no_attr ($ns, $type, $content) {
 
 # Handle cases like audio:author or image:width, where the object is in separate
 # namespace, named after its type.
-sub _handle_other_prefix ($type, $attr, $content) {
+sub _handle_other_prefix ($self, $type, $attr, $content) {
     if(!exists $type->{$attr}) {
         $type->{$attr} = $content;
     }
