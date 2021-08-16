@@ -1,4 +1,5 @@
 package HTML::Inspect;
+
 use strict;
 use warnings;
 use utf8;
@@ -8,9 +9,11 @@ use feature qw (:5.20 lexical_subs signatures);
 
 our $VERSION = 0.11;
 
+use Log::Report 'html-inspect';
+use HTML::Inspect::OpenGraph  ();  # mixin
+
 use XML::LibXML  ();
 use URI;
-use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
 use List::Util   qw(uniq);
 
@@ -33,14 +36,11 @@ sub _refAttributes($thing) { return \%referencing_attributes }    # for testing 
 # Not much more faster than literal string passing but still faster.
 # See xt/benchmark_collectOpenGraph.pl
 my $X_BASE          = XML::LibXML::XPathExpression->new('//base[@href][1]');
-my $X_META_PROPERTY = XML::LibXML::XPathExpression->new('//meta[@property]');
 my $X_NOT_PROPERTY  = XML::LibXML::XPathExpression->new('//meta[not(@property) and (@http-equiv or @name or @charset)]');
 my $X_LINK_REL      = XML::LibXML::XPathExpression->new('//link[@rel]');
-my %X_REF_ATTRS;
-$X_REF_ATTRS{"$_\_$referencing_attributes{$_}"} = XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")
-  for (keys %referencing_attributes);
-# Types which may be met more than once in a document. These are usually alternatives of each other.
-my $ARRAY_TYPES = qr/image|video|audio/;
+
+my %X_REF_ATTRS = map +("$_\_$referencing_attributes{$_}" =>  XML::LibXML::XPathExpression->new("//$_\[\@$referencing_attributes{$_}\]")),
+     keys %referencing_attributes;
 
 
 # Deduplicate white spaces and trim string.
@@ -147,38 +147,6 @@ C<$doc-E<gt>findnodes($xpath_expression)>.
 =cut
 
 sub xpc { return $_[0]->{HI_xpc} }
-
-=head2 prefix2ns
-
-Readonly static accessor.
-Retuns the corresponding namespace for a prefix.
-
-    my $ns = $self->prefix2ns('og'); # https://ogp.me/ns#
-    my $ns = HTML::Inspect->prefix2ns('og'); # https://ogp.me/ns#
-    my $ns = HTML::Inspect->prefix2ns('video'); #https://ogp.me/ns/video# 
-=cut
-
-
-sub prefix2ns ($self, $prefix) {
-# Default and known namespaces for collectOpenGraph() when we have a document
-# with no explicitly defined prefix(namespace), but then in the document it is
-# used. These cases are very common.
-    state %PREFIXES = (
-        fb      => 'https://ogp.me/ns/fb#',
-        og      => 'https://ogp.me/ns#',
-        image   => 'https://ogp.me/ns/image#',
-        music   => 'https://ogp.me/ns/music#',
-        video   => 'https://ogp.me/ns/video#',
-        article => 'https://ogp.me/ns/article#',
-        book    => 'https://ogp.me/ns/book#',
-        profile => 'https://ogp.me/ns/profile#',
-        # From https://ogp.me/ : "No additional properties other than the basic
-        # ones. Any non-marked up webpage should be treated as og:type website."
-        website => 'https://ogp.me/ns/website#',
-    );
-
-    return $PREFIXES{$prefix};
-}
 
 =head2 requestURI
 
@@ -293,155 +261,7 @@ sub collectLinks($self) {
     return $self->{HI_links} = \%links;
 }
 
-=head2 collectOpenGraph
-
-    my $hash = $self->collectOpenGraph();
-
-Collects all meta elements which have an attribute C<property>.  See
-t/12_collect_opengraph.t for examples of the HASH reference structure which is
-returned. 
-
-Example
-
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://example.com/article-offset.html', html_ref => \$html);
-    my $og   = $i->collectOpenGraph();
-    
-   # {
-   #   'https://ogp.me/ns#' => {
-   #     'image' => [
-   #       {
-   #         'height' => '50',
-   #         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/images/50.png',
-   #         'type' => 'image/png',
-   #         'url' => 'http://examples.opengraphprotocol.us/media/images/50.png',
-   #         'width' => '50'
-   #       }
-   #     ],
-   #     'locale' => 'en_US',
-   #     'site_name' => 'Open Graph protocol examples',
-   #     'title' => 'John Doe profile page',
-   #     'type' => 'profile',
-   #     'url' => 'http://examples.opengraphprotocol.us/profile.html'
-   #   },
-   #   'https://ogp.me/ns/profile#' => {
-   #     'first_name' => 'John',
-   #     'gender' => 'male',
-   #     'last_name' => 'Doe',
-   #     'username' => 'johndoe'
-   #   }
-   # }
-
-=cut
-
-# TODO: Implement collection fo all tags specified in this page
-# https://developers.facebook.com/docs/sharing/webmasters
-# https://ogp.me/#types
-# See also: https://developers.facebook.com/docs/sharing/webmasters/crawler
-# https://developers.facebook.com/docs/sharing/webmasters/optimizing
-sub collectOpenGraph ($self, %args) {
-    return $self->{HI_og} if $self->{HI_og};
-    my $og = {};
-    $self->_handle_og_meta($og, $_) for $self->doc->findnodes($X_META_PROPERTY);
-    return $self->{HI_og} = $og;
-}
-
-# A not so dummy, implementation of collecting OG data from a page
-sub _handle_og_meta ($self, $og, $meta) {
-    my ($prefix, $type, $attr) = split /:/, lc $meta->getAttribute('property');
-    my $curie   = $self->prefix2ns($prefix);
-    my $ns      = ($og->{$curie} //= {});
-    my $content = _trimss $meta->getAttribute('content');
-    if($prefix ne 'og') {
-        # warn "_handle_other_prefix(" . $meta->getAttribute('property');
-        _handle_other_prefix($ns, $type, $content);
-    }
-    elsif(!defined $attr) {
-        # warn "_handle_no_attr(" . $meta->getAttribute('property');
-        _handle_no_attr($ns, $type, $content);
-    }
-    else {
-        # warn "_handle_attr(" . $meta->getAttribute('property');
-        _handle_attr($ns, $type, $attr, $content);
-    }
-    return;
-}
-
-# Handle cases like og:audio:author, where we have the namespace, type and
-# attribute.
-sub _handle_attr ($ns, $type, $attr, $content) {
-    if(!exists $ns->{$type}) {
-        if($type =~ $ARRAY_TYPES) {
-            $ns->{$type} = [ {$attr => $content} ];
-        }
-        else {
-            $ns->{$type} = {$attr => $content};
-        }
-        return;
-    }
-    # An already defined object of type $type.
-    my $ns_type = $ns->{$type};
-    if(ref $ns_type eq 'ARRAY') {
-        if(!exists $ns_type->[-1]{$attr}) {
-            $ns_type->[-1]{$attr} = $content;
-        }
-        # Starting a new object
-        else {
-            push @$ns_type, {$attr => $content};
-        }
-    }
-    else {
-        $ns_type->{$attr} = $content;
-    }
-    return;
-}
-
-# Handle cases like og:image or og:audio, where we have to introduce an 'url'
-# atribute if we have other atributes of the same object later in the data.
-sub _handle_no_attr ($ns, $type, $content) {
-
-    # Handle og properties
-    if(!exists $ns->{$type}) {
-        # There is no way to have image as an og property and as an array
-        # object at the same time, so the first image in the image array is a
-        # property of the default type(website).
-        if($type =~ $ARRAY_TYPES) {
-            $ns->{$type} = [ {url => $content} ];
-        }
-        # this is a property of og
-        else {
-            $ns->{$type} = $content;
-        }
-        return;
-    }
-    # An already deined object of type $type.
-    my $ns_type = $ns->{$type};
-
-    if(ref $ns_type eq 'ARRAY') {
-        push @$ns_type, {url => $content};
-    }
-    else {
-        my $first_content = $ns_type;
-        $ns_type = [ $first_content, {url => $content} ];
-    }
-    return;
-}
-
-# Handle cases like audio:author or image:width, where the object is in separate
-# namespace, named after its type.
-sub _handle_other_prefix ($type, $attr, $content) {
-    if(!exists $type->{$attr}) {
-        $type->{$attr} = $content;
-    }
-    elsif(ref $type->{$attr} eq 'ARRAY') {
-        push @{$type->{$attr}}, $content;
-    }
-    else {
-        my $first_content = $type->{$attr};
-        $type->{$attr} = [ $first_content, $content ];
-    }
-    return;
-}
+### collectOpenGraph in mixn file
 
 =head1 SEE ALSO
 
