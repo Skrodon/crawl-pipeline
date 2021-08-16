@@ -73,15 +73,15 @@ my $collectOpenGraph = sub {
 
     my $i  = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $og = $i->collectOpenGraph();
-    is(ref $og                           => 'HASH',                 'collectOpenGraph() returns a HASH reference');
-    is($og->{$i->prefix2ns('og')}{title} => 'Open Graph protocol',  'content is trimmed');
-    is($og                               => $i->collectOpenGraph(), 'collectOpenGraph() returns alrady parsed Graph data');
+    is(ref $og          => 'HASH',                 'collectOpenGraph() returns a HASH reference');
+    is($og->{og}{title} => 'Open Graph protocol',  'content is trimmed');
+    is($og              => $i->collectOpenGraph(), 'collectOpenGraph() returns alrady parsed Graph data');
     is_deeply(
         $og => {
-            $i->prefix2ns('fb') => {'app_id' => '115190258555800'},
-            $i->prefix2ns('og') => {
+            fb => {'app_id' => '115190258555800'},
+            og => {
                 'image' => [
-                    {'url' => 'https://ogp.me/logo.png'},
+                    {   'url' => 'https://ogp.me/logo.png' },
                     {
                         'alt'        => 'A shiny red apple with a bite taken out',
                         'height'     => '300',
@@ -97,6 +97,7 @@ my $collectOpenGraph = sub {
                     },
                     {'url' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'}
                 ],
+#XXX This is incorrect use of profile.  Should be: profile:first_name etc
                 'profile' => {
                     'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
                     'last_name'  => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
@@ -144,21 +145,21 @@ HTMLOG
     $og = $i->collectOpenGraph();
     is_deeply(
         $og => {
-            'https://ogp.me/ns#' => {
+            og => {
                 'description' => 'Greatest Hits II, an album by Queen on Spotify.',
-                'image'       => 'http://o.scdn.co/image/e4c7b06c20c17156e46bbe9a71eb0703281cf345',
+                'image'       => [ { url => 'http://o.scdn.co/image/e4c7b06c20c17156e46bbe9a71eb0703281cf345' } ],
                 'site_name'   => 'Spotify',
                 'title'       => 'Greatest Hits II',
                 'type'        => 'music.album',
                 'url'         => 'http://open.spotify.com/album/7rq68qYz66mNdPfidhIEFa'
             },
-            'https://ogp.me/ns/fb#'    => {'app_id' => '174829003346'},
-            'https://ogp.me/ns/music#' => {
-                'musician'     => 'http://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d',
+            fb    => {'app_id' => '174829003346'},
+            music => {
+                'musician'     => [ 'http://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d' ],
                 'release_date' => '2011-04-19',
                 'song'         => [
-                    {'disc' => '1', 'track' => '1', 'url' => 'http://open.spotify.com/track/0pfHfdUNVwlXA0WDXznm2C'},
-                    {'disc' => '1', 'track' => '2', 'url' => 'http://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF'}
+                    {'disc' => '1', 'track' => '1', 'description' => 'http://open.spotify.com/track/0pfHfdUNVwlXA0WDXznm2C'},
+                    {'disc' => '1', 'track' => '2', 'description' => 'http://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF'}
                 ]
             }
         },

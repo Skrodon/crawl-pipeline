@@ -346,6 +346,11 @@ sub collectLinks($self) {
     return $self->{HI_links} = \%links;
 }
 
+use HTML::Inspect::OpenGraph ();
+1;
+
+__END__
+
 =head2 collectOpenGraph
 
     my $hash = $self->collectOpenGraph();

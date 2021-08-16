@@ -11,11 +11,12 @@ use feature qw (:5.20 lexical_subs signatures);
 use Log::Report 'html-inspect';
 use XML::LibXML ();
 
-my @sub_types = qw/article book music profile video website/;
+my @sub_types = qw/article book music profile video website fb/;
 my %default_prefixes =
   ( og       => 'https://ogp.me/ns#',
     map +($_ => "https://ogp.me/ns/$_#"), @sub_types,
   );
+
 my %namespace2prefix = reverse %default_prefixes;
 
 # When the property itself does not contain an attribute, but we know
@@ -75,12 +76,11 @@ sub collectOpenGraph($self, %args) {
 
     # Create a map which translates the used prefix in the HTML, to the prefered
     # prefix from the OGP specification.
-    my $prefer = $self->{HIO_pref_prefix} = {};  
-    my $nss    = $self->{HIO_nss}         = {};  
-    foreach my $def (map $_->getAttribute('prefix'), $self->doc->findnodes('//[@prefix]')) {
-        while(my ($prefix, $ns) = $def =~ m!(\w+)\:\s*(\S+)!g)
-        {   $prefer->{$prefix} = $namespace2prefix{$ns} // $prefix;
-            $nss->{$prefix} = $nss;     #XXX needed?
+
+    my %prefer;
+    foreach my $def (map $_->getAttribute('prefix'), $self->doc->findnodes('//*[@prefix]')) {
+        while($def =~ m!(\w+)\:\s*(\S+)!g)
+        {   $prefer{$1} = $namespace2prefix{$2} // $1;
         }
     }
 
@@ -88,7 +88,7 @@ sub collectOpenGraph($self, %args) {
     foreach my $meta ($self->doc->findnodes($X_META_PROPERTY)) {
         my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property');
         my $content  = _trimss $meta->getAttribute('content');
-        my $prefix   = $self->{HIO_pref_prefix}{$used_prefix} || $used_prefix;
+        my $prefix   = $prefer{$used_prefix} || $used_prefix;
         my $property = "$prefix:$name";
         my $table    = $data->{$prefix} ||= {};
 
@@ -112,7 +112,12 @@ sub collectOpenGraph($self, %args) {
             }
         }
         else {
-            $table->{$name} = $content;
+            if($is_array{$property}) {
+                push @{$table->{$name}}, $content;
+            }
+            else {
+                $table->{$name} = $content;
+            }
         }
     }
     $data;
