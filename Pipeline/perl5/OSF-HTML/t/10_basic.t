@@ -75,7 +75,7 @@ my $collectOpenGraph = sub {
     my $og = $i->collectOpenGraph();
     is(ref $og          => 'HASH',                 'collectOpenGraph() returns a HASH reference');
     is($og->{og}{title} => 'Open Graph protocol',  'content is trimmed');
-    is($og              => $i->collectOpenGraph(), 'collectOpenGraph() returns alrady parsed Graph data');
+    is($og              => $i->collectOpenGraph(), 'collectOpenGraph() returns already parsed Graph data');
     is_deeply(
         $og => {
             fb => {'app_id' => '115190258555800'},
@@ -99,9 +99,9 @@ my $collectOpenGraph = sub {
                 ],
 #XXX This is incorrect use of profile.  Should be: profile:first_name etc
                 'profile' => {
-                    'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
-                    'last_name'  => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
-                    'username'   => "\x{43d}\x{430}\x{443}\x{43c}\x{43e}\x{432}"
+                    'first_name' => "Перко",
+                    'last_name'  => "Наумов",
+                    'username'   => "наумов"
                 },
                 'title' => 'Open Graph protocol',
                 'type'  => 'website',

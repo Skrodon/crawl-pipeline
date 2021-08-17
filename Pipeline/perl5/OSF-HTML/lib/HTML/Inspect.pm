@@ -17,19 +17,12 @@ use List::Util qw(uniq);
 # Default and known namespaces for collectOpenGraph() when we have a document
 # with no explicitly defined prefix(namespace), but then in the document it is
 # used. These cases are very common.
+my @sub_types = qw/article book music profile video website fb restrictions/;
 my %PREFIXES = (
-    fb      => 'https://ogp.me/ns/fb#',
-    og      => 'https://ogp.me/ns#',
-    image   => 'https://ogp.me/ns/image#',
-    music   => 'https://ogp.me/ns/music#',
-    video   => 'https://ogp.me/ns/video#',
-    article => 'https://ogp.me/ns/article#',
-    book    => 'https://ogp.me/ns/book#',
-    profile => 'https://ogp.me/ns/profile#',
-    # From https://ogp.me/ : "No additional properties other than the basic
-    # ones. Any non-marked up webpage should be treated as og:type website."
-    website => 'https://ogp.me/ns/website#',
+    og       => 'https://ogp.me/ns#',
+    map {$_ => "https://ogp.me/ns/$_#"} @sub_types
 );
+
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
 my %referencing_attributes = (
@@ -154,9 +147,10 @@ sub _init ($self, $args) {
 }
 
 # Returns all prefixes found in this document.
+# Used in collectMeta and collectOpenGraph
 sub _doc_prefixes ($self) {
     return $self->{HI_doc_prefixes} if $self->{HI_doc_prefixes};
-    my %prefixes = map { $_->getAttribute('prefix') =~ /(\w+):\s*?(\S+)/g } $self->xpc->findnodes($X_PREFIXES);
+    my %prefixes = map { ($_->getAttribute('prefix') =~ /(\w+):\s*?(\S+)/g)} $self->xpc->findnodes($X_PREFIXES);
     return %prefixes ? ($self->{HI_doc_prefixes} = \%prefixes) : undef;
 }
 #-------------------------
@@ -366,7 +360,7 @@ Example
     my $og   = $i->collectOpenGraph();
     
    # {
-   #   'https://ogp.me/ns#' => {
+   #   'og' => {
    #     'image' => [
    #       {
    #         'height' => '50',
@@ -382,7 +376,7 @@ Example
    #     'type' => 'profile',
    #     'url' => 'http://examples.opengraphprotocol.us/profile.html'
    #   },
-   #   'https://ogp.me/ns/profile#' => {
+   #   'profile' => {
    #     'first_name' => 'John',
    #     'gender' => 'male',
    #     'last_name' => 'Doe',
@@ -397,12 +391,12 @@ Example
 # https://ogp.me/#types
 # See also: https://developers.facebook.com/docs/sharing/webmasters/crawler
 # https://developers.facebook.com/docs/sharing/webmasters/optimizing
-sub collectOpenGraph ($self, %args) {
-    return $self->{HI_og} if $self->{HI_og};
-    my $og = {};
-    $self->_handle_og_meta($og, $_) for $self->doc->findnodes($X_META_PROPERTY);
-    return $self->{HI_og} = $og;
-}
+#sub collectOpenGraph ($self, %args) {
+#    return $self->{HI_og} if $self->{HI_og};
+#    my $og = {};
+#    $self->_handle_og_meta($og, $_) for $self->doc->findnodes($X_META_PROPERTY);
+#    return $self->{HI_og} = $og;
+#}
 
 # A not so dummy, implementation of collecting OG data from a page
 sub _handle_og_meta ($self, $og, $meta) {

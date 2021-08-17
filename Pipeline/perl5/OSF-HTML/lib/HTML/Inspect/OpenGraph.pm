@@ -1,4 +1,4 @@
-
+##no critic [Modules::RequireFilenameMatchesPackage]
 package HTML::Inspect;   # role OpenGraph
 
 use strict;
@@ -11,13 +11,6 @@ use feature qw (:5.20 lexical_subs signatures);
 use Log::Report 'html-inspect';
 use XML::LibXML ();
 
-my @sub_types = qw/article book music profile video website fb/;
-my %default_prefixes =
-  ( og       => 'https://ogp.me/ns#',
-    map +($_ => "https://ogp.me/ns/$_#"), @sub_types,
-  );
-
-my %namespace2prefix = reverse %default_prefixes;
 
 # When the property itself does not contain an attribute, but we know
 # that it may have attributes ("structured properties"), we need to create
@@ -36,7 +29,7 @@ my %is_structural = (
 # Some properties or attributes can appear more than once.  They will always
 # be collected as ARRAY, even if there is only one presence: this helps
 # implementors.
-my %is_array  = map +($_ => 1), qw/
+my %is_array  = map {$_ => 1} qw/
     article:author
     article:tag
     book:author
@@ -54,52 +47,26 @@ my %is_array  = map +($_ => 1), qw/
     video:writer
 /;
 
-=encoding utf-8
-
-=head1 NAME
-
-HTML::Inspect::OpenGraph - extract OpenGraph information from HTML
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-=head2 collectOpenGraph
-
-    my $data = $self->collectOpenGraph
-
-=cut
-
 my $X_META_PROPERTY = XML::LibXML::XPathExpression->new('//meta[@property]');
+use Data::Dumper;
 sub collectOpenGraph($self, %args) {
     return $self->{HIO_og} if $self->{HIO_og};
 
-    # Create a map which translates the used prefix in the HTML, to the prefered
-    # prefix from the OGP specification.
-
-    my %prefer;
-    foreach my $def (map $_->getAttribute('prefix'), $self->doc->findnodes('//*[@prefix]')) {
-        while($def =~ m!(\w+)\:\s*(\S+)!g)
-        {   $prefer{$1} = $namespace2prefix{$2} // $1;
-        }
-    }
-
     my $data = $self->{HIO_og} = {};
     foreach my $meta ($self->doc->findnodes($X_META_PROPERTY)) {
-        my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property');
+        my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property'), 3;
         my $content  = _trimss $meta->getAttribute('content');
-        my $prefix   = $prefer{$used_prefix} || $used_prefix;
-        my $property = "$prefix:$name";
-        my $table    = $data->{$prefix} ||= {};
-
+        my $property = "$used_prefix:$name";
+        my $table    = $data->{$used_prefix} ||= {};
         if($attr) {
-            if(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
-               if($is_array{"$property:$attr"}) {
-                   push @{$structure->{$attr}}, $content;
-               }
-               else {
-                   $structure->{$attr} = $content;
-               }
+            warn "($used_prefix, $name, $attr)";
+            if(my $structure = $is_array{$property} ? ($table->{$name}[-1] : ($table->{$name} //= {})) {
+                if($is_array{"$property:$attr"}) {
+                    push @{$structure->{$attr}}, $content;
+                }
+                else {
+                    $structure->{$attr} = $content;
+                }
             }
             # ignore attributes without starting property
         }
@@ -120,31 +87,7 @@ sub collectOpenGraph($self, %args) {
             }
         }
     }
-    $data;
+    return $data;
 }
 
-=head1 AUTHORS and COPYRIGHT
-    
-    Mark Overmeer
-    CPAN ID: MARKOV
-    markov at cpan dot org
-    https://solutions.overmeer.net/
-
-    Красимир Беров
-    CPAN ID: BEROV
-    berov на cpan точка org
-    https://studio-berov.eu
-
-This is free software, licensed under:
-
-The Artistic License 2.0 (GPL Compatible)
-
-The full text of the license can be found in the LICENSE file included with
-this module.
-
-This distribution contains other free software  and content which belongs to
-their respective authors.
-=cut
-
-1;
 1;

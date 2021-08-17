@@ -562,7 +562,7 @@ subtest music => \&music;
 
 # Testing collectOpenGraph() thoroughly here
 SKIP: {
-    unless (-d "$Bin/data/open-graph-protocol-examples") {
+    unless (-d "$Bin/data/open__-graph-protocol-examples") {
         skip('OpenGraph example data is not redistributed with this module.');
     }
     subtest 'article-offset.html' => \&article_offset;
