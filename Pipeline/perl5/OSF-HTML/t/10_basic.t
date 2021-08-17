@@ -81,7 +81,7 @@ my $collectOpenGraph = sub {
             fb => {'app_id' => '115190258555800'},
             og => {
                 'image' => [
-                    {   'url' => 'https://ogp.me/logo.png' },
+                    {'url' => 'https://ogp.me/logo.png'},
                     {
                         'alt'        => 'A shiny red apple with a bite taken out',
                         'height'     => '300',
@@ -98,15 +98,11 @@ my $collectOpenGraph = sub {
                     {'url' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'}
                 ],
 #XXX This is incorrect use of profile.  Should be: profile:first_name etc
-                'profile' => {
-                    'first_name' => "Перко",
-                    'last_name'  => "Наумов",
-                    'username'   => "наумов"
-                },
-                'title' => 'Open Graph protocol',
-                'type'  => 'website',
-                'url'   => 'https://ogp.me/',
-                'video' => [
+                'profile' => {'first_name' => "Перко", 'last_name' => "Наумов", 'username' => "наумов"},
+                'title'   => 'Open Graph protocol',
+                'type'    => 'website',
+                'url'     => 'https://ogp.me/',
+                'video'   => [
                     {
                         'height'     => '300',
                         'secure_url' => 'https://secure.example.com/movie.swf',
@@ -147,7 +143,7 @@ HTMLOG
         $og => {
             og => {
                 'description' => 'Greatest Hits II, an album by Queen on Spotify.',
-                'image'       => [ { url => 'http://o.scdn.co/image/e4c7b06c20c17156e46bbe9a71eb0703281cf345' } ],
+                'image'       => [ {url => 'http://o.scdn.co/image/e4c7b06c20c17156e46bbe9a71eb0703281cf345'} ],
                 'site_name'   => 'Spotify',
                 'title'       => 'Greatest Hits II',
                 'type'        => 'music.album',
@@ -155,7 +151,7 @@ HTMLOG
             },
             fb    => {'app_id' => '174829003346'},
             music => {
-                'musician'     => [ 'http://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d' ],
+                'musician'     => ['http://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d'],
                 'release_date' => '2011-04-19',
                 'song'         => [
                     {'disc' => '1', 'track' => '1', 'description' => 'http://open.spotify.com/track/0pfHfdUNVwlXA0WDXznm2C'},

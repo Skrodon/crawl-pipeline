@@ -1,5 +1,5 @@
 ##no critic [Modules::RequireFilenameMatchesPackage]
-package HTML::Inspect;   # role OpenGraph
+package HTML::Inspect;    # role OpenGraph
 
 use strict;
 use warnings;
@@ -17,39 +17,39 @@ use XML::LibXML ();
 # a HASH which stores this content.  We want consistent output, whether
 # the attributes are actually present or not.
 my %is_structural = (
-   'og:image'    => 'url',
-   'og:video'    => 'url',
-   'og:audio'    => 'url',
-   'og:locale'   => 'this',
-   'music:album' => 'location',     # not sure about this one
-   'music:song'  => 'description',  # not sure about this one
-   'video:actor' => 'profile',
+    'og:image'    => 'url',
+    'og:video'    => 'url',
+    'og:audio'    => 'url',
+    'og:locale'   => 'this',
+    'music:album' => 'location',       # not sure about this one
+    'music:song'  => 'description',    # not sure about this one
+    'video:actor' => 'profile',
 );
 
 # Some properties or attributes can appear more than once.  They will always
 # be collected as ARRAY, even if there is only one presence: this helps
 # implementors.
-my %is_array  = map {$_ => 1} qw/
-    article:author
-    article:tag
-    book:author
-    book:tag
-    music:album
-    music:musician
-    music:song
-    og:audio
-    og:image
-    og:locale:alternate
-    og:video
-    video:actor
-    video:director
-    video:tag
-    video:writer
-/;
+my %is_array = map { $_ => 1 } qw/
+  article:author
+  article:tag
+  book:author
+  book:tag
+  music:album
+  music:musician
+  music:song
+  og:audio
+  og:image
+  og:locale:alternate
+  og:video
+  video:actor
+  video:director
+  video:tag
+  video:writer
+  /;
 
 my $X_META_PROPERTY = XML::LibXML::XPathExpression->new('//meta[@property]');
-use Data::Dumper;
-sub collectOpenGraph($self, %args) {
+
+sub collectOpenGraph ($self, %args) {
     return $self->{HIO_og} if $self->{HIO_og};
 
     my $data = $self->{HIO_og} = {};
@@ -59,8 +59,7 @@ sub collectOpenGraph($self, %args) {
         my $property = "$used_prefix:$name";
         my $table    = $data->{$used_prefix} ||= {};
         if($attr) {
-            warn "($used_prefix, $name, $attr)";
-            if(my $structure = $is_array{$property} ? ($table->{$name}[-1] : ($table->{$name} //= {})) {
+            if(my $structure = $is_array{$property} ? $table->{$name}[-1] : ($table->{$name} //= {})) {
                 if($is_array{"$property:$attr"}) {
                     push @{$structure->{$attr}}, $content;
                 }
@@ -72,10 +71,10 @@ sub collectOpenGraph($self, %args) {
         }
         elsif(my $default_attr = $is_structural{$property}) {
             if($is_array{$property}) {
-                push @{$table->{$name}}, { $default_attr => $content };
+                push @{$table->{$name}}, {$default_attr => $content};
             }
             else {
-                $table->{$name} = { $default_attr => $content };
+                $table->{$name} = {$default_attr => $content};
             }
         }
         else {

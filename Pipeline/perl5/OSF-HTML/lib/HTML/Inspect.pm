@@ -18,10 +18,7 @@ use List::Util qw(uniq);
 # with no explicitly defined prefix(namespace), but then in the document it is
 # used. These cases are very common.
 my @sub_types = qw/article book music profile video website fb restrictions/;
-my %PREFIXES = (
-    og       => 'https://ogp.me/ns#',
-    map {$_ => "https://ogp.me/ns/$_#"} @sub_types
-);
+my %PREFIXES  = (og => 'https://ogp.me/ns#', map { $_ => "https://ogp.me/ns/$_#" } @sub_types);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
@@ -150,7 +147,7 @@ sub _init ($self, $args) {
 # Used in collectMeta and collectOpenGraph
 sub _doc_prefixes ($self) {
     return $self->{HI_doc_prefixes} if $self->{HI_doc_prefixes};
-    my %prefixes = map { ($_->getAttribute('prefix') =~ /(\w+):\s*?(\S+)/g)} $self->xpc->findnodes($X_PREFIXES);
+    my %prefixes = map { ($_->getAttribute('prefix') =~ /(\w+):\s*?(\S+)/g) } $self->xpc->findnodes($X_PREFIXES);
     return %prefixes ? ($self->{HI_doc_prefixes} = \%prefixes) : undef;
 }
 #-------------------------

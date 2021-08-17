@@ -1,6 +1,7 @@
 .perlcriticrc
 .perltidyrc
 lib/HTML/Inspect.pm
+lib/HTML/Inspect/OpenGraph.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
