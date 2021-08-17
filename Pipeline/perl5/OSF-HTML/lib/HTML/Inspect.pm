@@ -178,26 +178,7 @@ C<$doc-E<gt>findnodes($xpath_expression)>.
 
 sub xpc { return $_[0]->{HI_xpc} }
 
-=head2 prefix2ns
-
-Readonly accessor.
-Retuns the corresponding namespace for a prefix.
-
-    my $ns = $self->prefix2ns('og'); # https://ogp.me/ns#
-
-    my $i = HTML::Inspect->new(
-        request_uri => $req_uri,
-        prefixes    => {bar => 'https://example.com/ns/bar#'},
-        html_ref    => \q|<meta property=bar:site_name content="SomeThing">
-        <B prefix="foo: https://example.com/ns/foo#">FooBar</B>|
-    );
-    is($i->prefix2ns('bar') => 'https://example.com/ns/bar#', 'right prefix');
-    is($i->prefix2ns('foo') => 'https://example.com/ns/foo#', 'right prefix');
-    is($i->prefix2ns('baz') => 'https://ogp.me/ns/baz#',      'right prefix');
-=cut
-
-
-sub prefix2ns ($self, $prefix) {
+sub _prefix2ns ($self, $prefix) {
     return $self->{HI_prefixes}{$prefix} // "https://ogp.me/ns/$prefix#";
 }
 

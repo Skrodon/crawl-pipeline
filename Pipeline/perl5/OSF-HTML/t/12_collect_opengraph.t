@@ -17,8 +17,8 @@ sub music {
 
     my $i  = HTML::Inspect->new(request_uri => 'https://open.spotify.com/track/2aSFLiDPreOVP6KHiWk4lF', html_ref => \$html);
     my $og = $i->collectOpenGraph();
-    is(ref $og                           => 'HASH',                             'collectOpenGraph() returns a HASH reference');
-    is($og->{$i->prefix2ns('og')}{title} => 'Under Pressure - Remastered 2011', 'right title');
+    is(ref $og            => 'HASH',                             'collectOpenGraph() returns a HASH reference');
+    is($og->{'og'}{title} => 'Under Pressure - Remastered 2011', 'right title');
     note explain $og;
 }
 
@@ -31,13 +31,13 @@ sub article_offset {
     note explain $og;
     is_deeply(
         $og => {
-            $i->prefix2ns('article') => {
+            'article' => {
                 'author'         => 'http://examples.opengraphprotocol.us/profile.html',
                 'published_time' => '1972-06-17T20:23:45-05:00',
                 'section'        => 'Front page',
                 'tag'            => 'Watergate'
             },
-            $i->prefix2ns('og') => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -68,13 +68,13 @@ sub article_utc {
         $og =>
 
           {
-            $i->prefix2ns('article') => {
+            'article' => {
                 'author'         => 'http://examples.opengraphprotocol.us/profile.html',
                 'published_time' => '1972-06-18T01:23:45Z',
                 'section'        => 'Front page',
                 'tag'            => 'Watergate'
             },
-            'http://ogp.me/ns#' => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -103,13 +103,13 @@ sub article {
     # note explain $og;
     is_deeply(
         $og => {
-            $i->prefix2ns('article') => {
+            'article' => {
                 'author'         => 'http://examples.opengraphprotocol.us/profile.html',
                 'published_time' => '1972-06-18',
                 'section'        => 'Front page',
                 'tag'            => 'Watergate'
             },
-            'http://ogp.me/ns#' => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -138,7 +138,7 @@ sub audio_array {
     note explain $og;
     is_deeply(
         $og => {
-            'http://ogp.me/ns#' => {
+            'og' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/1khz.mp3',
@@ -179,7 +179,7 @@ sub audio_url {
     # note explain $og;
     is_deeply(
         $og => {
-            'http://ogp.me/ns#' => {
+            'og' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/250hz.mp3',
@@ -215,7 +215,7 @@ sub audio {
     # note explain $og;
     is_deeply(
         $og => {
-            'http://ogp.me/ns#' => {
+            'og' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/250hz.mp3',
@@ -252,13 +252,13 @@ sub book_isbn10 {
     note explain $og, 'doc_prefixes', explain $i->_doc_prefixes;
     is_deeply(
         $og => {
-            $i->prefix2ns('book') => {
+            'book' => {
                 'author'       => 'http://examples.opengraphprotocol.us/profile.html',
                 'isbn'         => '1451648537',
                 'release_date' => '2011-10-24',
                 'tag'          => [ 'Steve Jobs', 'Apple', 'Pixar' ]
             },
-            'http://ogp.me/ns#' => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -285,7 +285,7 @@ sub book_isbn10 {
 # rest of the files are tested as one
 my $test_files = {
     'canadian.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image'  => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
             'locale' => 'en_CA',
             'title'  => 'Canadian, eh?',
@@ -295,7 +295,7 @@ my $test_files = {
     },
     'error.html'       => {},
     'image-array.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '75',
@@ -320,7 +320,7 @@ my $test_files = {
         },
     },
     'image-toosmall.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'description' => 'Will an indexer accept a 1x1 transparent PNG?',
             'image'       => [
                 {
@@ -339,7 +339,7 @@ my $test_files = {
         },
     },
     'image-url.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -357,7 +357,7 @@ my $test_files = {
         },
     },
     'image.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -378,7 +378,7 @@ my $test_files = {
     ,
     'min.html' => {'https://ogp.me/ns#' => {'description' => 'Content not on page', 'site_name' => 'Open Graph protocol examples'}},
     'nomedia.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'description' => 'Required and optional properties without associated media.',
             'determiner'  => 'the',
             'image'       => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
@@ -391,7 +391,7 @@ my $test_files = {
     },
     'plain.html'   => {},
     'profile.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -407,19 +407,19 @@ my $test_files = {
             'type'      => 'profile',
             'url'       => 'http://examples.opengraphprotocol.us/profile.html'
         },
-        'http://ogp.me/ns/profile#' => {'first_name' => 'John', 'gender' => 'male', 'last_name' => 'Doe', 'username' => 'johndoe'}
+        'profile' => {'first_name' => 'John', 'gender' => 'male', 'last_name' => 'Doe', 'username' => 'johndoe'}
       }
 
     ,
     'required.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image' => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
             'title' => 'Minimum required properties',
             'url'   => 'http://examples.opengraphprotocol.us/required.html'
         },
     },
     'video-array.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -462,7 +462,7 @@ my $test_files = {
         },
     },
     'video-movie.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'description' =>
               "L'arriv\x{e9}e d'un train en gare de La Ciotat is an 1895 French short black-and-white silent documentary film directed and produced by Auguste and Louis Lumi\x{e8}re. Its first public showing took place in January 1896.",
             'image' => [
@@ -505,7 +505,7 @@ my $test_files = {
                 }
             ]
         },
-        'http://ogp.me/ns/video#' => {
+        'video' => {
             'director'     => 'http://examples.opengraphprotocol.us/profile.html',
             'duration'     => '50',
             'release_date' => '1895-12-28',
@@ -513,7 +513,7 @@ my $test_files = {
         }
     },
     'video.html' => {
-        'http://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -562,7 +562,7 @@ subtest music => \&music;
 
 # Testing collectOpenGraph() thoroughly here
 SKIP: {
-    unless (-d "$Bin/data/open__-graph-protocol-examples") {
+    unless (-d "$Bin/data/open-graph-protocol-examples") {
         skip('OpenGraph example data is not redistributed with this module.');
     }
     subtest 'article-offset.html' => \&article_offset;

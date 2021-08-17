@@ -40,6 +40,7 @@ my %is_array = map { $_ => 1 } qw/
   og:audio
   og:image
   og:locale:alternate
+  og:restrictions
   og:video
   video:actor
   video:director
@@ -58,7 +59,15 @@ sub collectOpenGraph ($self, %args) {
         my $content  = _trimss $meta->getAttribute('content');
         my $property = "$used_prefix:$name";
         my $table    = $data->{$used_prefix} ||= {};
+        #warn "($used_prefix, $name, $attr)";
         if($attr) {
+#            if ($is_array{$property} && !$table->{$name}){
+#                $table->{$name} =[{$attr=>$content}];
+#                next;
+#            }elsif($is_array{$property} && $table->{$name}){
+#                push @{$table->{$name}},{$attr=>$content};
+#                next;
+#            }
             if(my $structure = $is_array{$property} ? $table->{$name}[-1] : ($table->{$name} //= {})) {
                 if($is_array{"$property:$attr"}) {
                     push @{$structure->{$attr}}, $content;

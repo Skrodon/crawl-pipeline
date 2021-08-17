@@ -39,9 +39,9 @@ my $constructor_and_doc = sub {
         <B prefix="foo: https://example.com/ns/foo#">FooBar</B>|
     );
     note 'HI_doc_prefixes:', explain($i->_doc_prefixes);
-    is($i->prefix2ns('bar') => 'https://example.com/ns/bar#', 'right prefix');
-    is($i->prefix2ns('foo') => 'https://example.com/ns/foo#', 'right prefix');
-    is($i->prefix2ns('baz') => 'https://ogp.me/ns/baz#',      'right prefix');
+    is($i->_prefix2ns('bar') => 'https://example.com/ns/bar#', 'right prefix');
+    is($i->_prefix2ns('foo') => 'https://example.com/ns/foo#', 'right prefix');
+    is($i->_prefix2ns('baz') => 'https://ogp.me/ns/baz#',      'right prefix');
 };
 
 my $collectMeta = sub {
