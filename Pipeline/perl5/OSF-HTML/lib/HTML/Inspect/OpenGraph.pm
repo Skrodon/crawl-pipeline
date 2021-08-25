@@ -9,6 +9,7 @@ no warnings 'experimental::signatures';
 use feature qw (:5.20 lexical_subs signatures);
 
 use Log::Report 'html-inspect';
+<<<<<<< HEAD
 
 use HTML::Inspect::Util  qw(trim_attr xpc_find);
 
@@ -54,7 +55,6 @@ my %is_array  = map +($_ => 1), qw/
     video:tag
     video:writer
 /;
-
 
 sub collectOpenGraph($self, %args) {
     return $self->{HIO_og} if $self->{HIO_og};
