@@ -31,7 +31,7 @@ HTML::Inspect - Inspect a HTML document
 
     my $html         = slurp("t/data/collectMeta.html");
     my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
-    my $collectedMeta = $inspector->collectMeta();
+    my $collectedMeta = $inspector->collectMetaClassic();
     # $collectedMeta is:
     #{
     #    charset      => 'utf-8',
@@ -57,11 +57,11 @@ See C<t/*.t> files for examples of use and returned results.
 
 =head2 new
 
-    my $self = $class->new(%options)
+    my $self = $class->new(%options);
 
-Arguments: C<request_uri> and C<html_ref>. C<request_uri> is an absolute url as
-a string or an L<URI> instance. C<html_ref> is areference to the valid HTML
-string. Both argunebts are mandatory.
+Requires arguments: C<request_uri> and C<html_ref>.  The C<request_uri> is an
+absolute url as a string or L<URI::Fast> or L<URI> instance.
+The C<html_ref> is a reference to the valid HTML string.
 
 =cut
 
@@ -76,7 +76,7 @@ sub _init ($self, $args) {
     $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '".substr($$html_ref, 0, 20)."'";
 
     my $req = $args->{request_uri}   or panic '"request_uri" is mandatory';
-    my $uri = $self->{HI_request_uri} = blessed $req && $req->isa('URI') ? $req : URI->new($req);
+    my $uri = $self->{HI_request_uri} = blessed $req ? $req : URI->new($req);
 
     my $dom = XML::LibXML->load_html(
         string            => $html_ref,
@@ -86,15 +86,15 @@ sub _init ($self, $args) {
         no_network        => 1,
         no_xinclude_nodes => 1,
     );
-    my $doc = $self->{HI_doc} = $dom->documentElement;
 
+    my $doc = $self->{HI_doc} = $dom->documentElement;
     $self->{HI_xpc} = XML::LibXML::XPathContext->new($doc);
 
     my $base;
     state $find_base_href = xpc_find '//base[@href][1]';
     if(my ($base_elem) = $find_base_href->($self)) {
         # Sometimes, base does not contain scheme.
-        $base = html_url($base_elem->getAttribute('href'), $uri);
+        $base = html_url($base_elem->getAttribute('href') || 'x', $uri);
     }
     else {
         $base = $uri->canonical;
@@ -159,9 +159,9 @@ sub base { $_[0]->{HI_base} }
 
 =head1 Collecting
 
-=head2 collectMeta 
+=head2 collectMetaClassic 
 
-    my $hash = $html->collectMeta(%options);
+    my $hash = $html->collectMetaClassic(%options);
 
 Returns a HASH reference with all C<< <meta> >> information of traditional content:
 each value will only appear once. OpenGraph meta-data records use attribute
@@ -176,7 +176,7 @@ Example:
 
 =cut
 
-sub collectMeta($self, %args) {
+sub collectMetaClassic($self, %args) {
     return $self->{HI_meta} if $self->{HI_meta};
 
     state $meta_classic = xpc_find '//meta[@http-equiv or @name or @charset]';
@@ -187,6 +187,8 @@ sub collectMeta($self, %args) {
             $meta{'http-equiv'}{lc $http} = trim_attr $content;
         }
         elsif(my $name = $meta->getAttribute('name')) {
+#XXX this is not enough: we should restrict to the well-defined list of HTML5
+            next if $name =~ m/[.:]/;  # private extensions
             my $content = $meta->getAttribute('content') // next;
             $meta{name}{$name} = trim_attr $content;
         }
@@ -197,6 +199,8 @@ sub collectMeta($self, %args) {
 
     $self->{HI_meta} = \%meta;
 }
+
+#XXX We need a collectAllMeta, which works like collectLinks.  The output is huge
 
 =head2 collectLinks 
 
@@ -226,7 +230,7 @@ sub collectLinks($self) {
     $self->{HI_links} = \%links;
 }
 
-=head2 collectReferences 
+=head2 collectReferences
 
     $hash = $self->collectReferences;
 

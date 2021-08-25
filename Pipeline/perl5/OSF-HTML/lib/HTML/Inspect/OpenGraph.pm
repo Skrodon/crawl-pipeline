@@ -60,7 +60,7 @@ sub collectOpenGraph($self, %args) {
     return $self->{HIO_og} if $self->{HIO_og};
 
     # Create a map which translates the used prefix in the HTML, to the prefered
-    # prefix from the OGP specification.
+    # prefix from the OGP specification, so we can normalize prefix.
     my %prefer;
     state $find_prefix_decls = xpc_find '//*[@prefix]';
     foreach my $def (map $_->getAttribute('prefix'), $find_prefix_decls->($self)) {
@@ -74,7 +74,12 @@ sub collectOpenGraph($self, %args) {
     foreach my $meta ($find_meta_property->($self)) {
         my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property');
         defined $name && length $name or next;
-        my $prefix   = $prefer{$used_prefix} or next;   # skip unknown prefix
+
+        # The required prefix declarations are often missing or incorrectly
+        # formatted, so we are kind for things we recognize.  But do not
+        # take stuff which is probably not part of OpenGraph.
+        my $prefix   = $prefer{$used_prefix}
+          || (exists $default_prefixes{$used_prefix} ? $used_prefix : next);
 
         my $content  = trim_attr $meta->getAttribute('content');
         my $property = "$prefix:$name";
@@ -106,7 +111,8 @@ sub collectOpenGraph($self, %args) {
             $table->{$name} = $content;
         }
     }
-    $data;
+
+    keys %$data ? $data : undef;
 }
 
 =head1 AUTHORS and COPYRIGHT

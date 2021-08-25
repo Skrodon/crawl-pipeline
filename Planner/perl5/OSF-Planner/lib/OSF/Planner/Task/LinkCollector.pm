@@ -46,15 +46,17 @@ sub save($$)
     my $data = try {
        my $html     = $response->inspectHTML or return;
          +{
-#           meta  => $html->collectMeta
-            links => $html->collectLinks
+            meta  => $html->collectMetaClassic
+          , links => $html->collectLinks
           , refs  => $html->collectReferences
+          , OpenGraph => $html->collectOpenGraph
           , date  => $response->date
           };
     };
 
     if(my $fatal = $@->wasFatal)
     {   $product->reportError($@);
+#warn $@;
     }
 
     $self->index->{$product->name} = $data;

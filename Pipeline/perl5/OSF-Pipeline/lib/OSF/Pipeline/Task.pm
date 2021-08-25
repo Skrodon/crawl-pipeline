@@ -93,7 +93,7 @@ sub filterStatus($%)
 
     sub {
         my $code = $_[0]->responseStatus;
-        $which->($code} ? +{ rule => 'response status', code => $code } : ();
+        $which->($code) ? +{ rule => 'response status', code => $code } : ();
     };
 }
 
