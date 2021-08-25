@@ -44,9 +44,9 @@ my $collectMeta = sub {
         'http-equiv' =>
           {'content-disposition' => '', 'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
     };
-    my $collectedMeta = $inspector->collectMeta();
+    my $collectedMeta = $inspector->collectMetaClassic;
     is_deeply($collectedMeta => $expectedMeta, 'HI_meta, parsed ok');
-    is($collectedMeta => $inspector->collectMeta(), 'collectMeta() returns already parsed HI_meta');
+    is($collectedMeta => $inspector->collectMetaClassic(), 'collectMetaClassic() returns already parsed HI_meta');
     note explain $collectedMeta;
 };
 
@@ -55,13 +55,13 @@ my $collectOpenGraph = sub {
 
     my $i  = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
     my $og = $i->collectOpenGraph();
-    is(ref $og                           => 'HASH',                 'collectOpenGraph() returns a HASH reference');
-    is($og->{$i->prefix2ns('og')}{title} => 'Open Graph protocol',  'content is trimmed');
-    is($og                               => $i->collectOpenGraph(), 'collectOpenGraph() returns alrady parsed Graph data');
+    is(ref $og          => 'HASH',                 'collectOpenGraph() returns a HASH reference');
+    is($og->{og}{title} => 'Open Graph protocol',  'content is trimmed');
+    is($og              => $i->collectOpenGraph(), 'collectOpenGraph() returns alrady parsed Graph data');
     is_deeply(
         $og => {
-            $i->prefix2ns('fb') => {'app_id' => '115190258555800'},
-            $i->prefix2ns('og') => {
+            fb => {'app_id' => '115190258555800'},
+            og => {
                 'image' => [
                     {'url' => 'https://ogp.me/logo.png'},
                     {
@@ -75,11 +75,6 @@ my $collectOpenGraph = sub {
                     {'url' => 'HTTPS://EXAMPLE.COM/ROCK.JPG'},
                     {'url' => 'HTTPS://EXAMPLE.COM/ROCK2.JPG'}
                 ],
-                'profile' => {
-                    'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
-                    'last_name'  => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
-                    'username'   => "\x{43d}\x{430}\x{443}\x{43c}\x{43e}\x{432}"
-                },
                 'title' => 'Open Graph protocol',
                 'type'  => 'website',
                 'url'   => 'https://ogp.me/',
@@ -91,8 +86,13 @@ my $collectOpenGraph = sub {
                         'url'        => 'https://example.com/movie.swf',
                         'width'      => '400'
                     }
-                ]
-            },
+                ],
+             },
+             profile => {
+                'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
+                'last_name'  => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
+                'username'   => "\x{43d}\x{430}\x{443}\x{43c}\x{43e}\x{432}"
+             },
         },
         'all OG meta tags are parsed properly'
     );

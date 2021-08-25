@@ -9,7 +9,6 @@ no warnings 'experimental::signatures';
 use feature qw (:5.20 lexical_subs signatures);
 
 use Log::Report 'html-inspect';
-<<<<<<< HEAD
 
 use HTML::Inspect::Util  qw(trim_attr xpc_find);
 
