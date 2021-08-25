@@ -47,8 +47,11 @@ sub _init($)
         start    => time,
     };
 
+    exists $ENV{PIPELINE_TASKS}
+        or error "No PIPELINE_TASKS in the environment";
+
     my @pkgs = grep /^[\w:]+$/, split ' ', $ENV{PIPELINE_TASKS} // '';
-    @pkgs or error "No PIPELINE_TASKS in the environment";
+    @pkgs or warning "Running Pipeline without Tasks";
 
     my $tasks = $self->{OP_tasks} = [];
     foreach my $pkg (@pkgs)

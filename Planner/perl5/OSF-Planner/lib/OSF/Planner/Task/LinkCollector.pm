@@ -45,8 +45,9 @@ sub save($$)
 
     my $data = try {
        my $html     = $response->inspectHTML or return;
-         +{ meta  => $html->collectMeta
-          , links => $html->collectLinks
+         +{
+#           meta  => $html->collectMeta
+            links => $html->collectLinks
           , refs  => $html->collectReferences
           , date  => $response->date
           };
