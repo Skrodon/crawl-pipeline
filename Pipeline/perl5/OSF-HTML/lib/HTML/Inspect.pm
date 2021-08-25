@@ -15,6 +15,7 @@ use Log::Report 'html-inspect';
 use HTML::Inspect::Util       qw(trim_attr xpc_find);
 use HTML::Inspect::OpenGraph  ();  # mixin for collectOpenGraph()
 use HTML::Inspect::References ();  # mixin for collectReferences()
+use HTML::Inspect::Meta       ();  # mixin for collectMeta*()
 
 use XML::LibXML  ();
 use Scalar::Util qw(blessed);
@@ -159,48 +160,6 @@ sub base { $_[0]->{HI_base} }
 
 =head1 Collecting
 
-=head2 collectMetaClassic 
-
-    my $hash = $html->collectMetaClassic(%options);
-
-Returns a HASH reference with all C<< <meta> >> information of traditional content:
-each value will only appear once. OpenGraph meta-data records use attribute
-'property', and are ignored here.
-
-Example:
-
-    {  'http-equiv' => { 'content-type' => 'text/plain' },
-        charset => 'UTF-8',
-        name => { author => 'John Smith' , description => 'The John Smith\'s page.'},
-    }
-
-=cut
-
-sub collectMetaClassic($self, %args) {
-    return $self->{HI_meta} if $self->{HI_meta};
-
-    state $meta_classic = xpc_find '//meta[@http-equiv or @name or @charset]';
-    my %meta;
-    foreach my $meta ($meta_classic->($self)) {
-        if(my $http = $meta->getAttribute('http-equiv')) {
-            my $content = $meta->getAttribute('content') // next;
-            $meta{'http-equiv'}{lc $http} = trim_attr $content;
-        }
-        elsif(my $name = $meta->getAttribute('name')) {
-#XXX this is not enough: we should restrict to the well-defined list of HTML5
-            next if $name =~ m/[.:]/;  # private extensions
-            my $content = $meta->getAttribute('content') // next;
-            $meta{name}{$name} = trim_attr $content;
-        }
-        elsif(my $charset = $meta->getAttribute('charset')) {
-            $meta{charset} = lc $charset;
-        }
-    }
-
-    $self->{HI_meta} = \%meta;
-}
-
-#XXX We need a collectAllMeta, which works like collectLinks.  The output is huge
 
 =head2 collectLinks 
 
@@ -212,6 +171,8 @@ link elements with that value.  The ARRAY elements are HASHes of all
 attributes of the link and and all lower-cased.  The added C<href_uri>
 key will be a normalized, absolute translation of the C<href> attribute.
 =cut
+
+#XXX Feeling lonely in this file.
 
 sub collectLinks($self) {
     return $self->{HI_links} if $self->{HI_links};
@@ -229,6 +190,51 @@ sub collectLinks($self) {
 
     $self->{HI_links} = \%links;
 }
+
+=head2 collectMetaClassic 
+
+    my $hash = $html->collectMetaClassic(%options);
+
+Returns a HASH reference with all C<< <meta> >> information of traditional content:
+the single C<charset> and all C<http-equiv> records, plus the subset of names which
+are listed on F<https://www.w3schools.com/tags/tag_meta.asp>.  There are far too
+many names to be useful for everyone.
+
+Example:
+
+    {  'http-equiv' => { 'content-type' => 'text/plain' },
+        charset => 'UTF-8',
+        name => { author => 'John Smith' , description => 'The John Smith\'s page.'},
+    }
+
+=head2 collectMetaNames
+
+   my $hash = $html->collectMetaNames(%options);
+
+Returns a HASH with all C<< <meta> >> records which have both a C<name> and a
+C<content> attribute.  These are used as key-value pairs for many, many different
+purposes.
+
+Example:
+
+   { author => 'John Smith' , description => 'The John Smith\'s page.'}
+
+=head2 collectMeta
+
+   my $array = $html->collectMeta(%options);
+
+Returns a list of B<all> kinds of C<< <meta> >> records, which have a wide
+variety of fields and may be order dependend!!!
+
+Example:
+
+   [ { 'http-equiv' => 'Content-Type', 'content' => 'text/html; charset=UTF-8' },
+     { 'name' => 'viewport', 'content' => 'width=device-width, initial-scale=1.0' },
+   ]
+
+=cut
+
+# All collectMeta* in ::Meta.pm mixin
 
 =head2 collectReferences
 

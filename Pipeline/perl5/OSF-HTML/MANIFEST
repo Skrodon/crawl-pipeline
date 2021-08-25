@@ -1,6 +1,7 @@
 .perlcriticrc
 .perltidyrc
 lib/HTML/Inspect.pm
+lib/HTML/Inspect/Meta.pm
 lib/HTML/Inspect/OpenGraph.pm
 lib/HTML/Inspect/References.pm
 lib/HTML/Inspect/Util.pm
