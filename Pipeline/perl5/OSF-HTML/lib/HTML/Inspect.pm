@@ -10,9 +10,18 @@ our $VERSION = 0.11;
 
 use XML::LibXML  ();
 use URI;
+use URI::Fast  qw(html_url);
 use Log::Report 'html-inspect';
 use Scalar::Util qw(blessed);
 use List::Util   qw(uniq);
+
+use HTML::Inspect::OpenGraph ();  # Mixin, provides collectOpenGraph()
+
+# Default and known namespaces for collectOpenGraph() when we have a document
+# with no explicitly defined prefix(namespace), but then in the document it is
+# used. These cases are very common.
+my @sub_types = qw/article book music profile video website fb restrictions/;
+my %PREFIXES  = (og => 'https://ogp.me/ns#', map { $_ => "https://ogp.me/ns/$_#" } @sub_types);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
@@ -114,9 +123,18 @@ sub _init ($self, $args) {
     my $doc = $self->{HI_doc} = $dom->documentElement;
     my $xpc = $self->{HI_xpc} = XML::LibXML::XPathContext->new($doc);
 
-    my $base_elem = $xpc->findvalue($X_BASE);
-    $self->{HI_base} = $base_elem ? $base_elem->getAttribute('href') : $uri->canonical;
+    my $base;
+    if(my ($base_elem) = $xpc->findnodes($X_BASE))
+    {   # Sometimes, base does not contain scheme.
+        $base = URI->new_abs($base_elem->getAttribute('href'), $uri);
+    }
+    else
+    {   $base = $uri;
+    }
+    $self->{HI_base} = $base->canonical->as_string;
 
+    # Build prefixes hash.
+    $self->{HI_prefixes} = {%PREFIXES, %{$args->{prefixes} // {}}, %{$self->_doc_prefixes // {}}};
     return $self;
 }
 
@@ -260,7 +278,7 @@ sub collectReferences($self) {
 
     my %refs;
     while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attr = uniq map { URI->new_abs($_->getAttribute($attr), $base)->canonical }
+        my @attr = uniq map html_url($_->getAttribute($attr) || 'x', $base)->as_string,
           $self->xpc->findnodes($X_REF_ATTRS{"${tag}_$attr"});
         $refs{"${tag}_$attr"} = \@attr if @attr;
     }
@@ -286,12 +304,16 @@ sub collectLinks($self) {
     my %links;
     foreach my $link ($self->xpc->findnodes($X_LINK_REL)) {
         my %attrs = map { $_->name => $_->value } grep { $_->isa('XML::LibXML::Attr') } $link->attributes;
-        $attrs{href} = URI->new_abs($attrs{href}, $base)->canonical if $attrs{href};
-        push @{$links{delete $attrs{rel}}}, \%attrs;
+        $attrs{href} = html_url($attrs{href} || 'x', $base)->as_string if exists $attrs{href};
+        push @{$links{$attrs{rel}}}, \%attrs;
     }
 
     return $self->{HI_links} = \%links;
 }
+
+1;
+
+__END__
 
 =head2 collectOpenGraph
 
