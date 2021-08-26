@@ -4,7 +4,7 @@ use parent 'Exporter';
 use strict;
 use warnings;
 
-our @EXPORT_OK = qw(trim_attr xpc_find);
+our @EXPORT_OK = qw(trim_attr xpc_find get_attributes);
 
 use Log::Report 'html-inspect';
 
@@ -21,7 +21,18 @@ sub trim_attr($) { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z//r }
 sub xpc_find($)
 {   my $pattern = shift;
     my $compiled = XML::LibXML::XPathExpression->new($pattern);
-    sub { $_[0]->xpc->findnodes($compiled) };  # Call with $self as param
+    sub { $_[0]->_xpc->findnodes($compiled) };  # Call with $self as param
+}
+
+# function get_attributes($doc_element)
+# Returns a HASH of all attributes found for an HTML element, which is an
+# XML::LibXML::Element.
+
+sub get_attributes($) {
+   +{ map +($_->name => trim_attr($_->value)),
+#        grep $_->isa('XML::LibXML::Attr'),  XXX only on <html> in xhtml
+            $_[0]->attributes
+    };
 }
 
 1;

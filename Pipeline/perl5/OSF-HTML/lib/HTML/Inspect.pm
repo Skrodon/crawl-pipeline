@@ -12,7 +12,7 @@ our $VERSION = 0.11;
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util       qw(trim_attr xpc_find);
+use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes);
 use HTML::Inspect::OpenGraph  ();  # mixin for collectOpenGraph()
 use HTML::Inspect::References ();  # mixin for collectReferences()
 use HTML::Inspect::Meta       ();  # mixin for collectMeta*()
@@ -120,19 +120,6 @@ document and everything in it.
 
 sub doc { $_[0]->{HI_doc} }
 
-=head2 xpc
-
-    my $xpath_context = $self->xpc;
-
-Readonly accessor.
-Returns instance of XML::LibXML::XPathContext, representing the XPATH context
-with attached root node of the document and everything in it. Using find,
-findvalue and L<XML::LibXML::XPathContext/findnodes> is slightly faster than
-C<$doc-E<gt>findnodes($xpath_expression)>.
-=cut
-
-sub xpc { $_[0]->{HI_xpc} }
-
 =head2 requestURI
 
     my $uri = $self->requestURI;
@@ -156,10 +143,11 @@ base URI is normalized.
 
 sub base { $_[0]->{HI_base} }
 
+# Returns the XPathContext for the current document
+sub _xpc { $_[0]->{HI_xpc} }
+
 #-------------------------
-
 =head1 Collecting
-
 
 =head2 collectLinks 
 
@@ -182,10 +170,10 @@ sub collectLinks($self) {
 
     my %links;
     foreach my $link ($find_link_rel->($self)) {
-        my %attrs = map +($_->name => $_->value),
-            grep $_->isa('XML::LibXML::Attr'), $link->attributes;
-        $attrs{href} = html_url($attrs{href} || 'x', $base)->as_string if exists $attrs{href};
-        push @{$links{delete $attrs{rel}}}, \%attrs;
+        my $attrs = get_attributes $link;
+        $attrs->{href} = html_url($attrs->{href} || 'x', $base)->as_string
+            if exists $attrs->{href};
+        push @{$links{delete $attrs->{rel}}}, $attrs;
     }
 
     $self->{HI_links} = \%links;

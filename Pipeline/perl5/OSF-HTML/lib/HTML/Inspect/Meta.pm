@@ -10,7 +10,7 @@ use feature qw (:5.20 lexical_subs signatures);
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util       qw(trim_attr xpc_find);
+use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes);
 
 # According to https://www.w3schools.com/tags/tag_meta.asp
 # There are far too many other fields which are not interesting.
@@ -72,16 +72,8 @@ sub collectMetaNames($self, %args) {
 sub collectMeta($self, %args) {
     return $self->{HIM_all} if $self->{HIM_all};
 
-    my @meta;
     state $find_meta = xpc_find '//meta';
-
-    foreach my $link ($find_meta->($self)) {
-        my %attrs = map +($_->name => $_->value),
-            grep $_->isa('XML::LibXML::Attr'), $link->attributes;
-        push @meta, \%attrs;
-    }
-
-    $self->{HIM_all} = \@meta;
+    $self->{HIM_all} = [ map get_attributes($_), $find_meta->($self) ];
 }
 
 =head1 SEE ALSO
