@@ -12,15 +12,22 @@ use Log::Report 'html-inspect';
 
 use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes);
 
-# According to https://www.w3schools.com/tags/tag_meta.asp
+# According https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
 # There are far too many other fields which are not interesting.
 my @classic_names = qw/
    application-name
    author
+   color-scheme
+   creator
    description
    generator
+   googlebot
    keywords
+   publisher
+   referrer
+   robots
    viewport
+   theme-color
 /;
 
 sub collectMetaClassic($self, %args) {
