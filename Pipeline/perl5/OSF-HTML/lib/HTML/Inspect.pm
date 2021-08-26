@@ -98,9 +98,9 @@ sub _init ($self, $args) {
         $base = absolute_url $base_elem->getAttribute('href'), $uri->as_string;
     }
     else {
-        $base = $uri->canonical;
+        $base = $uri->canonical->as_string;
     }
-    $self->{HI_base} = $base->as_string;
+    $self->{HI_base} = $base;
 
     $self;
 }
