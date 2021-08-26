@@ -10,10 +10,8 @@ use feature qw (:5.20 lexical_subs signatures);
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util       qw(trim_attr xpc_find);
-
-use List::Util   qw(uniq);
-use URI::Fast    qw(html_url);
+use HTML::Inspect::Util qw(xpc_find absolute_url);
+use List::Util          qw(uniq);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
@@ -39,7 +37,7 @@ sub collectReferences($self) {
 
     my %refs;
     while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attrs = uniq map html_url($_->getAttribute($attr) || 'x', $base)->as_string,
+        my @attrs = uniq map absolute_url($_->getAttribute($attr), $base),
             $find{"${tag}_$attr"}->($self);
 
         $refs{"${tag}_$attr"} = \@attrs if @attrs;

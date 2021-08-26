@@ -76,31 +76,4 @@ sub collectMeta($self, %args) {
     $self->{HIM_all} = [ map get_attributes($_), $find_meta->($self) ];
 }
 
-=head1 SEE ALSO
-
-L<URI::Fast>, L<XML::LibXML>, L<Log::Report>
-
-=head1 AUTHORS and COPYRIGHT
-    
-    Mark Overmeer
-    CPAN ID: MARKOV
-    markov at cpan dot org
-    https://solutions.overmeer.net/
-
-    Красимир Беров
-    CPAN ID: BEROV
-    berov на cpan точка org
-    https://studio-berov.eu
-
-This is free software, licensed under:
-
-The Artistic License 2.0 (GPL Compatible)
-
-The full text of the license can be found in the LICENSE file included with
-this module.
-
-This distribution contains other free software  and content which belongs to
-their respective authors.
-=cut
-
 1;

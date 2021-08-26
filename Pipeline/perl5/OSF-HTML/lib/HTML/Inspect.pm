@@ -12,7 +12,8 @@ our $VERSION = 0.11;
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes);
+use HTML::Inspect::Util qw(trim_attr xpc_find get_attributes absolute_url);
+
 use HTML::Inspect::OpenGraph  ();  # mixin for collectOpenGraph()
 use HTML::Inspect::References ();  # mixin for collectReferences()
 use HTML::Inspect::Meta       ();  # mixin for collectMeta*()
@@ -20,7 +21,6 @@ use HTML::Inspect::Meta       ();  # mixin for collectMeta*()
 use XML::LibXML  ();
 use Scalar::Util qw(blessed);
 use URI          ();
-use URI::Fast    qw(html_url);
 
 =encoding utf-8
 
@@ -95,7 +95,7 @@ sub _init ($self, $args) {
     state $find_base_href = xpc_find '//base[@href][1]';
     if(my ($base_elem) = $find_base_href->($self)) {
         # Sometimes, base does not contain scheme.
-        $base = html_url($base_elem->getAttribute('href') || 'x', $uri);
+        $base = absolute_url $base_elem->getAttribute('href'), $uri->as_string;
     }
     else {
         $base = $uri->canonical;
@@ -171,7 +171,7 @@ sub collectLinks($self) {
     my %links;
     foreach my $link ($find_link_rel->($self)) {
         my $attrs = get_attributes $link;
-        $attrs->{href} = html_url($attrs->{href} || 'x', $base)->as_string
+        $attrs->{href} = absolute_url($attrs->{href}, $base)
             if exists $attrs->{href};
         push @{$links{delete $attrs->{rel}}}, $attrs;
     }
