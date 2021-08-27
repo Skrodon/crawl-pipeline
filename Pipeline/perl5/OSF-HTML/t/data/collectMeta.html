@@ -18,8 +18,7 @@ https://html.spec.whatwg.org/multipage/semantics.html#the-meta-element
   <head>
     <META CHARSET="UTF-8">
     <title>The Open Graph protocol</title>
-    <Meta name="description" content="        The Open Graph protocol enables... ">
-    <!-- these must be skipped by collectMeta -->
+    <!-- these must be skipped by collectMeta*() -->
     <metA property="og:title" content="  Open Graph          protocol ">
     <META PROPERTY="OG:TYPE" CONTENT=" website">
     <meta property="og:url" content="https://ogp.me/">
@@ -27,10 +26,17 @@ https://html.spec.whatwg.org/multipage/semantics.html#the-meta-element
     <!-- ... and so on ... -->
     <meta prefix="fb: https://ogp.me/ns/fb#" property="fb:app_id" content="115190258555800">
     <meta >
-    <!-- ... but not these -->
+    <!-- ... but not these (altough the next two are skipped by collectMetaClassic) -->
     <meta name="Алабала" content="ница " турска="паница.">
     <meta name="empty" content="        ">
+    <!-- The name="undefined" is skipped because it does not have @content attribute -->
     <meta name="undefined" >
+
+    <!-- ... these are all returned by collectMetaClassic) -->
+    
+    <meta name="referrer" content="no-referrer">
+    <Meta name="description" content="        The Open Graph protocol enables... ">
+    <meta name="Author" content="Ванчо Панчев  ">
     <meta name="generator" content="     Хей,      гиди Ванчо   ">
     <!--
 When the http-equiv attribute is specified on a meta element, the element is a pragma directive.
@@ -41,7 +47,6 @@ https://html.spec.whatwg.org/multipage/semantics.html#attr-meta-http-equiv
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta http-equiv="Content-Disposition" content="">
     <meta http-equiv="Keep-Alive">
-    
   </head>
   <body>
     <div id="body">

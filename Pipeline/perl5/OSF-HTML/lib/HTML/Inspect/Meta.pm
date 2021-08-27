@@ -1,4 +1,5 @@
-package HTML::Inspect;    # Micin
+#line 1 Inspect.pm
+package HTML::Inspect;    # Mixin
 
 use strict;
 use warnings;
@@ -52,7 +53,7 @@ sub collectMetaClassic ($self, %args) {
         $meta{charset} = lc trim_attr $elem->getAttribute('charset');
     }
 
-    $self->{HIM_classic} = \%meta;
+    return $self->{HIM_classic} = \%meta;
 }
 
 sub collectMetaNames ($self, %args) {
@@ -66,18 +67,16 @@ sub collectMetaNames ($self, %args) {
     }
     else {
         state $find_names = xpc_find '//meta[@name and @content]';
-
         $names{trim_attr $_->getAttribute('name')} = trim_attr $_->getAttribute('content') for $find_names->($self);
     }
-
-    $self->{HIM_names} = \%names;
+    return $self->{HIM_names} = \%names;
 }
 
 sub collectMeta ($self, %args) {
     return $self->{HIM_all} if $self->{HIM_all};
 
     state $find_meta = xpc_find '//meta';
-    $self->{HIM_all} = [ map get_attributes($_), $find_meta->($self) ];
+    return $self->{HIM_all} = [ map get_attributes($_), $find_meta->($self) ];
 }
 
 1;
