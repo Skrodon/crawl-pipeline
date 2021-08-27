@@ -1,4 +1,4 @@
-package HTML::Inspect;  # Micin
+package HTML::Inspect;    # Micin
 
 use strict;
 use warnings;
@@ -10,33 +10,32 @@ use feature qw (:5.20 lexical_subs signatures);
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes);
+use HTML::Inspect::Util qw(trim_attr xpc_find get_attributes);
 
 # According https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
 # There are far too many other fields which are not interesting.
 my @classic_names = qw/
-   application-name
-   author
-   color-scheme
-   creator
-   description
-   generator
-   googlebot
-   keywords
-   publisher
-   referrer
-   robots
-   viewport
-   theme-color
-/;
+  application-name
+  author
+  color-scheme
+  creator
+  description
+  generator
+  googlebot
+  keywords
+  publisher
+  referrer
+  robots
+  viewport
+  theme-color
+  /;
 
-sub collectMetaClassic($self, %args) {
+sub collectMetaClassic ($self, %args) {
     return $self->{HIM_classic} if $self->{HIM_classic};
 
     my %names;
     my $all_names = $self->collectMetaNames;
-    $names{$_} = $all_names->{$_}
-        for grep defined $all_names->{$_}, @classic_names;
+    $names{$_} = $all_names->{$_} for grep defined $all_names->{$_}, @classic_names;
 
     my %meta = (name => \%names);
 
@@ -56,27 +55,25 @@ sub collectMetaClassic($self, %args) {
     $self->{HIM_classic} = \%meta;
 }
 
-sub collectMetaNames($self, %args) {
+sub collectMetaNames ($self, %args) {
     return $self->{HIM_names} if $self->{HIM_names};
 
     my %names;
 
     if(my $all = $self->{HIM_all}) {
         # Reuse data already collected
-        $names{$_->{name}} = $_->{content}
-           for grep { exists $_->{name} && exists $_->{content} } @$all;
+        $names{$_->{name}} = $_->{content} for grep { exists $_->{name} && exists $_->{content} } @$all;
     }
     else {
         state $find_names = xpc_find '//meta[@name and @content]';
 
-        $names{trim_attr $_->getAttribute('name')} = trim_attr $_->getAttribute('content')
-            for $find_names->($self);
+        $names{trim_attr $_->getAttribute('name')} = trim_attr $_->getAttribute('content') for $find_names->($self);
     }
 
     $self->{HIM_names} = \%names;
 }
 
-sub collectMeta($self, %args) {
+sub collectMeta ($self, %args) {
     return $self->{HIM_all} if $self->{HIM_all};
 
     state $find_meta = xpc_find '//meta';

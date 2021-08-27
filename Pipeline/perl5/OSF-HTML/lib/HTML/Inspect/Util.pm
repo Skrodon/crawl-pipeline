@@ -21,10 +21,10 @@ sub trim_attr($) { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z//r }
 # state $find = xpc_find 'pattern';
 # my @nodes = $find->($self);     # or even: $self->$find
 
-sub xpc_find($)
-{   my $pattern = shift;
+sub xpc_find($) {
+    my $pattern  = shift;
     my $compiled = XML::LibXML::XPathExpression->new($pattern);
-    sub { $_[0]->_xpc->findnodes($compiled) };  # Call with $self as param
+    sub { $_[0]->_xpc->findnodes($compiled) };    # Call with $self as param
 }
 
 # function get_attributes($doc_element)
@@ -32,10 +32,11 @@ sub xpc_find($)
 # XML::LibXML::Element.
 
 sub get_attributes($) {
-   +{ map +($_->name => trim_attr($_->value)),
+    +{
+        map +($_->name => trim_attr($_->value)),
 #        grep $_->isa('XML::LibXML::Attr'),  XXX only on <html> in xhtml
-            $_[0]->attributes
-    };
+        $_[0]->attributes
+     };
 }
 
 # function absolute_url($relative_url, $base)
@@ -43,7 +44,7 @@ sub get_attributes($) {
 # which are not urls (data: and javascript:) will return nothing.
 
 sub absolute_url($$) {
-    my $href = $_[0] || 'x';  #XXX avoid crash in URI::Fast 0.52
+    my $href = $_[0] || 'x';                        #XXX avoid crash in URI::Fast 0.52
     my $ref  = html_url($href, $_[1])->as_string;
     $ref =~ m/^(?:data\:|javascript\:)/ ? () : $ref;
 }

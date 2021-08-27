@@ -87,12 +87,12 @@ my $collectOpenGraph = sub {
                         'width'      => '400'
                     }
                 ],
-             },
-             profile => {
+            },
+            profile => {
                 'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
                 'last_name'  => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
                 'username'   => "\x{43d}\x{430}\x{443}\x{43c}\x{43e}\x{432}"
-             },
+            },
         },
         'all OG meta tags are parsed properly'
     );

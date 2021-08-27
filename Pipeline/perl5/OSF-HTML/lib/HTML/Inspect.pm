@@ -14,13 +14,13 @@ use Log::Report 'html-inspect';
 
 use HTML::Inspect::Util qw(trim_attr xpc_find get_attributes absolute_url);
 
-use HTML::Inspect::OpenGraph  ();  # mixin for collectOpenGraph()
-use HTML::Inspect::References ();  # mixin for collectReferences()
-use HTML::Inspect::Meta       ();  # mixin for collectMeta*()
+use HTML::Inspect::OpenGraph  ();            # mixin for collectOpenGraph()
+use HTML::Inspect::References ();            # mixin for collectReferences()
+use HTML::Inspect::Meta       ();            # mixin for collectMeta*()
 
-use XML::LibXML  ();
+use XML::LibXML ();
 use Scalar::Util qw(blessed);
-use URI          ();
+use URI ();
 
 =encoding utf-8
 
@@ -74,9 +74,9 @@ sub new {
 sub _init ($self, $args) {
     my $html_ref = $args->{html_ref} or panic "html_ref is required";
     ref $html_ref eq 'SCALAR'        or panic "html_ref not SCALAR";
-    $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '".substr($$html_ref, 0, 20)."'";
+    $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '" . substr($$html_ref, 0, 20) . "'";
 
-    my $req = $args->{request_uri}   or panic '"request_uri" is mandatory';
+    my $req = $args->{request_uri} or panic '"request_uri" is mandatory';
     my $uri = $self->{HI_request_uri} = blessed $req ? $req : URI->new($req);
 
     my $dom = XML::LibXML->load_html(
@@ -147,6 +147,7 @@ sub base { $_[0]->{HI_base} }
 sub _xpc { $_[0]->{HI_xpc} }
 
 #-------------------------
+
 =head1 Collecting
 
 =head2 collectLinks 
@@ -171,8 +172,7 @@ sub collectLinks($self) {
     my %links;
     foreach my $link ($find_link_rel->($self)) {
         my $attrs = get_attributes $link;
-        $attrs->{href} = absolute_url($attrs->{href}, $base)
-            if exists $attrs->{href};
+        $attrs->{href} = absolute_url($attrs->{href}, $base) if exists $attrs->{href};
         push @{$links{delete $attrs->{rel}}}, $attrs;
     }
 

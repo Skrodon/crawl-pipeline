@@ -1,4 +1,4 @@
-package HTML::Inspect;   # Mixin
+package HTML::Inspect;    # Mixin
 
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ use feature qw (:5.20 lexical_subs signatures);
 use Log::Report 'html-inspect';
 
 use HTML::Inspect::Util qw(xpc_find absolute_url);
-use List::Util          qw(uniq);
+use List::Util qw(uniq);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
@@ -33,12 +33,11 @@ sub collectReferences($self) {
     my $base = $self->base;
 
     state %find = map +("$_\_$referencing_attributes{$_}" => xpc_find "//$_\[\@$referencing_attributes{$_}\]"),
-         keys %referencing_attributes;
+      keys %referencing_attributes;
 
     my %refs;
     while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attrs = uniq map absolute_url($_->getAttribute($attr), $base),
-            $find{"${tag}_$attr"}->($self);
+        my @attrs = uniq map absolute_url($_->getAttribute($attr), $base), $find{"${tag}_$attr"}->($self);
 
         $refs{"${tag}_$attr"} = \@attrs if @attrs;
     }
