@@ -15,7 +15,7 @@ WriteMakefile(
     NAME             => __PACKAGE__,
     VERSION_FROM     => $module_file,
     AUTHOR           => 'Красимир Беров <berov@cpan.org>',
-    PREREQ_PM        => {'XML::LibXML' => 2.0207, URI => 5.09, 'Log::Report' => 1.32, URI::Fast => 0.52},
+    PREREQ_PM        => {'XML::LibXML' => 2.0207, 'URI' => 5.09, 'Log::Report' => 1.32, 'URI::Fast' => 0.52},
     test             => {TESTS         => 't/*.t'},
     clean            => {FILES         => '*.bak HTML-Inspect-*'},
     MIN_PERL_VERSION => '5.020000',
