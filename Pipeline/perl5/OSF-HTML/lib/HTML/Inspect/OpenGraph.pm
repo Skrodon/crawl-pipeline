@@ -85,7 +85,10 @@ sub collectOpenGraph($self, %args) {
         my $table    = $data->{$prefix} ||= {};
 
         if($attr) {
-            if(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
+            if(! $is_structural{$property}) {
+                # people who did not understand the spec, or unknown extension
+            }
+            elsif(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
                if($is_array{"$property:$attr"}) {
                    push @{$structure->{$attr}}, $content;
                }
