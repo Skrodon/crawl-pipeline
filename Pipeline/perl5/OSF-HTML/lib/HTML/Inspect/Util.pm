@@ -54,30 +54,39 @@ sub absolute_url($$) {
     my $scheme = $href =~ /^([a-z]+)\:/i ? lc($1) : 'https';  # base always http*
     $take_schemes{$scheme} or return ();
 
-    return URI->new_abs($href, $base)->canonical->as_string
-        unless $scheme eq 'https' || $scheme eq 'http';  # about 2.2% of the input
+    my $url;
+    if($scheme eq 'https' || $scheme eq 'http') {
+        # URI::Fast is only good for http normalization: then it is much faster
+        # than module URI.
 
-    ### For http*, URI::Fast::html_url is mainly better than URI.  And much, much
-    #   faster.  Even when some things need to be fixed later.
-
-
-    # URI::Fast does not remove empty fragments and queries
-#   my $url = html_url($href =~ s/\#\z//r =~ s/\?\z//r, $base);
+        # URI::Fast does not remove empty and queries
+#       $url = html_url($href =~ s/\?\z//r, $base);
 
 #XXX avoid crash in URI::Fast 0.52
-$href =~ s/\#\z//;
 $href =~ s/\?\z//;
 $href ||= 'x';
-my $url = html_url($href, $base);
+$url = html_url($href, $base);
 
-    if(my $port = $url->port) {
-        $port =~ m/^[0-9]{1,8}$/ or return ();  # not validated by URI::Fast
-        $url->port(undef)                       # not normalized by URI::Fast
-            if $port == ($scheme eq 'http' ? 80 : 432);
+        if(my $port = $url->port) {
+            # not validated by URI::Fast
+            $port =~ m/^[0-9]{1,8}$/ or return ();  # illegal ports
+            $url->port(undef)                       # default ports
+                if $port == ($scheme eq 'http' ? 80 : 432);
+        }
+
+        $url->frag(undef);
+
+        #TODO: IDN on host
+        #TODO: utf8->hex on path.  See xt/benchmark_utf8.t
+
+    }
+    else {
+       # about 2.2% of the links
+       $url = URI->new_abs($href, $base)->canonical;
+       $url->fragment(undef);
     }
 
-    #TODO: IDN on host
-    #TODO: utf8->hex on path.  See xt/benchmark_utf8.t
+    # Fragments are useful for display, what we are not doing.
 
     $url->as_string;
 }
