@@ -35,19 +35,56 @@ my $constructor_and_doc = sub {
 };
 
 my $collectMeta = sub {
-    my $html         = slurp("$Bin/data/collectMeta.html");
-    my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
-    my $expectedMeta = {
-        charset => 'utf-8',
-        name    =>
-          {empty => '', Алабала => 'ница', generator => "Хей, гиди Ванчо", description => 'The Open Graph protocol enables...'},
+    my $html                = slurp("$Bin/data/collectMeta.html");
+    my $inspector           = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+    my $expectedMetaClassic = {
+        'charset'    => 'utf-8',
         'http-equiv' =>
-          {'content-disposition' => '', 'content-type' => 'text/html;charset=utf-8', refresh => '3;url=https://www.mozilla.org'}
+          {'content-disposition' => '', 'content-type' => 'text/html;charset=utf-8', 'refresh' => '3;url=https://www.mozilla.org'},
+        'name' => {
+            # Should capital letters be acepted in name attributes content? Not
+            # in standart metadata names, otherwise why not.
+            # See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
+            # 'Author'      => "Ванчо Панчев",
+            'description' => 'The Open Graph protocol enables...',
+            'generator'   => "Хей, гиди Ванчо",
+            'referrer'    => 'no-referrer'
+        }
     };
-    my $collectedMeta = $inspector->collectMetaClassic;
-    is_deeply($collectedMeta => $expectedMeta, 'HI_meta, parsed ok');
-    is($collectedMeta => $inspector->collectMetaClassic(), 'collectMetaClassic() returns already parsed HI_meta');
-    note explain $collectedMeta;
+    my $collectedMetaClassic = $inspector->collectMetaClassic;
+    is_deeply($collectedMetaClassic => $expectedMetaClassic, 'HIM_classic, parsed ok');
+    is($collectedMetaClassic => $inspector->collectMetaClassic(), 'collectMetaClassic() returns already parsed HIM_classic');
+    note explain $collectedMetaClassic;
+
+    # but here capitalised name="Values" are OK
+    my $expectedMetaNames  = {'empty' => '', 'Author' => "Ванчо Панчев", 'Алабала' => 'ница', %{$expectedMetaClassic->{name}}};
+    my $collectedMetaNames = $inspector->collectMetaNames();    # cached already
+    is_deeply($collectedMetaNames => $expectedMetaNames, 'collectMetaNames() returns already parsed HIM_names');
+    note explain $collectedMetaNames;
+    my $expectedAllMeta = [
+        {'charset' => 'UTF-8'},
+        {'content' => 'Open Graph protocol',     'property' => 'og:title'},
+        {'content' => 'website',                 'property' => 'OG:TYPE'},
+        {'content' => 'https://ogp.me/',         'property' => 'og:url'},
+        {'content' => 'https://ogp.me/logo.png', 'property' => 'og:image'},
+        {'content' => '115190258555800',         'prefix'   => 'fb: https://ogp.me/ns/fb#', 'property' => 'fb:app_id'},
+        {},
+        {'content'    => "ница", 'name' => "Алабала"},
+        {'content'    => '',     'name' => 'empty'},
+        {'name'       => 'undefined'},
+        {'content'    => 'no-referrer',                        'name'       => 'referrer'},
+        {'content'    => 'The Open Graph protocol enables...', 'name'       => 'description'},
+        {'content'    => "Ванчо Панчев",                       'name'       => 'Author'},
+        {'content'    => "Хей, гиди Ванчо",                    'name'       => 'generator'},
+        {'content'    => '3;url=https://www.mozilla.org',      'http-equiv' => 'refresh'},
+        {'content'    => 'text/html',                          'http-equiv' => 'Content-type'},
+        {'content'    => 'text/html;charset=utf-8',            'http-equiv' => 'Content-Type'},
+        {'content'    => '',                                   'http-equiv' => 'Content-Disposition'},
+        {'http-equiv' => 'Keep-Alive'}
+    ];
+    my $collectedAllMeta = $inspector->collectMeta();
+    is_deeply($expectedAllMeta => $collectedAllMeta, 'HIM_all, parsed ok');
+    note explain $collectedAllMeta;
 };
 
 my $collectOpenGraph = sub {
@@ -87,12 +124,12 @@ my $collectOpenGraph = sub {
                         'width'      => '400'
                     }
                 ],
-             },
-             profile => {
+            },
+            profile => {
                 'first_name' => "\x{41f}\x{435}\x{440}\x{43a}\x{43e}",
                 'last_name'  => "\x{41d}\x{430}\x{443}\x{43c}\x{43e}\x{432}",
                 'username'   => "\x{43d}\x{430}\x{443}\x{43c}\x{43e}\x{432}"
-             },
+            },
         },
         'all OG meta tags are parsed properly'
     );
@@ -110,7 +147,7 @@ my $collectReferences = sub {
 
 subtest constructor_and_doc => $constructor_and_doc;
 subtest collectMeta         => $collectMeta;
-subtest collectOpenGraph    => $collectOpenGraph;
-subtest collectReferences   => $collectReferences;
+#subtest collectOpenGraph    => $collectOpenGraph;
+#subtest collectReferences   => $collectReferences;
 
 done_testing;

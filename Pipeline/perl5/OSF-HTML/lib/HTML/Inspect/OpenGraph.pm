@@ -1,5 +1,4 @@
-
-package HTML::Inspect;   # role OpenGraph
+package HTML::Inspect;    # role OpenGraph
 
 use strict;
 use warnings;
@@ -10,14 +9,15 @@ use feature qw (:5.20 lexical_subs signatures);
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util  qw(trim_attr xpc_find);
+use HTML::Inspect::Util qw(trim_attr xpc_find);
 
 my @sub_types = qw/article book fb music profile video website/;
 
-my %default_prefixes =
-  ( og       => 'https://ogp.me/ns#',
-    map +($_ => "https://ogp.me/ns/$_#"), @sub_types,
-  );
+my %default_prefixes = (
+    og => 'https://ogp.me/ns#',
+    (map +($_ => "https://ogp.me/ns/$_#"), @sub_types),
+);
+
 my %namespace2prefix = reverse %default_prefixes;
 
 # When the property itself does not contain an attribute, but we know
@@ -25,19 +25,19 @@ my %namespace2prefix = reverse %default_prefixes;
 # a HASH which stores this content.  We want consistent output, whether
 # the attributes are actually present or not.
 my %is_structural = (
-   'og:image'    => 'url',
-   'og:video'    => 'url',
-   'og:audio'    => 'url',
-   'og:locale'   => 'this',
-   'music:album' => 'location',     # not sure about this one
-   'music:song'  => 'description',  # not sure about this one
-   'video:actor' => 'profile',
+    'og:image'    => 'url',
+    'og:video'    => 'url',
+    'og:audio'    => 'url',
+    'og:locale'   => 'this',
+    'music:album' => 'location',       # not sure about this one
+    'music:song'  => 'description',    # not sure about this one
+    'video:actor' => 'profile',
 );
 
 # Some properties or attributes can appear more than once.  They will always
 # be collected as ARRAY, even if there is only one presence: this helps
 # implementors.
-my %is_array  = map +($_ => 1), qw/
+my %is_array = map +($_ => 1), qw/
     article:author
     article:tag
     book:author
@@ -63,8 +63,8 @@ sub collectOpenGraph($self, %args) {
     my %prefer;
     state $find_prefix_decls = xpc_find '//*[@prefix]';
     foreach my $def (map $_->getAttribute('prefix'), $find_prefix_decls->($self)) {
-        while($def =~ m!(\w+)\:\s*(\S+)!g)
-        {   $prefer{$1} = $namespace2prefix{$2};   # only known namespaces!
+        while ($def =~ m!(\w+)\:\s*(\S+)!g) {
+            $prefer{$1} = $namespace2prefix{$2};    # only known namespaces!
         }
     }
 
@@ -77,8 +77,8 @@ sub collectOpenGraph($self, %args) {
         # The required prefix declarations are often missing or incorrectly
         # formatted, so we are kind for things we recognize.  But do not
         # take stuff which is probably not part of OpenGraph.
-        my $prefix   = $prefer{$used_prefix}
-          || (exists $default_prefixes{$used_prefix} ? $used_prefix : next);
+        my $prefix = $prefer{$used_prefix}
+            || (exists $default_prefixes{$used_prefix} ? $used_prefix : next);
 
         my $content  = trim_attr $meta->getAttribute('content');
         my $property = "$prefix:$name";
@@ -100,10 +100,10 @@ sub collectOpenGraph($self, %args) {
         }
         elsif(my $default_attr = $is_structural{$property}) {
             if($is_array{$property}) {
-                push @{$table->{$name}}, { $default_attr => $content };
+                push @{$table->{$name}}, {$default_attr => $content};
             }
             else {
-                $table->{$name} = { $default_attr => $content };
+                $table->{$name} = {$default_attr => $content};
             }
         }
         elsif($is_array{$property}) {

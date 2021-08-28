@@ -1,4 +1,5 @@
-package HTML::Inspect;  # Micin
+#line 1 Inspect.pm
+package HTML::Inspect;    # Mixin
 
 use strict;
 use warnings;
@@ -10,24 +11,24 @@ use feature qw (:5.20 lexical_subs signatures);
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes);
+use HTML::Inspect::Util qw(trim_attr xpc_find get_attributes);
 
 # According https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
 # There are far too many other fields which are not interesting.
 my @classic_names = qw/
-   application-name
-   author
-   color-scheme
-   creator
-   description
-   generator
-   googlebot
-   keywords
-   publisher
-   referrer
-   robots
-   viewport
-   theme-color
+    application-name
+    author
+    color-scheme
+    creator
+    description
+    generator
+    googlebot
+    keywords
+    publisher
+    referrer
+    robots
+    viewport
+    theme-color
 /;
 
 sub collectMetaClassic($self, %args) {
@@ -64,11 +65,10 @@ sub collectMetaNames($self, %args) {
     if(my $all = $self->{HIM_all}) {
         # Reuse data already collected
         $names{$_->{name}} = $_->{content}
-           for grep { exists $_->{name} && exists $_->{content} } @$all;
+            for grep { exists $_->{name} && exists $_->{content} } @$all;
     }
     else {
         state $find_names = xpc_find '//meta[@name and @content]';
-
         $names{trim_attr $_->getAttribute('name')} = trim_attr $_->getAttribute('content')
             for $find_names->($self);
     }
