@@ -17,12 +17,28 @@ pager     = less
 [Subroutines::RequireArgUnpacking]
 short_subroutine_statements = 4
 
-[Subroutines::RequireFinalReturn]
-terminal_funcs = _init
-[Variables::ProhibitPackageVars]
-add_packages = Carp
+#XXX NO: return is a superfluous word.
+# [Subroutines::RequireFinalReturn]
+# terminal_funcs = _init
 
-# Shorten allowed lenght of regexp for more readability.
+[-Perl::Critic::Policy::BuiltinFunctions::RequireBlockGrep]
+[-Perl::Critic::Policy::BuiltinFunctions::RequireBlockMap]
+[Perl::Critic::Policy::ClassHierarchies::ProhibitOneArgBless]
+[BuiltinFunctions::RequireGlobFunction]
+[Perl::Critic::Policy::CodeLayout::ProhibitHardTabs]
+[Perl::Critic::Policy::CodeLayout::ProhibitTrailingWhitespace]
+[Perl::Critic::Policy::CodeLayout::RequireConsistentNewlines]
+[Perl::Critic::Policy::CodeLayout::RequireTrailingCommas]
+[Perl::Critic::Policy::ControlStructures::ProhibitUnreachableCode]
+[Perl::Critic::Policy::InputOutput::ProhibitBacktickOperators]
+[Perl::Critic::Policy::InputOutput::ProhibitBarewordFileHandles]
+[Perl::Critic::Policy::InputOutput::ProhibitTwoArgOpen]
+[Perl::Critic::Policy::Miscellanea::ProhibitFormats]
+
+[Variables::ProhibitPackageVars]
+#add_packages = Carp
+
+# Shorten allowed length of regexp for more readability.
 [RegularExpressions::ProhibitComplexRegexes]
 max_characters = 40
 
