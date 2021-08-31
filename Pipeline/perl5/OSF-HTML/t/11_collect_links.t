@@ -17,7 +17,6 @@ my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/
 ###
 
 my $refs = $inspector->collectReferences;
-#note explain $refs;
 
 # Have we collected all links that we support?
 my $ref_attributes = $inspector->_refAttributes;
@@ -31,47 +30,55 @@ while (my ($t, $a) = each %$ref_attributes) {
 
 # See all deduplicated links from the parsed document.
 # Are all links absolute(and canonical) URI instance?
-#note explain $refs;
+note explain $refs;
 is_deeply(
-    $refs => {
+    $refs =>
+
+        {
         'a_href' => [
             'https://whatwg.org/',
             'https://html.spec.whatwg.org/multipage/structured-data.html',
             'https://html.spec.whatwg.org/multipage/',
             'https://html.spec.whatwg.org/multipage/semantics.html',
-            'https://html.spec.whatwg.org/multipage/dom.html#dom',
-            'https://html.spec.whatwg.org/multipage/dom.html#documents',
-            'https://html.spec.whatwg.org/multipage/dom.html#elements',
-            'https://html.spec.whatwg.org/multipage/dom.html#semantics-2',
-            'https://html.spec.whatwg.org/multipage/dom.html#elements-in-the-dom',
-            'https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors',
-            'https://html.spec.whatwg.org/multipage/dom.html#element-definitions',
-            'https://html.spec.whatwg.org/multipage/#documents',
-            'https://html.spec.whatwg.org/multipage/#document',
-            'https://html.spec.whatwg.org/multipage/references.html#refsDOM',
-            'https://dom.spec.whatwg.org/#concept-document-url'
+            'https://html.spec.whatwg.org/multipage/dom.html',
+            'https://html.spec.whatwg.org/multipage/references.html',
+            'https://dom.spec.whatwg.org/'
         ],
         'area_href' => [
-            'https://mozilla.org',                                   'https://developer.mozilla.org/',
-            'https://developer.mozilla.org/docs/Web/Guide/Graphics', 'https://developer.mozilla.org/docs/Web/CSS'
+            'https://mozilla.org',
+            'https://developer.mozilla.org/',
+            'https://developer.mozilla.org/docs/Web/Guide/Graphics',
+            'https://developer.mozilla.org/docs/Web/CSS'
         ],
-        'base_href'   => ['https://html.spec.whatwg.org/multipage/'],
-        'embed_src'   => ['https://html.spec.whatwg.org/media/cc0-videos/flower.mp4'],
-        'form_action' => ['https://html.spec.whatwg.org/multipage/x'],
-        'iframe_src'  => [
+        'base_href' => [
+            'https://html.spec.whatwg.org/multipage/'
+        ],
+        'embed_src' => [
+            'https://html.spec.whatwg.org/media/cc0-videos/flower.mp4'
+        ],
+        'form_action' => [
+            'https://html.spec.whatwg.org/multipage/x'
+        ],
+        'iframe_src' => [
             'https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik'
         ],
-        'img_src'   => [ 'https://resources.whatwg.org/logo.svg', 'https://html.spec.whatwg.org/media/examples/mdn-info.png' ],
+        'img_src' => [
+            'https://resources.whatwg.org/logo.svg',
+            'https://html.spec.whatwg.org/media/examples/mdn-info.png'
+        ],
         'link_href' => [
-            'https://resources.whatwg.org/spec.css',                     'https://resources.whatwg.org/standard.css',
-            'https://resources.whatwg.org/standard-shared-with-dev.css', 'https://resources.whatwg.org/logo.svg',
+            'https://resources.whatwg.org/spec.css',
+            'https://resources.whatwg.org/standard.css',
+            'https://resources.whatwg.org/standard-shared-with-dev.css',
+            'https://resources.whatwg.org/logo.svg',
             'https://html.spec.whatwg.org/styles.css'
         ],
         'script_src' => [
-            'https://html.spec.whatwg.org/link-fixup.js', 'https://html.spec.whatwg.org/html-dfn.js',
+            'https://html.spec.whatwg.org/link-fixup.js',
+            'https://html.spec.whatwg.org/html-dfn.js',
             'https://resources.whatwg.org/file-issue.js'
         ]
-    },
+        },
     'all references are collected'
 );
 
