@@ -72,20 +72,20 @@ sub collectOpenGraph($self, %args) {
     my $data = $self->{HIO_og} = {};
     state $find_meta_property = xpc_find '//meta[@property]';
     foreach my $meta ($find_meta_property->($self)) {
-        _handle_meta_property($meta, $data);
+        _handle_meta_property($meta, $data, \%prefer);
     }
 
     keys %$data ? $data : undef;
 }
 
-sub _handle_meta_property($meta, $data) {
+sub _handle_meta_property($meta, $data, $prefer) {
     my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property');
     (defined $name && length $name) or next;
 
     # The required prefix declarations are often missing or incorrectly
     # formatted, so we are kind for things we recognize.  But do not
     # take stuff which is probably not part of OpenGraph.
-    my $prefix = $prefer{$used_prefix}
+    my $prefix = $prefer->{$used_prefix}
         || (exists $default_prefixes{$used_prefix} ? $used_prefix : next);
 
     my $content  = trim_attr $meta->getAttribute('content');
