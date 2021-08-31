@@ -1,3 +1,4 @@
+#line 1 Inspect.pm
 package HTML::Inspect;    # Mixin
 
 use strict;

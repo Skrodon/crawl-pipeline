@@ -18,8 +18,7 @@ pager     = less
 short_subroutine_statements = 4
 
 #XXX NO: return is a superfluous word.
-# [Subroutines::RequireFinalReturn]
-# terminal_funcs = _init
+[-Subroutines::RequireFinalReturn]
 
 [-Perl::Critic::Policy::BuiltinFunctions::RequireBlockGrep]
 [-Perl::Critic::Policy::BuiltinFunctions::RequireBlockMap]
@@ -61,4 +60,7 @@ max_arguments = 7
 allow_with_category_restriction = 1
 
 [Subroutines::ProhibitUnusedPrivateSubroutines]
-allow = _refAttributes
+allow = _refAttributes _xpc
+
+[Subroutines::ProhibitExcessComplexity]
+max_mccabe = 22

@@ -143,7 +143,9 @@ base URI is normalized.
 
 sub base { $_[0]->{HI_base} }
 
-# Returns the XPathContext for the current document
+# Returns the XPathContext for the current document.
+# Used via HTML::Inspect::Util::xpc_find in respective roles — Meta, OpenGraph,
+# References.
 sub _xpc { $_[0]->{HI_xpc} }
 
 #-------------------------

@@ -1,3 +1,4 @@
+#line 1 Inspect.pm
 package HTML::Inspect;    # role OpenGraph
 
 use strict;
@@ -72,7 +73,7 @@ sub collectOpenGraph($self, %args) {
     state $find_meta_property = xpc_find '//meta[@property]';
     foreach my $meta ($find_meta_property->($self)) {
         my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property');
-        defined $name && length $name or next;
+        (defined $name && length $name) or next;
 
         # The required prefix declarations are often missing or incorrectly
         # formatted, so we are kind for things we recognize.  But do not
