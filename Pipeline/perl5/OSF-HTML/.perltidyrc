@@ -1,4 +1,5 @@
 --perl-best-practices          # "sane" defaults
+--nostandard-output # We may not use -st (comming from -pbp) with more than one input file
 --warning-output               # warnings become errors
 # --ignore-old-breakpoints     #XXX no!
 --maximum-line-length=132
