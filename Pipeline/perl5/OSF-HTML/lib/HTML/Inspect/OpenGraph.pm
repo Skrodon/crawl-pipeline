@@ -72,54 +72,58 @@ sub collectOpenGraph($self, %args) {
     my $data = $self->{HIO_og} = {};
     state $find_meta_property = xpc_find '//meta[@property]';
     foreach my $meta ($find_meta_property->($self)) {
-        my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property');
-        (defined $name && length $name) or next;
-
-        # The required prefix declarations are often missing or incorrectly
-        # formatted, so we are kind for things we recognize.  But do not
-        # take stuff which is probably not part of OpenGraph.
-        my $prefix = $prefer{$used_prefix}
-            || (exists $default_prefixes{$used_prefix} ? $used_prefix : next);
-
-        my $content  = trim_attr $meta->getAttribute('content');
-        my $property = "$prefix:$name";
-        my $table    = $data->{$prefix} ||= {};
-
-        # The spec is not clear.  Some structures may start with an $property:url,
-        # is what examples tell us.  Not documented on ogp.me
-        undef $attr if defined $attr && $attr eq 'url' && $is_structural{$property};
-
-        if($attr) {
-            if(! $is_structural{$property}) {
-                # people who did not understand the spec, or unknown extension
-            }
-            elsif(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
-               if($is_array{"$property:$attr"}) {
-                   push @{$structure->{$attr}}, $content;
-               }
-               else {
-                   $structure->{$attr} = $content;
-               }
-            }
-            # ignore attributes without starting property
-        }
-        elsif(my $default_attr = $is_structural{$property}) {
-            if($is_array{$property}) {
-                push @{$table->{$name}}, {$default_attr => $content};
-            }
-            else {
-                $table->{$name} = {$default_attr => $content};
-            }
-        }
-        elsif($is_array{$property}) {
-            push @{$table->{$name}}, $content;
-        }
-        else {
-            $table->{$name} = $content;
-        }
+        _handle_meta_property($meta, $data);
     }
 
     keys %$data ? $data : undef;
+}
+
+sub _handle_meta_property($meta, $data) {
+    my ($used_prefix, $name, $attr) = split /\:/, lc $meta->getAttribute('property');
+    (defined $name && length $name) or next;
+
+    # The required prefix declarations are often missing or incorrectly
+    # formatted, so we are kind for things we recognize.  But do not
+    # take stuff which is probably not part of OpenGraph.
+    my $prefix = $prefer{$used_prefix}
+        || (exists $default_prefixes{$used_prefix} ? $used_prefix : next);
+
+    my $content  = trim_attr $meta->getAttribute('content');
+    my $property = "$prefix:$name";
+    my $table    = $data->{$prefix} ||= {};
+
+    # The spec is not clear.  Some structures may start with an $property:url,
+    # is what examples tell us.  Not documented on ogp.me
+    undef $attr if defined $attr && $attr eq 'url' && $is_structural{$property};
+
+    if($attr) {
+        if(!$is_structural{$property}) {
+            # people who did not understand the spec, or unknown extension
+        }
+        elsif(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
+            if($is_array{"$property:$attr"}) {
+                push @{ $structure->{$attr} }, $content;
+            }
+            else {
+                $structure->{$attr} = $content;
+            }
+        }
+        # ignore attributes without starting property
+    }
+    elsif(my $default_attr = $is_structural{$property}) {
+        if($is_array{$property}) {
+            push @{ $table->{$name} }, { $default_attr => $content };
+        }
+        else {
+            $table->{$name} = { $default_attr => $content };
+        }
+    }
+    elsif($is_array{$property}) {
+        push @{ $table->{$name} }, $content;
+    }
+    else {
+        $table->{$name} = $content;
+    }
 }
 
 1;
