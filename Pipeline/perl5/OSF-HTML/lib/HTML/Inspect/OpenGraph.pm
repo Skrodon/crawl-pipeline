@@ -85,6 +85,10 @@ sub collectOpenGraph($self, %args) {
         my $property = "$prefix:$name";
         my $table    = $data->{$prefix} ||= {};
 
+        # The spec is not clear.  Some structures may start with an $property:url,
+        # is what examples tell us.  Not documented on ogp.me
+        undef $attr if defined $attr && $attr eq 'url' && $is_structural{$property};
+
         if($attr) {
             if(! $is_structural{$property}) {
                 # people who did not understand the spec, or unknown extension
