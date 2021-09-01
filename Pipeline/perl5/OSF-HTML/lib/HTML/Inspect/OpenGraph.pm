@@ -89,13 +89,13 @@ sub collectOpenGraph($self, %args) {
         # is what examples tell us.  Not documented on ogp.me
         undef $attr if defined $attr && $attr eq 'url' && $is_structural{$property};
 
-        _handle_property($used_prefix, $name, $attr, $property, $content, $table);
+        _handle_property($property, $name, $attr, $content, $table);
     }
 
     keys %$data ? $data : undef;
 }
 
-sub _handle_property($used_prefix, $name, $attr, $property, $content, $table) {
+sub _handle_property ($property, $name, $attr, $content, $table) {
     if($attr) {
         if(!$is_structural{$property}) {
             # people who did not understand the spec, or unknown extension
