@@ -1,3 +1,6 @@
+# This code is part of distribution HTML::Inspect.  It is licensed under the
+# same terms as Perl itself: https://spdx.org/licenses/Artistic-2.0.html
+
 package HTML::Inspect;
 
 use strict;
@@ -258,22 +261,15 @@ L<URI::Fast>, L<XML::LibXML>, L<Log::Report>
     Mark Overmeer
     CPAN ID: MARKOV
     markov at cpan dot org
-    https://solutions.overmeer.net/
 
     Красимир Беров
     CPAN ID: BEROV
     berov на cpan точка org
     https://studio-berov.eu
 
-This is free software, licensed under:
-
-The Artistic License 2.0 (GPL Compatible)
-
-The full text of the license can be found in the LICENSE file included with
-this module.
-
-This distribution contains other free software  and content which belongs to
-their respective authors.
+This is free software, licensed under: The Artistic License 2.0 (GPL
+Compatible) The full text of the license can be found in the LICENSE
+file included with this module.
 =cut
 
 1;

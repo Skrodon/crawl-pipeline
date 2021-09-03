@@ -1,9 +1,14 @@
+# This code is part of distribution HTML::Inspect.  It is licensed under the
+# same terms as Perl itself: https://spdx.org/licenses/Artistic-2.0.html
+
 package HTML::Inspect;
+
 use 5.020000;
-use ExtUtils::MakeMaker 7.24;
 use strict;
 use warnings;
 use utf8;
+
+use ExtUtils::MakeMaker 7.24;
 
 my $module_file = 'lib/' . (__PACKAGE__ =~ s|::|/|gr) . '.pm';
 

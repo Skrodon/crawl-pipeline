@@ -1,4 +1,9 @@
 #line 1 Inspect.pm
+# This code is part of distribution HTML::Inspect.  It is licensed under the
+# same terms as Perl itself: https://spdx.org/licenses/Artistic-2.0.html
+
+### This module handles various generic extractions of <meta> elements.
+
 package HTML::Inspect;    # Mixin
 
 use strict;

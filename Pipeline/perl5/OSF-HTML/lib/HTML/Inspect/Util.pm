@@ -1,3 +1,8 @@
+# This code is part of distribution HTML::Inspect.  It is licensed under the
+# same terms as Perl itself: https://spdx.org/licenses/Artistic-2.0.html
+
+### This package contains a few generic helper functions.
+
 package HTML::Inspect::Util;
 use parent 'Exporter';
 

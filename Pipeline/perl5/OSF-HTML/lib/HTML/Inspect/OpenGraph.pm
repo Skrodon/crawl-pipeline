@@ -1,4 +1,9 @@
 #line 1 Inspect.pm
+# This code is part of distribution HTML::Inspect.  It is licensed under the
+# same terms as Perl itself: https://spdx.org/licenses/Artistic-2.0.html
+
+### This module handles the extraction of OpenGraph data.
+
 package HTML::Inspect;    # role OpenGraph
 
 use strict;
