@@ -3,13 +3,16 @@ use parent 'Exporter';
 
 use strict;
 use warnings;
+use utf8;
 
 our @EXPORT_OK = qw(trim_attr xpc_find get_attributes absolute_url);
 
 use Log::Report 'html-inspect';
 
-use URI::Fast qw(html_url);
-use URI       ();
+use URI::Fast    qw(html_url);
+use URI          ();
+use Encode       qw(encode_utf8 _utf8_on is_utf8);
+use Net::LibIDN2 qw(idn2_lookup_u8 idn2_strerror_name IDN2_NFC_INPUT);
 
 # Deduplicate white spaces and trim string.
 sub trim_attr($) { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z//r }
@@ -56,34 +59,39 @@ sub absolute_url($$) {
         # URI::Fast is only good for http normalization: then it is much faster
         # than module URI.
 
-        # URI::Fast does not remove empty and queries
-#       $url = html_url($href =~ s/\?\z//r, $base);
-
-#XXX avoid crash in URI::Fast 0.52
-$href =~ s/\?\z//;
-$href ||= 'x';
-$url = html_url($href, $base);
+        $url = html_url $href, $base;
 
         if(my $port = $url->port) {
-            # not validated by URI::Fast
+            # not validated nor normalized by URI::Fast
             $port =~ m/^[0-9]{1,8}$/ or return ();  # illegal ports
             $url->port(undef)                       # default ports
                 if $port == ($scheme eq 'http' ? 80 : 432);
         }
 
-        $url->frag(undef);
+        # Fix missing path encoding. See xt/benchmark_utf8.t
+        if($url->path =~ /[^\x20-\x7f]/)
+        {   my $path = $url->path =~ s!([^\x20-\xf0])!$b = $1; utf8::encode($b);
+                 join '', map sprintf("%%%02X", ord), split //, $b!gre;
+            $url->path($path);
+        }
 
-        #TODO: IDN on host
-        #TODO: utf8->hex on path.  See xt/benchmark_utf8.t
-
+        # Fix missing IDN encoding
+        if($url->host =~ /[^\x20-\x7f]/)     # html_url has removed % encoding
+        {   my $host = $url->host;
+            my $rc;
+            my $host2 = idn2_lookup_u8(encode_utf8($host), IDN2_NFC_INPUT, $rc);
+            $host2 or warn idn2_strerror_name($rc);
+            $host2 or return ();   # invalid idn
+            $url->host($host2);
+        }
     }
     else {
-       # about 2.2% of the links
-       $url = URI->new_abs($href, $base)->canonical;
-       $url->fragment(undef);
+        # about 2.2% of the links
+        $url = URI->new_abs($href, $base)->canonical;
     }
 
     # Fragments are useful for display, what we are not doing.
+    $url->fragment(undef);
 
     $url->as_string;
 }
