@@ -87,43 +87,44 @@ sub collectOpenGraph($self, %args) {
 
         # The spec is not clear.  Some structures may start with an $property:url,
         # is what examples tell us.  Not documented on ogp.me
-        undef $attr if defined $attr && $attr eq 'url' && $is_structural{$property};
+        undef $attr
+            if defined $attr && $attr eq 'url' && $is_structural{$property};
 
-        _handle_property($property, $name, $attr, $content, $table);
+        if($attr) {
+            if(!$is_structural{$property}) {
+                # Found attribute, but used on something which is not structural.
+                # People who did not understand the spec, broken order, or unknown extension.
+            }
+            elsif(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
+                # Attribute added to current structure
+                if($is_array{"$property:$attr"}) {
+                    push @{ $structure->{$attr} }, $content;
+                }
+                else {
+                    $structure->{$attr} = $content;
+                }
+            }
+            # ignore attributes without starting property
+        }
+        elsif(my $default_attr = $is_structural{$property}) {
+            # Start of new structure.
+            if($is_array{$property}) {
+                push @{$table->{$name}}, +{ $default_attr => $content };
+            }
+            else {
+                $table->{$name} = +{ $default_attr => $content };
+            }
+        }
+        elsif($is_array{$property}) {
+            # Top-level non-structures: simple value(s)
+            push @{$table->{$name}}, $content;
+        }
+        else {
+            $table->{$name} = $content;
+        }
     }
 
     keys %$data ? $data : undef;
-}
-
-sub _handle_property ($property, $name, $attr, $content, $table) {
-    if($attr) {
-        if(!$is_structural{$property}) {
-            # people who did not understand the spec, or unknown extension
-        }
-        elsif(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
-            if($is_array{"$property:$attr"}) {
-                push @{ $structure->{$attr} }, $content;
-            }
-            else {
-                $structure->{$attr} = $content;
-            }
-        }
-        # ignore attributes without starting property
-    }
-    elsif(my $default_attr = $is_structural{$property}) {
-        if($is_array{$property}) {
-            push @{ $table->{$name} }, { $default_attr => $content };
-        }
-        else {
-            $table->{$name} = { $default_attr => $content };
-        }
-    }
-    elsif($is_array{$property}) {
-        push @{ $table->{$name} }, $content;
-    }
-    else {
-        $table->{$name} = $content;
-    }
 }
 
 1;

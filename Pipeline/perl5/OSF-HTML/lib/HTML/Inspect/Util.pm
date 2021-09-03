@@ -12,7 +12,7 @@ use Log::Report 'html-inspect';
 use URI::Fast    qw(html_url);
 use URI          ();
 use Encode       qw(encode_utf8 _utf8_on is_utf8);
-use Net::LibIDN2 qw(idn2_lookup_u8 idn2_strerror_name IDN2_NFC_INPUT);
+use Net::LibIDN2 qw(idn2_lookup_u8 idn2_strerror IDN2_NFC_INPUT);
 
 # Deduplicate white spaces and trim string.
 sub trim_attr($) { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z//r }
@@ -69,20 +69,23 @@ sub absolute_url($$) {
         }
 
         # Fix missing path encoding. See xt/benchmark_utf8.t
-        if($url->path =~ /[^\x20-\x7f]/)
-        {   my $path = $url->path =~ s!([^\x20-\xf0])!$b = $1; utf8::encode($b);
+        if($url->path =~ /[^\x20-\x7f]/) {
+            my $path = $url->path =~ s!([^\x20-\xf0])!$b = $1; utf8::encode($b);
                  join '', map sprintf("%%%02X", ord), split //, $b!gre;
             $url->path($path);
         }
 
         # Fix missing IDN encoding
-        if($url->host =~ /[^\x20-\x7f]/)     # html_url has removed % encoding
-        {   my $host = $url->host;
-            my $rc;
-            my $host2 = idn2_lookup_u8(encode_utf8($host), IDN2_NFC_INPUT, $rc);
-            $host2 or warn idn2_strerror_name($rc);
-            $host2 or return ();   # invalid idn
-            $url->host($host2);
+        if($url->host =~ /[^\x20-\x7f]/) {   # html_url has removed % encoding
+            my $host = encode_utf8($url->host) or return ();
+            my $rc   = 0;
+            my $host_idn = idn2_lookup_u8($host, IDN2_NFC_INPUT, $rc);
+            unless($host_idn) {
+                warning __x"IDN failed on '{host}': {rc}",
+                    rc => idn2_strerror($rc), host => $url->host, _code => $rc;
+                return;
+            }
+            $url->host($host_idn);
         }
     }
     else {
