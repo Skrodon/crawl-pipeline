@@ -1,4 +1,10 @@
 #line 1 Inspect.pm
+# This code is part of distribution HTML::Inspect.
+# It is licensed under the same terms as Perl itself.
+
+### This module handles the extract of any kind of reference: links
+### to other pages or itself.
+
 package HTML::Inspect;    # Mixin
 
 use strict;
@@ -28,8 +34,6 @@ my %referencing_attributes = (
     link   => 'href',     # could use collectLinks(), but probably slower by complexity
     script => 'src',
 );
-
-sub _refAttributes($thing) { \%referencing_attributes }    # for testing only
 
 sub collectReferences($self) {
     return $self->{HIR_refs} if $self->{HIR_refs};
