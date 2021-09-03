@@ -13,6 +13,7 @@ t/01_use.t
 t/10_basic.t
 t/11_collect_links.t
 t/12_collect_opengraph.t
+t/13_collect_meta.t
 t/90pod.t
 t/91perl-critic.t
 t/92perltidy.t
@@ -25,4 +26,5 @@ xt/benchmark_collectMeta.pl
 xt/benchmark_collectOpenGraph.pl
 xt/benchmark_hash_or_var.pl
 xt/benchmark_trim.pl
+xt/benchmark_utf8.pl
 xt/benchmark_xpath.pl

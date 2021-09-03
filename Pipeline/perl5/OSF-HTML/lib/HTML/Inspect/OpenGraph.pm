@@ -82,67 +82,48 @@ sub collectOpenGraph($self, %args) {
             || (exists $default_prefixes{$used_prefix} ? $used_prefix : next);
 
         my $content  = trim_attr $meta->getAttribute('content');
-        my $property = "$prefix:$name";
         my $table    = $data->{$prefix} ||= {};
+        my $property = "$prefix:$name";
 
         # The spec is not clear.  Some structures may start with an $property:url,
         # is what examples tell us.  Not documented on ogp.me
         undef $attr if defined $attr && $attr eq 'url' && $is_structural{$property};
 
-        if($attr) {
-            if(! $is_structural{$property}) {
-                # people who did not understand the spec, or unknown extension
-            }
-            elsif(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
-               if($is_array{"$property:$attr"}) {
-                   push @{$structure->{$attr}}, $content;
-               }
-               else {
-                   $structure->{$attr} = $content;
-               }
-            }
-            # ignore attributes without starting property
-        }
-        elsif(my $default_attr = $is_structural{$property}) {
-            if($is_array{$property}) {
-                push @{$table->{$name}}, {$default_attr => $content};
-            }
-            else {
-                $table->{$name} = {$default_attr => $content};
-            }
-        }
-        elsif($is_array{$property}) {
-            push @{$table->{$name}}, $content;
-        }
-        else {
-            $table->{$name} = $content;
-        }
+        _handle_property($property, $name, $attr, $content, $table);
     }
 
     keys %$data ? $data : undef;
 }
 
-=head1 AUTHORS and COPYRIGHT
-    
-    Mark Overmeer
-    CPAN ID: MARKOV
-    markov at cpan dot org
-    https://solutions.overmeer.net/
-
-    Красимир Беров
-    CPAN ID: BEROV
-    berov на cpan точка org
-    https://studio-berov.eu
-
-This is free software, licensed under:
-
-The Artistic License 2.0 (GPL Compatible)
-
-The full text of the license can be found in the LICENSE file included with
-this module.
-
-This distribution contains other free software  and content which belongs to
-their respective authors.
-=cut
+sub _handle_property ($property, $name, $attr, $content, $table) {
+    if($attr) {
+        if(!$is_structural{$property}) {
+            # people who did not understand the spec, or unknown extension
+        }
+        elsif(my $structure = $is_array{$property} ? $table->{$name}[-1] : $table->{$name}) {
+            if($is_array{"$property:$attr"}) {
+                push @{ $structure->{$attr} }, $content;
+            }
+            else {
+                $structure->{$attr} = $content;
+            }
+        }
+        # ignore attributes without starting property
+    }
+    elsif(my $default_attr = $is_structural{$property}) {
+        if($is_array{$property}) {
+            push @{ $table->{$name} }, { $default_attr => $content };
+        }
+        else {
+            $table->{$name} = { $default_attr => $content };
+        }
+    }
+    elsif($is_array{$property}) {
+        push @{ $table->{$name} }, $content;
+    }
+    else {
+        $table->{$name} = $content;
+    }
+}
 
 1;
