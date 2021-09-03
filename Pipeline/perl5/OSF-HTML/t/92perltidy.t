@@ -4,6 +4,8 @@ use Test::More;
 use File::Basename;
 
 
+plan(skip_all => 'Test::PerlTidy is temporarirly muted');
+
 eval { require Test::PerlTidy; } or do {
     plan(skip_all => 'Test::PerlTidy required to criticise code');
 };

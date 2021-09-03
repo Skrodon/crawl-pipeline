@@ -46,9 +46,12 @@ sub save($$)
     my $data = try {
        my $html     = $response->inspectHTML or return;
          +{
-#           meta  => $html->collectMeta
-            links => $html->collectLinks
+            meta  => $html->collectMeta         # when first is more efficient
+          , metan => $html->collectMetaNames
+          , metac => $html->collectMetaClassic
+          , links => $html->collectLinks
           , refs  => $html->collectReferences
+          , OpenGraph => $html->collectOpenGraph
           , date  => $response->date
           };
     };

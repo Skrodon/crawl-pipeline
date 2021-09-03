@@ -18,16 +18,19 @@ sub article_offset {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article-offset.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
-    is_deeply(
-        $og => {
-            $i->prefix2ns('article') => {
-                'author'         => 'http://examples.opengraphprotocol.us/profile.html',
+    note explain $og;
+    is_deeply($og => {
+            'article' => {
+                'author' => [
+                    'http://examples.opengraphprotocol.us/profile.html'
+                ],
                 'published_time' => '1972-06-17T20:23:45-05:00',
                 'section'        => 'Front page',
-                'tag'            => 'Watergate'
+                'tag'            => [
+                    'Watergate'
+                ]
             },
-            $i->prefix2ns('og') => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -37,15 +40,15 @@ sub article_offset {
                         'width'      => '50'
                     }
                 ],
-                'locale'    => 'en_US',
+                'locale' => {
+                    'this' => 'en_US'
+                },
                 'site_name' => 'Open Graph protocol examples',
                 'title'     => '5 Held in Plot to Bug Office',
                 'type'      => 'article',
                 'url'       => 'http://examples.opengraphprotocol.us/article-offset.html'
-            },
-        },
-        'Right structure for article-offset.html'
-    );
+            }
+    }, 'Right structure for article-offset.html');
 }
 
 # article-utc.html
@@ -53,18 +56,20 @@ sub article_utc {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article-utc.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article-utc.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+    note explain $og;
     is_deeply(
-        $og =>
-
-          {
-            $i->prefix2ns('article') => {
-                'author'         => 'http://examples.opengraphprotocol.us/profile.html',
+        $og => {
+            'article' => {
+                'author' => [
+                    'http://examples.opengraphprotocol.us/profile.html'
+                ],
                 'published_time' => '1972-06-18T01:23:45Z',
                 'section'        => 'Front page',
-                'tag'            => 'Watergate'
+                'tag'            => [
+                    'Watergate'
+                ]
             },
-            'https://ogp.me/ns#' => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -74,14 +79,15 @@ sub article_utc {
                         'width'      => '50'
                     }
                 ],
-                'locale'    => 'en_US',
+                'locale' => {
+                    'this' => 'en_US'
+                },
                 'site_name' => 'Open Graph protocol examples',
                 'title'     => '5 Held in Plot to Bug Office',
                 'type'      => 'article',
                 'url'       => 'http://examples.opengraphprotocol.us/article-utc.html'
-            },
-          },
-        'Right structure for article-utc.html'
+            }
+        }, 'Right structure for article-utc.html'
     );
 }
 
@@ -90,16 +96,20 @@ sub article {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+    note explain $og;
     is_deeply(
         $og => {
-            $i->prefix2ns('article') => {
-                'author'         => 'http://examples.opengraphprotocol.us/profile.html',
+            'article' => {
+                'author' => [
+                    'http://examples.opengraphprotocol.us/profile.html'
+                ],
                 'published_time' => '1972-06-18',
                 'section'        => 'Front page',
-                'tag'            => 'Watergate'
+                'tag'            => [
+                    'Watergate'
+                ]
             },
-            'https://ogp.me/ns#' => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -109,14 +119,15 @@ sub article {
                         'width'      => '50'
                     }
                 ],
-                'locale'    => 'en_US',
+                'locale' => {
+                    'this' => 'en_US'
+                },
                 'site_name' => 'Open Graph protocol examples',
                 'title'     => '5 Held in Plot to Bug Office',
                 'type'      => 'article',
                 'url'       => 'http://examples.opengraphprotocol.us/article.html'
-            },
-        },
-        'Right structure for article.html'
+            }
+        }, 'Right structure for article.html'
     );
 }
 
@@ -125,10 +136,10 @@ sub audio_array {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/audio-array.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/audio-array.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+    note explain $og;
     is_deeply(
         $og => {
-            'https://ogp.me/ns#' => {
+            'og' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/1khz.mp3',
@@ -150,14 +161,15 @@ sub audio_array {
                         'width'      => '50'
                     }
                 ],
-                'locale'    => 'en_US',
+                'locale' => {
+                    'this' => 'en_US'
+                },
                 'site_name' => 'Open Graph protocol examples',
                 'title'     => 'Two structured audio properties',
                 'type'      => 'website',
                 'url'       => 'http://examples.opengraphprotocol.us/audio-array.html'
-            },
-        },
-        'Right structure for audio-array.html'
+            }
+        }, 'Right structure for audio-array.html'
     );
 }
 
@@ -166,10 +178,10 @@ sub audio_url {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/audio-url.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/audio-url.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+    note explain $og;
     is_deeply(
         $og => {
-            'https://ogp.me/ns#' => {
+            'og' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/250hz.mp3',
@@ -186,7 +198,7 @@ sub audio_url {
                         'width'      => '50'
                     }
                 ],
-                'locale'    => 'en_US',
+                'locale'    => { this => 'en_US' },
                 'site_name' => 'Open Graph protocol examples',
                 'title'     => 'Structured audio property',
                 'type'      => 'website',
@@ -205,7 +217,7 @@ sub audio {
     # note explain $og;
     is_deeply(
         $og => {
-            'https://ogp.me/ns#' => {
+            'og' => {
                 'audio' => [
                     {
                         'secure_url' => 'https://d72cgtgi6hvvl.cloudfront.net/media/audio/250hz.mp3',
@@ -222,7 +234,7 @@ sub audio {
                         'width'      => '50'
                     }
                 ],
-                'locale'    => 'en_US',
+                'locale'    => { this => 'en_US' },
                 'site_name' => 'Open Graph protocol examples',
                 'title'     => 'Structured audio property',
                 'type'      => 'website',
@@ -238,16 +250,16 @@ sub book_isbn10 {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/book-isbn10.html");
     my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/book-isbn10.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
-    # note explain $og;
+    note explain $og;
     is_deeply(
         $og => {
-            $i->prefix2ns('book') => {
-                'author'       => 'http://examples.opengraphprotocol.us/profile.html',
+            book => {
+                'author'       => ['http://examples.opengraphprotocol.us/profile.html'],
                 'isbn'         => '1451648537',
                 'release_date' => '2011-10-24',
-                'tag'          => [ 'Steve Jobs', 'Apple', 'Pixar' ]
+                'tag'          => ['Steve Jobs', 'Apple', 'Pixar']
             },
-            'https://ogp.me/ns#' => {
+            'og' => {
                 'image' => [
                     {
                         'height'     => '50',
@@ -257,7 +269,7 @@ sub book_isbn10 {
                         'width'      => '50'
                     }
                 ],
-                'locale'    => 'en_US',
+                'locale'    => { this => 'en_US' },
                 'site_name' => 'Open Graph protocol examples',
                 'title'     => 'Steve Jobs',
                 'type'      => 'book',
@@ -281,17 +293,17 @@ subtest 'book-isbn10.html'    => \&book_isbn10;
 # rest of the files are tested as one
 my $test_files = {
     'canadian.html' => {
-        'https://ogp.me/ns#' => {
-            'image'  => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
-            'locale' => 'en_CA',
+        'og' => {
+            'image'  => [{ 'url' => 'http://examples.opengraphprotocol.us/media/images/50.png' }],
+            'locale' => { this => 'en_CA' },
             'title'  => 'Canadian, eh?',
             'type'   => 'website',
             'url'    => 'http://examples.opengraphprotocol.us/canadian.html'
         },
     },
-    'error.html'       => {},
+    'error.html'       => undef,
     'image-array.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '75',
@@ -308,7 +320,7 @@ my $test_files = {
                     'width'      => '50'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'Two structured image properties',
             'type'      => 'website',
@@ -316,7 +328,7 @@ my $test_files = {
         },
     },
     'image-toosmall.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'description' => 'Will an indexer accept a 1x1 transparent PNG?',
             'image'       => [
                 {
@@ -327,7 +339,7 @@ my $test_files = {
                     'width'      => '1'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'Structured image too small',
             'type'      => 'website',
@@ -335,7 +347,7 @@ my $test_files = {
         },
     },
     'image-url.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -345,7 +357,7 @@ my $test_files = {
                     'width'      => '50'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'Full structured image property',
             'type'      => 'website',
@@ -353,7 +365,7 @@ my $test_files = {
         },
     },
     'image.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -363,31 +375,31 @@ my $test_files = {
                     'width'      => '50'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'Structured image property',
             'type'      => 'website',
             'url'       => 'http://examples.opengraphprotocol.us/image.html'
         },
-      }
+        }
 
     ,
-    'min.html' => {'https://ogp.me/ns#' => {'description' => 'Content not on page', 'site_name' => 'Open Graph protocol examples'}},
+    'min.html'     => { 'og' => { 'description' => 'Content not on page', 'site_name' => 'Open Graph protocol examples' } },
     'nomedia.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'description' => 'Required and optional properties without associated media.',
             'determiner'  => 'the',
-            'image'       => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
-            'locale'      => 'en_US',
+            'image'       => [{ 'url' => 'http://examples.opengraphprotocol.us/media/images/50.png' }],
+            'locale'      => { this => 'en_US' },
             'site_name'   => 'Open Graph protocol examples',
             'title'       => 'No media properties',
             'type'        => 'website',
             'url'         => 'http://examples.opengraphprotocol.us/nomedia.html'
         },
     },
-    'plain.html'   => {},
+    'plain.html'   => undef,
     'profile.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -397,26 +409,26 @@ my $test_files = {
                     'width'      => '50'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'John Doe profile page',
             'type'      => 'profile',
             'url'       => 'http://examples.opengraphprotocol.us/profile.html'
         },
-        HTML::Inspect->prefix2ns('profile') =>
-          {'first_name' => 'John', 'gender' => 'male', 'last_name' => 'Doe', 'username' => 'johndoe'}
-      }
+        'profile' =>
+            { 'first_name' => 'John', 'gender' => 'male', 'last_name' => 'Doe', 'username' => 'johndoe' }
+        }
 
     ,
     'required.html' => {
-        'https://ogp.me/ns#' => {
-            'image' => [ {'url' => 'http://examples.opengraphprotocol.us/media/images/50.png'} ],
+        'og' => {
+            'image' => [{ 'url' => 'http://examples.opengraphprotocol.us/media/images/50.png' }],
             'title' => 'Minimum required properties',
             'url'   => 'http://examples.opengraphprotocol.us/required.html'
         },
     },
     'video-array.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -426,7 +438,7 @@ my $test_files = {
                     'width'      => '50'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'Structured video array',
             'type'      => 'website',
@@ -435,10 +447,10 @@ my $test_files = {
                 {
                     'height'     => '296',
                     'secure_url' =>
-                      'https://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=https%3A%2F%2Fd72cgtgi6hvvl.cloudfront.net%2Fmedia%2Fvideo%2Ftrain.mp4',
+                        'https://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=https%3A%2F%2Fd72cgtgi6hvvl.cloudfront.net%2Fmedia%2Fvideo%2Ftrain.mp4',
                     'type' => 'application/x-shockwave-flash',
                     'url'  =>
-                      'http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=http%3A%2F%2Fexamples.opengraphprotocol.us%2Fmedia%2Fvideo%2Ftrain.mp4',
+                        'http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=http%3A%2F%2Fexamples.opengraphprotocol.us%2Fmedia%2Fvideo%2Ftrain.mp4',
                     'width' => '472'
                 },
                 {
@@ -459,9 +471,9 @@ my $test_files = {
         },
     },
     'video-movie.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'description' =>
-              "L'arriv\x{e9}e d'un train en gare de La Ciotat is an 1895 French short black-and-white silent documentary film directed and produced by Auguste and Louis Lumi\x{e8}re. Its first public showing took place in January 1896.",
+                "L'arriv\x{e9}e d'un train en gare de La Ciotat is an 1895 French short black-and-white silent documentary film directed and produced by Auguste and Louis Lumi\x{e8}re. Its first public showing took place in January 1896.",
             'image' => [
                 {
                     'height'     => '328',
@@ -471,7 +483,7 @@ my $test_files = {
                     'width'      => '500'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'Arrival of a Train at La Ciotat',
             'type'      => 'video.movie',
@@ -480,10 +492,10 @@ my $test_files = {
                 {
                     'height'     => '296',
                     'secure_url' =>
-                      'https://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=https%3A%2F%2Fd72cgtgi6hvvl.cloudfront.net%2Fmedia%2Fvideo%2Ftrain.mp4',
+                        'https://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=https%3A%2F%2Fd72cgtgi6hvvl.cloudfront.net%2Fmedia%2Fvideo%2Ftrain.mp4',
                     'type' => 'application/x-shockwave-flash',
                     'url'  =>
-                      'http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=http%3A%2F%2Fexamples.opengraphprotocol.us%2Fmedia%2Fvideo%2Ftrain.mp4',
+                        'http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=http%3A%2F%2Fexamples.opengraphprotocol.us%2Fmedia%2Fvideo%2Ftrain.mp4',
                     'width' => '472'
                 },
                 {
@@ -502,15 +514,15 @@ my $test_files = {
                 }
             ]
         },
-        HTML::Inspect->prefix2ns('video') => {
-            'director'     => 'http://examples.opengraphprotocol.us/profile.html',
+        'video' => {
+            'director'     => ['http://examples.opengraphprotocol.us/profile.html'],
             'duration'     => '50',
             'release_date' => '1895-12-28',
-            'tag'          => [ 'La Ciotat', 'train' ]
+            'tag'          => ['La Ciotat', 'train']
         }
     },
     'video.html' => {
-        'https://ogp.me/ns#' => {
+        'og' => {
             'image' => [
                 {
                     'height'     => '50',
@@ -520,7 +532,7 @@ my $test_files = {
                     'width'      => '50'
                 }
             ],
-            'locale'    => 'en_US',
+            'locale'    => { this => 'en_US' },
             'site_name' => 'Open Graph protocol examples',
             'title'     => 'Structured video property',
             'type'      => 'website',
@@ -529,10 +541,10 @@ my $test_files = {
                 {
                     'height'     => '296',
                     'secure_url' =>
-                      'https://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=https%3A%2F%2Fd72cgtgi6hvvl.cloudfront.net%2Fmedia%2Fvideo%2Ftrain.mp4',
+                        'https://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=https%3A%2F%2Fd72cgtgi6hvvl.cloudfront.net%2Fmedia%2Fvideo%2Ftrain.mp4',
                     'type' => 'application/x-shockwave-flash',
                     'url'  =>
-                      'http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=http%3A%2F%2Fexamples.opengraphprotocol.us%2Fmedia%2Fvideo%2Ftrain.mp4',
+                        'http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf?src=http%3A%2F%2Fexamples.opengraphprotocol.us%2Fmedia%2Fvideo%2Ftrain.mp4',
                     'width' => '472'
                 }
             ]
@@ -541,7 +553,7 @@ my $test_files = {
 };
 for my $filename (sort keys %$test_files) {
     # run only some tests
-    # next unless $filename =~/canadian|error|image|min|nomedia|palin|profile|required|video/;
+    # next unless $filename =~ /canadian|error|image|min|nomedia|palin|profile|required|video/;
     my $file = "$Bin/data/open-graph-protocol-examples/$filename";
     ok(-f $file, "$filename found");
     my $html = slurp($file);

@@ -20,7 +20,7 @@ Higher values than 3617.11/s (n=10996) is better
 
 Below is the benchmark.
 
-2. With precompiled XPATH queries. Nit much faster than hardcodded arguments
+2. With precompiled XPATH queries. Not much faster than hardcodded arguments
 
     Benchmark: timing 400000 iterations of HARD_XPATH, PRECOMPILED_XPATH, RAW_XPATH...
     HARD_XPATH: 20 wallclock secs (20.05 usr +  0.01 sys = 20.06 CPU) @ 19940.18/s (n=400000)

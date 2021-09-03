@@ -1,24 +1,27 @@
--pbp     # Start with Perl Best Practices
--w       # Show all warnings
--iob     # Ignore old breakpoints
--l=132   # 132 characters per line
--mbl=2   # No more than 2 blank lines
--i=4     # Indentation is 4 columns
--ci=2    # Continuation indentation is 2 columns
--vt=0    # Less vertical tightness
--pt=2    # High parenthesis tightness
--bt=2    # High brace tightness
--sbt=1   # Default square bracket tightness
--isbc    # Don't indent comments without leading space
-
--nst     # --nostandard-output
--utf8    # Encoding of both the input and output character streams
--b       # Modify files in place
+--perl-best-practices          # "sane" defaults
+--nostandard-output # We may not use -st (comming from -pbp) with more than one input file
+--warning-output               # warnings become errors
+# --ignore-old-breakpoints     #XXX no!
+--maximum-line-length=132
+#--maximum-consecutive-blank-lines=1  # default
+--indent-columns=4
+--continuation-indentation=4
+--vertical-tightness=0
+--vertical-tightness-closing=0
+--paren-tightness=2            # high
+#--brace-tightness==1          # medium (default)
+--square-bracket-tightness=2   # high
+--indent-spaced-block-comments # do not indent comments which start at pos 0
+--nospace-for-semicolon        # ; in for()
+--freeze-newlines              # no unfolding!
+--nocuddled-else               # no "} else {"
+#--nostandard-output           # no (default)
+-utf8                          # both the input and output encoding
+--backup-and-modify-in-place
 -bext='/' # and delete the originals if there are no error.
--nbl     # Opening brace on the same line as the keyword introducing it
--cti=1   # 1 extra indentation such that the closing token aligns with its
-         # opening token.
---nospace-after-keyword="if elsif"
+#--noopening-brace-on-new-line # (default K&R)
+--closing-token-indentation=0  # NO!!!!
+--nospace-after-keyword="if elsif while for until"
 #--nodelete-semicolons
---noblanks-before-comments # to prevent such blank lines from being introduced
-                           # before a commented line.
+--freeze-blank-lines
+--nospace-function-paren

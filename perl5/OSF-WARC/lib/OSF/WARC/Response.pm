@@ -52,7 +52,7 @@ sub inspectHTML()
 
     $self->{OWR_html} = HTML::Inspect->new(
         html_ref    => $self->decodedHtmlContent,
-        request_uri => defined $location ? html_url($location, $self->uri)->as_string : $self->uri;
+        request_uri => defined $location && length $location ? html_url($location, $self->uri) : $self->uri,
     );
 }
 
