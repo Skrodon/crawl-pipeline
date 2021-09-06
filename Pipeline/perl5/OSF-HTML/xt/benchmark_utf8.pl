@@ -2,7 +2,8 @@ use strict;
 use warnings;
 use utf8;
 use Benchmark;
-use Encode qw(_utf8_off);
+use Encode     qw(_utf8_off);
+use URI::Fast  ();
 
 =pod
 Check which way we can convert utf8 chars to hex encoding fastest, for
@@ -37,6 +38,9 @@ timethese(
             my $b;
             $str =~ s!([^\x20-\xf0])!$b = $1; utf8::encode($b);
                  join '', map sprintf("%%%02X", ord), split //, $b!ge;
+        },
+        URIFAST => sub {
+            URI::Fast::encode($str);
         },
         MIX => sub {
             my $b;

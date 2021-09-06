@@ -74,11 +74,8 @@ sub absolute_url($$) {
         }
 
         # Fix missing path encoding. See xt/benchmark_utf8.t
-        if($url->path =~ /[^\x20-\x7f]/) {
-            my $path = $url->path =~ s!([^\x20-\xf0])!$b = $1; utf8::encode($b);
-                 join '', map sprintf("%%%02X", ord), split //, $b!gre;
-            $url->path($path);
-        }
+        $url->path(URI::Fast::encode(scalar $url->path))
+            if $url->path =~ /[^\x20-\x7f]/;
 
         # Fix missing IDN encoding
         if($url->host =~ /[^\x20-\x7f]/) {   # html_url has removed % encoding
