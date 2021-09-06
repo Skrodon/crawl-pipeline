@@ -15,7 +15,7 @@ Here is the output on my computer
 
 
 New iteration (The winner is definitely STRIPGRSZ):
-    16:24:21|berov@kb-S340:OSF-HTML$ perl xt/benchmark_trim.pl 
+    16:24:21|berov@kb-S340:HTML-Inspect$ perl xt/benchmark_trim.pl 
     Benchmark: timing 5000000 iterations of COPY_TRIMMED, STRIPGRSZ, STRIPSS...
     COPY_TRIMMED: 17 wallclock secs (18.33 usr +  0.00 sys = 18.33 CPU) @ 272776.87/s (n=5000000)
      STRIPGRSZ: 10 wallclock secs (10.50 usr +  0.00 sys = 10.50 CPU) @ 476190.48/s (n=5000000)

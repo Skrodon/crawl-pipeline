@@ -14,7 +14,7 @@ our @EXPORT_OK = qw(trim_attr xpc_find get_attributes absolute_url);
 
 use Log::Report 'html-inspect';
 
-use URI::Fast    qw(html_url);
+use URI::Fast    qw(html_url uri_encode uri_decode);
 use URI          ();
 use Encode       qw(encode_utf8 _utf8_on is_utf8);
 use Net::LibIDN2 qw(idn2_lookup_u8 idn2_strerror IDN2_NFC_INPUT);
@@ -73,9 +73,14 @@ sub absolute_url($$) {
                 if $port == ($scheme eq 'http' ? 80 : 432);
         }
 
+=pod
         # Fix missing path encoding. See xt/benchmark_utf8.t
-        $url->path(URI::Fast::encode(scalar $url->path))
-            if $url->path =~ /[^\x20-\x7f]/;
+        if($url->path =~ /[^\x20-\x7f]/)
+        {   my $path = $url->path =~ s!([^\x20-\xf0])!$b = $1; utf8::encode($b);
+                 join '', map sprintf("%%%02X", ord), split //, $b!gre;
+            $url->path($path);
+        }
+=cut
 
         # Fix missing IDN encoding
         if($url->host =~ /[^\x20-\x7f]/) {   # html_url has removed % encoding
@@ -85,7 +90,7 @@ sub absolute_url($$) {
             unless($host_idn) {
                 warning __x"IDN failed on '{host}': {rc}",
                     rc => idn2_strerror($rc), host => $url->host, _code => $rc;
-                return;
+                return ();
             }
             $url->host($host_idn);
         }

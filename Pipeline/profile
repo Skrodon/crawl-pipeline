@@ -6,7 +6,7 @@ _T="\
 "
 
 PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/OSF-Pipeline/lib"
-PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/OSF-HTML/lib"
+PERL5LIB+=":$PIPELINE_REPO/Pipeline/perl5/HTML-Inspect/lib"
 
 export PIPELINE_TASKS=
 for TASK in $_T
