@@ -23,7 +23,7 @@ use List::Util   qw(uniq);
 
 # A map: for which tag which attributes to be considered as links?
 # We can add more tags and types of links later.
-my %referencing_attributes = (
+my %referencing_attrs = (
     a      => 'href',
     area   => 'href',
     base   => 'href',     # could be kept from the start, would add complexity
@@ -35,22 +35,41 @@ my %referencing_attributes = (
     script => 'src',
 );
 
-sub collectReferences($self) {
-    return $self->{HIR_refs} if $self->{HIR_refs};
-    my $base = $self->base;
+sub collectReferences($self, %filter) {
+    my $refs = $self->{HIR_refs} ||= {};
+    return $refs if $self->{HIR_refs_complete} && ! keys %filter;
 
-    state %find = map +("$_\_$referencing_attributes{$_}" => xpc_find "//$_\[\@$referencing_attributes{$_}\]"),
-        keys %referencing_attributes;
-
+    $self->{HIR_refs_complete}++;
     my %refs;
-    while (my ($tag, $attr) = each %referencing_attributes) {
-        my @attrs = uniq map absolute_url($_->getAttribute($attr), $base),
-            $find{"${tag}_$attr"}->($self);
+    while (my ($tag, $attr) = each %referencing_attrs) {
+       $refs{"$tag\_$attr"} = $self->collectReferencesFor($tag, $attr, %filter);
+    }
+    \%refs;
+}
 
-        $refs{"${tag}_$attr"} = \@attrs if @attrs;
+my %find_attr;
+sub collectReferencesFor($self, $tag, $attr, %filter) {
+    my $label = $tag . '_' . $attr;
+
+    # First get the full list of urls
+    my $data  = $self->{HIR_refs}{$label} ||=
+       do { my $find = $find_attr{$label} ||= xpc_find "//$tag\[\@$attr\]";
+            [ uniq map absolute_url($_->getAttribute($attr), $self->base), $find->($self) ];
+          };
+
+    keys %filter or return $data;
+    my $all = $data;
+
+    $data = [ grep /^https?\:/, @$data ] if $filter{http_only};
+    $data = [ grep /^mailto\:/, @$data ] if $filter{mailto_only};
+    $data = [ grep { $_ =~ $filter{matching} } @$data ] if $filter{matching};
+
+    if(my $max = $filter{maximum_set}) {
+        $data = [ @{$data}[0..$max-1] ];
     }
 
-    $self->{HIR_refs} = \%refs;
+    # When no modification, than return original to reduce copies.
+    @$data==@$all ? $all : $data;
 }
 
 1;

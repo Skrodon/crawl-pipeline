@@ -139,15 +139,21 @@ my $collectOpenGraph = sub {
 my $collectReferences = sub {
     my $html      = slurp("$Bin/data/links.html");
     my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
-    my $links     = $inspector->collectReferences();
+
+    my $a_href    = $inspector->collectReferencesFor(a => 'href');
+    note explain $a_href;
+
+    my $links     = $inspector->collectReferences;
     is(ref $links           => 'HASH',  'collectReferences() returns a HASH reference');
     is(ref $links->{a_href} => 'ARRAY', 'collectReferences() returns a HASH reference of ARRAYs');
-#    note explain $links;
+    is $a_href, $links->{a_href}, 'no reprocessing of already processed field';
+    ok defined $links->{img_src}, 'added more reference groups';
+    note explain $links;
 };
 
 subtest constructor_and_doc => $constructor_and_doc;
 subtest collectMeta         => $collectMeta;
-#subtest collectOpenGraph    => $collectOpenGraph;
-#subtest collectReferences   => $collectReferences;
+subtest collectOpenGraph    => $collectOpenGraph;
+subtest collectReferences   => $collectReferences;
 
 done_testing;

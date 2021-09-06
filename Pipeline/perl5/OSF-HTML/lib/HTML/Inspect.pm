@@ -231,17 +231,30 @@ Example:
 
 # All collectMeta* in ::Meta.pm mixin
 
+=head2 collectReferencesFor
+
+    $array = $self->collectReferencesFor($tag, $attr, %filter);
+
+Returns an ARRAY of unique normalized URIs, which where found with the
+C<$tag> attribute C<$attr>.  For instance, tag C<image> attribute C<src>.
+The URIs are in their textual order in the document, where only the
+first encounter is recorded.
+
+The C<%filter> rules will produce a subset of the links found.  You can
+use: C<http_only> (returning only http and https links), C<mailto_only>,
+C<maximum_set> (returning only the first C<n> links) and C<matching>,
+returning links matching a certain regex.
+
 =head2 collectReferences
 
-    $hash = $self->collectReferences;
+    $hash = $self->collectReferences(%filter);
 
-Collects all references from document. Returns a HASH reference with
-keys like C<$tag_$attr> and values an ARRAY of unique URIs found in such
-tags and attributes. The URIs are in their textual order in the document,
-where only the first encounter is recorded.
+Collects all references from document.  Method C<collectReferencesFor()>
+is called for a list of known tag/attribute pairs, and returned as a
+HASH of ARRAYs.  The keys of the HASH have format "$tag\_$attribute".
 =cut
 
-### collectReferences() is in mixin file ::References
+### collectReferences*() are in mixin file ::References
 
 
 =head2 collectOpenGraph
