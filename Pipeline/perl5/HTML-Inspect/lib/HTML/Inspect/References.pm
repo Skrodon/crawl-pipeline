@@ -67,7 +67,7 @@ sub collectReferencesFor($self, $tag, $attr, %filter) {
         $data = [ @{$data}[0..$max-1] ];
     }
 
-    # When no modification, than return original to reduce copies.
+    # When no modification, then return original to reduce copies.
     @$data==@$all ? $all : $data;
 }
 
