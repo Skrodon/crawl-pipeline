@@ -58,7 +58,7 @@ typedef struct url {
    char query    [MAX_STORE_PART];
 } url;
 
-url default_url = { "https:", "", "localhost", "", "/", "" };
+url default_url = { "https", "", "", "", "localhost", "/", "" };
 
 url global_base;
 
@@ -99,7 +99,7 @@ static int unhex(char *part) {
     * characters when %XX is found.  normalize_part() with put
     * then back in, only if needed.
     */
-   char *writer = part;
+   char * writer = part;
    while(part[0] != EOL) {
        char c = *part++;
        if(c=='%')
@@ -160,7 +160,7 @@ static int normalize_authorization(url *norm, char *auth, url *base) {
     }
 
     if( ! unhex(auth)) return 0;
-    if( ! normalize_part(norm->username, auth))   return 0;
+    if( ! normalize_part(norm->username, auth)) return 0;
     if(strcmp(norm->username, "anonymous")==0) {
         norm->username[0] = EOL;
     }
@@ -246,7 +246,7 @@ static int normalize_port(url *norm, char *port) {
         norm->port[0] = EOL;  /* ignore default for https */
     }
     else {
-        sprintf(norm->port, "%d", port);
+        sprintf(norm->port, "%d", portnr);
     }
 
     return 1;
@@ -287,7 +287,12 @@ static int normalize_hostport(url *norm, char *host, url *base) {
         *port++ = EOL;
     }
 
-    if( !normalize_host(norm, host)) return 0;
+    if(strlen(host)==0) {
+        strcpy(norm->host, base->host);
+    }
+    else {
+        if( !normalize_host(norm, host)) return 0;
+    }
 
     if(port && strlen(port)) {
        if( !normalize_port(norm, port)) return 0;
@@ -300,6 +305,7 @@ static int normalize_hostport(url *norm, char *host, url *base) {
 }
 
 static int resolve_external_address(url *norm, char **relative, url *base) {
+
     if((*relative)[0]==EOL || (*relative)[0]=='/') {
         /* empty location */
         strcpy(norm->username, base->username);
@@ -312,7 +318,7 @@ static int resolve_external_address(url *norm, char **relative, url *base) {
     char *end = strpbrk(*relative, "@/");
     if(end && end[0]=='@') {
         /* Authorization */
-        size_t auth_strlen = end - *relative - 1;
+        size_t auth_strlen = end - *relative;
         char   auth[MAX_STORE_PART];
 
         strncpy(auth, *relative, auth_strlen);
@@ -337,21 +343,26 @@ static int resolve_external_address(url *norm, char **relative, url *base) {
         strcpy(host, *relative);
     }
 
-    if( !normalize_host(norm, host)) return 0;
+    if( !normalize_hostport(norm, host, base)) return 0;
 
     return 1;
 }
 
 static int normalize_part(char *out, char *part) {
     /* XXX decode hex */
+    /* '+' -> blank */
+    /* remove \n\r\v\t */
     /* check utf8 bytes */
-    /* encode hex which is needed only */
+    /* encode hex which bytes are needed only */
+strcpy(out, part);
     return 1;
 }
 
 static int normalize_path(url *norm, char **path) {
     /* XXX split on / and ;, normalize all parts, rejoin */
     /* remove ./ and ../ */
+norm->path[0] = '/';
+norm->path[1] = EOL;
     return 1;
 }
 
@@ -417,7 +428,7 @@ static int normalize(url *norm, char *relative, url *base) {
 
 static void serialize(char *out, url *norm) {
     strcpy(out, norm->scheme);
-    strcat(out, "//:");
+    strcat(out, "://");
     if(strlen(norm->username)) {
         strcat(out, norm->username);
     }
