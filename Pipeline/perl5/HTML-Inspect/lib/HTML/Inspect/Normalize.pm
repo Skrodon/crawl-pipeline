@@ -3,9 +3,8 @@ package HTML::Inspect::Normalize;
 use parent 'Exporter';
 
 ## TODO: query cleanup
-## TODO: relative urls
-## TODO? check outf encoding
 ## TODO: check error handling
+## TODO? check utf created characters
 
 use warnings;
 use strict;
@@ -462,7 +461,8 @@ static int path2abs(url *norm, char **relative, url *base) {
 }
 
 static int normalize(url *norm, char *relative, url *base) {
-    char * end, * query;
+    char *end, *path, *query;
+    char constructed_path[MAX_STORE_PART];
 
     if(strlen(relative) > MAX_INPUT) {
         rc     = "HIN_INPUT_TOO_LONG";
@@ -490,37 +490,59 @@ static int normalize(url *norm, char *relative, url *base) {
             return 1;
         }
 
-        query  = NULL;
-        if(end = index(relative, '?')) {
-            end[0] = EOL;
-            query  = end+1;
-        }
-        if( !normalize_path(norm, relative) ) return 0;
+        path = relative;
+    }
+    else {
+        /* Local reference */
+        strcpy(norm->scheme,   base->scheme);
+        strcpy(norm->username, base->username);
+        strcpy(norm->password, base->password);
+        strcpy(norm->host,     base->host);
+        strcpy(norm->port,     base->port);
 
-        if(query) {
-            if( !normalize_query(norm, query) ) return 0;
+        if(relative[0]==EOL) {
+            /* Empty path: take base which is normalized already */
+            strcpy(norm->path, base->path);
+            strcpy(norm->query, base->query);
+            return 1;
         }
 
-        return 1;
+        if(relative[0]=='/') {
+            /* Absolute path */
+            path = relative;
+        }
+        else {
+            /* Relative path */
+            if(relative[0]=='#') {
+                strcpy(norm->path, base->path);
+                strcpy(norm->query, base->query);
+                return 1;
+            }
+
+            path = constructed_path;
+            strcpy(path, base->path);
+            if(relative[0]=='?') {
+                strcat(path, relative);
+            }
+            else {
+                rindex(path, '/')[1] = EOL;
+                strcat(path, relative);
+            }
+        }
     }
 
-    /*
-     * Relative address
-     */
-
-    strcpy(norm->username, base->username);
-    strcpy(norm->password, base->password);
-    strcpy(norm->host, base->host);
-    strcpy(norm->port, base->port);
-
-    if(relative[0]==EOL) {
-        /* Empty path: take base which is normalized already */
-        strcpy(norm->path, base->path);
-        strcpy(norm->query, base->query);
-        return 1;
+    /* Strip query from path */
+    query  = NULL;
+    if(end = index(path, '?')) {
+        end[0] = EOL;
+        query  = end+1;
     }
 
-    if( !normalize_path(norm, relative) ) return 0;
+    if( !normalize_path(norm, path) ) return 0;
+
+    if(query) {
+        if( !normalize_query(norm, query) ) return 0;
+    }
 
     return 1;
 }
