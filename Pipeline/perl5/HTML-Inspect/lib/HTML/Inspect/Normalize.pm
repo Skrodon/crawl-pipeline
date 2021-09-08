@@ -2,7 +2,6 @@
 package HTML::Inspect::Normalize;
 use parent 'Exporter';
 
-## TODO: query cleanup
 ## TODO: check error handling
 ## TODO? check utf created characters
 
@@ -407,7 +406,7 @@ static int normalize_path(url *out, char *path) {
     size_t len;
     char  *norm = (char *)&out->path;
 
-    while(path[0]!=EOL) {
+    while(*path) {
         begin   = path;
         len     = strcspn(begin, "/;");
         sep     = begin[len];
@@ -449,9 +448,29 @@ static int normalize_path(url *out, char *path) {
     return 1;
 }
 
-static int normalize_query(url *norm, char *query) {
+static int normalize_query(url *out, char *query) {
     /* XXX split on & and =, normalize all parts, rejoin */
-strcpy(norm->query, query);
+    char   *begin, *end;
+    char   sep;
+    char   segment[MAX_STORE_PART];
+    size_t len;
+    char  *norm = (char *)&out->query;
+
+    while(*query) {
+        begin   = query;
+        len     = strcspn(begin, "&=");
+        sep     = begin[len];
+        strncpy(segment, begin, len);
+        segment[len] = EOL;
+        query  += len;
+
+        if( !normalize_part(&norm[strlen(norm)], segment)) return 0;
+        if(sep != EOL) {
+            strncat(norm, &sep, 1);
+            query++;
+        }
+    }
+
     return 1;
 }
 

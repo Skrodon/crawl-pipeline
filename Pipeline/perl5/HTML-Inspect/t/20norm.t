@@ -63,6 +63,25 @@ is set_base('http://example.com/b/../../c'), 'http://example.com/c', 'too many i
 
 is set_base('http://e.com/a/./b/.././../c'), 'http://e.com/c',       'hard';
 
+### PATH RELATIVE
+set_base("http://a.bc");
+is normalize_url(''),                     'http://a.bc/',            'empty relative 1';
+is normalize_url('/'),                    'http://a.bc/',            'absolute empty 1';
+
+set_base("http://a.bc/d?q");
+is normalize_url(''),                     'http://a.bc/d?q',         'empty relative 2';
+is normalize_url('/'),                    'http://a.bc/',            'absolute empty 2';
+is normalize_url('/a'),                   'http://a.bc/a',           'absolute addition';
+is normalize_url('#f'),                   'http://a.bc/d?q',         'some fragment';
+is normalize_url('?p'),                   'http://a.bc/d?p',         'change of query';
+is normalize_url('../../e/'),             'http://a.bc/e/',          'postprocessing happens';
+
+### QUERY
+is set_base('http://e.com/?a+b=%63'),     'http://e.com/?a%20b=c',   'query hex encoding';
+is set_base('http://e.com/?pythaγoras'),  'http://e.com/?pytha%CE%B3oras', 'query unicode';
+is set_base('http://e.com/?a+b=%63&aγ&'), 'http://e.com/?a%20b=c&a%CE%B3&', 'query multi';
+
+### UNICODE
 is set_base('http://e.com/μαρκ'), 'http://e.com/%CE%BC%CE%B1%CF%81%CE%BA', 'unicode';
 
 ### HEX encoding
