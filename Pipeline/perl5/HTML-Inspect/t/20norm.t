@@ -154,5 +154,15 @@ ok !defined $val, 'got error 10: ' . ($val // 'undef');
 is $rc,   "HIN_PORT_NUMBER_TOO_HIGH";
 is $err,  "The portnumber is out of range";
 
+($val, $rc, $err) = set_page_base 'http://aa.be/%CE';        # missing follower
+ok !defined $val, 'got error 11: ' . ($val // 'undef');
+is $rc,   "HIN_INCORRECT_UTF8";
+is $err,  "Incorrect UTF8 encoding, broken characters";
+
+($val, $rc, $err) = set_page_base 'http://aa.be/%CE%B3%B3';  # extra follower
+ok !defined $val, 'got error 12: ' . ($val // 'undef');
+is $rc,   "HIN_INCORRECT_UTF8";
+is $err,  "Incorrect UTF8 encoding, broken characters";
+
 
 done_testing;

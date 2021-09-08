@@ -7,9 +7,6 @@ use strict;
 
 use Log::Report 'html-inspect';
 
-## TODO: check error handling
-## TODO? check utf created characters
-
 use Encode       qw(encode);
 use Scalar::Util qw(dualvar);
 
@@ -124,19 +121,24 @@ static int strip_fragment(char **str) {
     return 1;
 }
 
+inline int utf8cont(unsigned char c) {
+    return (c & 0b11000000) == 0b10000000;
+}
+
 static int unhex(char *part) {
    /* The part does not contain url serialization anymore.  The
     * changes are made in-place, because we reduce the number of
     * characters when %XX is found.  normalize_part() with put
     * then back in, only if needed.
     */
-   char * writer = part;
+   unsigned char * reader = part;
+   unsigned char * writer = part;
    char   c;
 
-   while(c = *part++) {
+   while(c = *reader++) {
        if(c=='%')
-       {   char h1 = tolower(*part++) & 0xFF;
-           char h2 = h1 ? tolower(*part++) & 0xFF : EOL;
+       {   char h1 = tolower(*reader++);
+           char h2 = h1 ? tolower(*reader++) : EOL;
 
            if( !isxdigit(h1) || !isxdigit(h2) ) {
                rc     = "HIN_ILLEGAL_HEX";
@@ -160,8 +162,32 @@ static int unhex(char *part) {
 
        if(c) *writer++ = c;         /* do not take NUL */
    }
-
    *writer = EOL;
+
+   /*
+    * Check validity utf8
+    */
+
+   reader = part;
+   while(*reader) {
+       unsigned char c = *reader++;
+       if(utf8cont(c)) {
+           /* follower without lead */
+       }
+       else
+       if( (c & 0b10000000)==0
+       ||( (c & 0b11100000)==0b11000000 && utf8cont(*reader++))
+       ||( (c & 0b11110000)==0b11100000 && utf8cont(*reader++) && utf8cont(*reader++))
+       ||( (c & 0b11111000)==0b11110000 && utf8cont(*reader++) && utf8cont(*reader++)
+             && utf8cont(*reader++))) {
+           continue;
+       }
+
+       rc     = "HIN_INCORRECT_UTF8";
+       errmsg = "Incorrect UTF8 encoding, broken characters";
+       return 0;
+   }
+
    return 1;
 }
 
