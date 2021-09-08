@@ -2,26 +2,51 @@
 package HTML::Inspect::Normalize;
 use parent 'Exporter';
 
+use warnings;
+use strict;
+
+use Log::Report 'html-inspect';
+
 ## TODO: check error handling
 ## TODO? check utf created characters
 
-use warnings;
-use strict;
-use Encode      qw(encode);
+use Encode       qw(encode);
+use Scalar::Util qw(dualvar);
 
-our @EXPORT = qw(set_base normalize_url);
+our @EXPORT = qw(set_page_base normalize_url);
 use Inline 'C' => config => libs => '-lidn2';
 use Inline 'C' => 'DATA';
 
 Inline->init;
 
-sub set_base($)      {
-my ($rc, $msg, $val) =
-    _set_base(encode utf8 => $_[0]);
-defined $val or warn "ERROR $rc=$msg\n";
-$val;
+# set_page_base($base_url)
+# In LIST context, returns normalized_url (string), rc, and errmsg.
+# In SCALAR content, only returns the normalized_url and casts error
+# exception when a problem was found.  The base is normalized first.
+
+sub set_page_base($) {
+    my ($rc, $msg, $val) = _set_base(encode utf8 => $_[0]);
+    return ($val, $rc, $msg) if wantarray;
+
+    defined $val
+        or error __x"Invalid base '{base}': {msg}", base => $_[0], msg => $msg, _code => $rc;
+
+    $val;
 }
-sub normalize_url($) { _normalize_url(encode utf8 => $_[0]) }
+
+# normalize_url($url)
+# Normalize a URL relative to the base (which needs to be set first).
+# Same returns as set_page_base
+
+sub normalize_url($) {
+    my ($rc, $msg, $val) = _normalize_url(encode utf8 => $_[0]);
+    return ($rc, $msg, $val) if wantarray;
+
+    defined $val
+        or error __x"Invalid url '{url}': {msg}", url => $_[0], msg => $msg, _code => $rc;
+
+    $val;
+}
 
 1;
 
@@ -37,8 +62,8 @@ __C__
 #include <arpa/inet.h>
 #include <idn2.h>
 
-#define MAX_INPUT_URL   1024
-#define MAX_STORE_PART  (4*MAX_INPUT_URL)
+#define MAX_INPUT_URL   1023
+#define MAX_STORE_PART  (4*(MAX_INPUT_URL+1))
 #define MAX_PORT_NUMBER 32767
 
 #define EOL    '\0'
@@ -47,10 +72,10 @@ __C__
 #define RESERVED_CHARS  ";/?:@=&"
 #define BLANKS          " \t\v\r\n"
 #define DIGITS          "0123456789"
-#define UNENCODED       "abcdefghijklmnopqrstuvwxyz" \
-                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
-                        DIGITS \
-                        "$-_.!*'(),"
+#define ALPHA           "abcdefghijklmnopqrstuvwxyz" \
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define UNENCODED       ALPHA DIGITS "$-_.!*'(),"
+#define SCHEMA_CHARS    ALPHA "-"
 #define IPv6_CHARS      DIGITS ":"
 #define IPv4_CHARS      DIGITS "."
 
@@ -121,6 +146,12 @@ static int unhex(char *part) {
            int d1 = h1 <= '9' ? h1 - '0' : h1 - 'a' +10;
            int d2 = h2 <= '9' ? h2 - '0' : h2 - 'a' +10;
            c = (d1 << 4) + d2;
+
+           if(c==0) {
+               rc     = "HIN_CONTAINS_ZERO";   /* spoofing attempt? */
+               errmsg = "Illegal use of NUL byte";
+               return 0;
+           }
        }
        else
        if(c=='+' || isblank(c) || c==0xA0) {   /* very special hex, and whitespaces */
@@ -143,12 +174,6 @@ static int rehex(char *out, char *part) {
 
        if(strchr(UNENCODED, this)) {
           *writer++ = this;
-       }
-       else
-       if(this==EOL) {
-           rc     = "NIH_CONTAINS_ZERO";   /* spoofing attempt? */
-           errmsg = "Illegal use of NUL byte";
-           return 0;
        }
        else {
           sprintf(writer, "%%%02X", this);
@@ -182,10 +207,13 @@ static int normalize_scheme(url *norm, char **relative, url *base) {
         strcpy(norm->scheme, base->scheme);
     }
     else
-    if(strstr(*relative, "://")) {
-        rc     = "HIN_UNSUPPORTED_SCHEME";
-        errmsg = "Only http(s) is supported";
-        return 0;
+    {
+        size_t len = strspn(*relative, SCHEMA_CHARS);
+        if((*relative)[len]==':') {
+            rc     = "HIN_UNSUPPORTED_SCHEME";
+            errmsg = "Only http(s) is supported";
+            return 0;
+        }
     }
 
     return 1;
@@ -222,7 +250,7 @@ static int normalize_host(url *norm, char *host) {
         host[strlen(host) -1] = EOL;  /* remove trailing ] */
         norm->host[0] = '[';
         byte bin_addr[sizeof(struct in6_addr)];
-        if(inet_pton(AF_INET6, host+1, bin_addr)) {
+        if(! inet_pton(AF_INET6, host+1, bin_addr)) {
             rc     = "HIN_IPV6_BROKEN";
             errmsg = "The IPv6 host address incorrect";
             return 0;
@@ -236,7 +264,7 @@ static int normalize_host(url *norm, char *host) {
     if(strspn(host, IPv4_CHARS)==strlen(host)) {
         /* IPv4 address */
         byte bin_addr[sizeof(struct in_addr)];
-        if(inet_pton(AF_INET, host, bin_addr)) {
+        if(! inet_pton(AF_INET, host, bin_addr)) {
             rc     = "HIN_IPV4_BROKEN";
             errmsg = "The IPv4 host address incorrect";
             return 0;
@@ -483,9 +511,9 @@ static int normalize(url *norm, char *relative, url *base) {
     char *end, *path, *query;
     char constructed_path[MAX_STORE_PART];
 
-    if(strlen(relative) > MAX_INPUT) {
+    if(strlen(relative) > MAX_INPUT_URL) {
         rc     = "HIN_INPUT_TOO_LONG";
-        errmsg = "Input url too long.";
+        errmsg = "Input url too long";
         return 0;
     }
 
@@ -602,16 +630,14 @@ static void answer(url *result) {
     inline_stack_reset;
     inline_stack_push(sv_2mortal(newSVpv(rc, PL_na)));
     inline_stack_push(sv_2mortal(newSVpv(errmsg, PL_na)));
-    inline_stack_push(sv_2mortal(newSVpv(normalized, PL_na)));
+    inline_stack_push(sv_2mortal(newSVpv(strlen(rc) ? NULL : normalized, PL_na)));
     inline_stack_done;
 }
 
 void _set_base(char *b) {
     rc = "";
-    if(! normalize(&global_base, b, &default_url)) {
-        return;
-    }
-    answer(&global_base);  /* Usefull for debugging */
+    normalize(&global_base, b, &default_url);
+    answer(&global_base);  /* Useful for debugging */
 }
 
 /* returns a LIST */
@@ -619,8 +645,6 @@ void _normalize_url(char *r) {
     url  absolute;
 
     rc = "";
-    if(! normalize(&absolute, r, &global_base)) {
-        return;
-    }
+    normalize(&absolute, r, &global_base);
     answer(&absolute);
 }

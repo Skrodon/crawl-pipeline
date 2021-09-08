@@ -1,94 +1,158 @@
 use warnings;
+
 use strict;
-use Test::More;
 use utf8;
 
-use_ok 'HTML::Inspect::Normalize';
-HTML::Inspect::Normalize->import;
+use Log::Report;
+use Test::More;
+
+use HTML::Inspect::Normalize;
 
 # We can use 'set_base' to check much of the parsing
 
+sub test_base($$$) {
+   my ($from, $to, $explain) = @_;
+   is scalar(set_page_base $from), $to, $explain;
+}
+
+sub test_norm($$$) {
+   my ($from, $to, $explain) = @_;
+   is scalar(normalize_url $from), $to, $explain;
+}
+
 ### Blanks
-is set_base('  http://example.com'),     'http://example.com/',      'leading blanks';
-is set_base('http://example.com  '),     'http://example.com/',      'trailing blanks';
-is set_base(' http://example.com '),     'http://example.com/',      'both side blanks';
+test_base '  http://example.com',     'http://example.com/',      'leading blanks';
+test_base 'http://example.com  ',     'http://example.com/',      'trailing blanks';
+test_base ' http://example.com ',     'http://example.com/',      'both side blanks';
 
 ### Fragment
-is set_base('http://example.com#abc'),   'http://example.com/',      'remove fragment';
+test_base 'http://example.com#abc',   'http://example.com/',      'remove fragment';
 
 ### Scheme
-is set_base('http://example.com'),       'http://example.com/',      'http';
-is set_base('https://example.com'),      'https://example.com/',     'https';
-is set_base('HtTP://example.com'),       'http://example.com/',      'schema in caps';
-is set_base('//example.com'),            'https://example.com/',     'schema from default';
+test_base 'http://example.com',       'http://example.com/',      'http';
+test_base 'https://example.com',      'https://example.com/',     'https';
+test_base 'HtTP://example.com',       'http://example.com/',      'schema in caps';
+test_base '//example.com',            'https://example.com/',     'schema from default';
 
 ### Auth
-is set_base('http://ab@exAmPle.cOm'),    'http://ab@example.com/',   'username';
-is set_base('http://ab:cd@exAmPle.cOm'), 'http://ab:cd@example.com/','username + password';
-is set_base('http://:cde@exAmPle.cOm'),  'http://:cde@example.com/', 'password';
+test_base 'http://ab@exAmPle.cOm',    'http://ab@example.com/',   'username';
+test_base 'http://ab:cd@exAmPle.cOm', 'http://ab:cd@example.com/','username + password';
+test_base 'http://:cde@exAmPle.cOm',  'http://:cde@example.com/', 'password';
 
 ### Host
-is set_base('http://exAmPle.cOm'),       'http://example.com/',      'hostname in caps';
-is set_base('http://'),                  'http://localhost/',        'missing host';
-is set_base('http:///'),                 'http://localhost/',        'missing host 2';
+test_base 'http://exAmPle.cOm',       'http://example.com/',      'hostname in caps';
+test_base 'http://',                  'http://localhost/',        'missing host';
+test_base 'http:///',                 'http://localhost/',        'missing host 2';
 
 ### Port
-is set_base('http://exAmPle.cOm:80'),    'http://example.com/',      'remove default port';
-is set_base('https://exAmPle.cOm:431'),  'https://example.com/',     'remove default port';
-is set_base('http://example.com:81'),    'http://example.com:81/',   'keep other port';
-is set_base('http://example.com:082'),   'http://example.com:82/',   'remove leading zeros';
-is set_base('http://example.com:'),      'http://example.com/',      'accidental no port';
-is set_base('http://:42'),               'http://localhost:42/',     'missing host 3';
+test_base 'http://exAmPle.cOm:80',    'http://example.com/',      'remove default port';
+test_base 'https://exAmPle.cOm:431',  'https://example.com/',     'remove default port';
+test_base 'http://example.com:81',    'http://example.com:81/',   'keep other port';
+test_base 'http://example.com:082',   'http://example.com:82/',   'remove leading zeros';
+test_base 'http://example.com:',      'http://example.com/',      'accidental no port';
+test_base 'http://:42',               'http://localhost:42/',     'missing host 3';
 
 ### PATH
-is set_base('http://example.com/'),      'http://example.com/',      'only root path';
-is set_base('http://example.com/a'),     'http://example.com/a',     'two level path';
-is set_base('http://example.com/a/bc'),  'http://example.com/a/bc',  'two level path';
-is set_base('http://example.com/a/bc/'), 'http://example.com/a/bc/', 'directory';
+test_base 'http://example.com/',      'http://example.com/',      'only root path';
+test_base 'http://example.com/a',     'http://example.com/a',     'two level path';
+test_base 'http://example.com/a/bc',  'http://example.com/a/bc',  'two level path';
+test_base 'http://example.com/a/bc/', 'http://example.com/a/bc/', 'directory';
 
-is set_base('http://example.com/.'),     'http://example.com/',      'useless dot';
-is set_base('http://example.com/a/.'),   'http://example.com/a/',    'dot keep /';
-is set_base('http://example.com/./a/'),  'http://example.com/a/',    'dot path removed';
-is set_base('http://example.com/./a/././b'), 'http://example.com/a/b','dot path removed multi';
-is set_base('http://example.com/.;a'),    'http://example.com/;a',   'dot with attribute';
-is set_base('http://example.com/b/.;a'),  'http://example.com/b/;a', 'dot with attribute';
-is set_base('http://example.com/.?a'),    'http://example.com/?a',   'dot with query';
+test_base 'http://example.com/.',     'http://example.com/',      'useless dot';
+test_base 'http://example.com/a/.',   'http://example.com/a/',    'dot keep /';
+test_base 'http://example.com/./a/',  'http://example.com/a/',    'dot path removed';
+test_base 'http://example.com/./a/././b', 'http://example.com/a/b','dot path removed multi';
+test_base 'http://example.com/.;a',    'http://example.com/;a',   'dot with attribute';
+test_base 'http://example.com/b/.;a',  'http://example.com/b/;a', 'dot with attribute';
+test_base 'http://example.com/.?a',    'http://example.com/?a',   'dot with query';
 
-is set_base('http://example.com/..'),     'http://example.com/',     'leading dot-dot';
-is set_base('http://example.com/../..'),  'http://example.com/',     'leading dot-dot x2';
-is set_base('http://example.com/../a'),   'http://example.com/a',    'leading dot-dot with more';
-is set_base('http://example.com/b/..'),   'http://example.com/',     'trailing dot-dot';
-is set_base('http://example.com/b/../c'), 'http://example.com/c',    'intermediate dot-dot';
-is set_base('http://example.com/b/../../c'), 'http://example.com/c', 'too many interm dot-dot';
+test_base 'http://example.com/..',     'http://example.com/',     'leading dot-dot';
+test_base 'http://example.com/../..',  'http://example.com/',     'leading dot-dot x2';
+test_base 'http://example.com/../a',   'http://example.com/a',    'leading dot-dot with more';
+test_base 'http://example.com/b/..',   'http://example.com/',     'trailing dot-dot';
+test_base 'http://example.com/b/../c', 'http://example.com/c',    'intermediate dot-dot';
+test_base 'http://example.com/b/../../c', 'http://example.com/c', 'too many interm dot-dot';
 
-is set_base('http://e.com/a/./b/.././../c'), 'http://e.com/c',       'hard';
+test_base 'http://e.com/a/./b/.././../c', 'http://e.com/c',       'hard';
 
 ### PATH RELATIVE
-set_base("http://a.bc");
-is normalize_url(''),                     'http://a.bc/',            'empty relative 1';
-is normalize_url('/'),                    'http://a.bc/',            'absolute empty 1';
+set_page_base "http://a.bc";
+test_norm '',                     'http://a.bc/',            'empty relative 1';
+test_norm '/',                    'http://a.bc/',            'absolute empty 1';
 
-set_base("http://a.bc/d?q");
-is normalize_url(''),                     'http://a.bc/d?q',         'empty relative 2';
-is normalize_url('/'),                    'http://a.bc/',            'absolute empty 2';
-is normalize_url('/a'),                   'http://a.bc/a',           'absolute addition';
-is normalize_url('#f'),                   'http://a.bc/d?q',         'some fragment';
-is normalize_url('?p'),                   'http://a.bc/d?p',         'change of query';
-is normalize_url('../../e/'),             'http://a.bc/e/',          'postprocessing happens';
+set_page_base "http://a.bc/d?q";
+test_norm '',                     'http://a.bc/d?q',         'empty relative 2';
+test_norm '/',                    'http://a.bc/',            'absolute empty 2';
+test_norm '/a',                   'http://a.bc/a',           'absolute addition';
+test_norm '#f',                   'http://a.bc/d?q',         'some fragment';
+test_norm '?p',                   'http://a.bc/d?p',         'change of query';
+test_norm '../../e/',             'http://a.bc/e/',          'postprocessing happens';
 
 ### QUERY
-is set_base('http://e.com/?a+b=%63'),     'http://e.com/?a%20b=c',   'query hex encoding';
-is set_base('http://e.com/?pythaγoras'),  'http://e.com/?pytha%CE%B3oras', 'query unicode';
-is set_base('http://e.com/?a+b=%63&aγ&'), 'http://e.com/?a%20b=c&a%CE%B3&', 'query multi';
+test_base 'http://e.com/?a+b=%63',     'http://e.com/?a%20b=c',   'query hex encoding';
+test_base 'http://e.com/?pythaγoras',  'http://e.com/?pytha%CE%B3oras', 'query unicode';
+test_base 'http://e.com/?a+b=%63&aγ&', 'http://e.com/?a%20b=c&a%CE%B3&', 'query multi';
 
 ### UNICODE
-is set_base('http://e.com/μαρκ'), 'http://e.com/%CE%BC%CE%B1%CF%81%CE%BA', 'unicode';
+test_base 'http://e.com/μαρκ', 'http://e.com/%CE%BC%CE%B1%CF%81%CE%BA', 'unicode';
 
 ### HEX encoding
-is set_base('http://e.com/a%6D%237%40%41'), 'http://e.com/am%237%40A', 'rehex';
-is set_base('http://e.com/%2F%25+%20 %3F'), 'http://e.com/%2F%25%20%20%20%3F', 'rehex blanks';
+test_base 'http://e.com/a%6D%237%40%41', 'http://e.com/am%237%40A', 'rehex';
+test_base 'http://e.com/%2F%25+%20 %3F', 'http://e.com/%2F%25%20%20%20%3F', 'rehex blanks';
 
 ### IDN
-is set_base('http://müller.de/abc'), 'http://xn--mller-kva.de/abc', 'idn';
+test_base 'http://müller.de/abc', 'http://xn--mller-kva.de/abc', 'idn';
+
+### Test errors
+my ($val, $rc, $err) = set_page_base 'http://aa.be/'.('f' x 3000);
+ok !defined $val, 'got error 1: ' . ($val // 'undef');
+is $rc,  'HIN_INPUT_TOO_LONG', 'rc';
+is $err, 'Input url too long', 'err';
+
+($val, $rc, $err) = set_page_base 'http://aa.be/%!!';
+ok !defined $val, 'got error 2: ' . ($val // 'undef');
+is $rc,   "HIN_ILLEGAL_HEX";
+is $err,  "Illegal hexadecimal digit";
+
+($val, $rc, $err) = set_page_base "http://a%00f.be/";
+ok !defined $val, 'got error 3: ' . ($val // 'undef');
+is $rc,   "HIN_CONTAINS_ZERO";
+is $err,  "Illegal use of NUL byte";
+
+($val, $rc, $err) = set_page_base 'tel:1123424';
+ok !defined $val, 'got error 4: ' . ($val // 'undef');
+is $rc,   "HIN_UNSUPPORTED_SCHEME";
+is $err,  "Only http(s) is supported";
+
+($val, $rc, $err) = set_page_base 'http://[0::a::c]/';
+ok !defined $val, 'got error 5: ' . ($val // 'undef');
+is $rc,   "HIN_IPV6_BROKEN";
+is $err,  "The IPv6 host address incorrect";
+
+($val, $rc, $err) = set_page_base 'http://[0::/';
+ok !defined $val, 'got error 6: ' . ($val // 'undef');
+is $rc,   "HIN_IPV6_UNTERMINATED";
+is $err,  "The IPv6 host address is not terminated";
+
+($val, $rc, $err) = set_page_base 'http://[0::]xxx/';
+ok !defined $val, 'got error 7: ' . ($val // 'undef');
+is $rc,   "HIN_IPV6_ENDS_INCORRECTLY";
+is $err,  "The IPv6 host address terminated unexpectedly";
+
+($val, $rc, $err) = set_page_base 'http://300.300.300.300/';
+ok !defined $val, 'got error 8: ' . ($val // 'undef');
+is $rc,   "HIN_IPV4_BROKEN";
+is $err,  "The IPv4 host address incorrect";
+
+($val, $rc, $err) = set_page_base 'http://aa.be:1a4/';
+ok !defined $val, 'got error 9: ' . ($val // 'undef');
+is $rc,   "HIN_PORT_NON_DIGIT";
+is $err,  "The portnumber contains a non-digit";
+
+($val, $rc, $err) = set_page_base 'http://aa.be:123456789/';
+ok !defined $val, 'got error 10: ' . ($val // 'undef');
+is $rc,   "HIN_PORT_NUMBER_TOO_HIGH";
+is $err,  "The portnumber is out of range";
+
 
 done_testing;
