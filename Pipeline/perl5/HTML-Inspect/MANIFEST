@@ -2,6 +2,7 @@
 .perltidyrc
 lib/HTML/Inspect.pm
 lib/HTML/Inspect/Meta.pm
+lib/HTML/Inspect/Normalize.pm
 lib/HTML/Inspect/OpenGraph.pm
 lib/HTML/Inspect/References.pm
 lib/HTML/Inspect/Util.pm
@@ -14,6 +15,7 @@ t/10_basic.t
 t/11_collect_links.t
 t/12_collect_opengraph.t
 t/13_collect_meta.t
+t/20norm.t
 t/90pod.t
 t/91perl-critic.t
 t/92perltidy.t

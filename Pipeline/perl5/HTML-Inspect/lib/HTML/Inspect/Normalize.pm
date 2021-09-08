@@ -1,6 +1,11 @@
-
+# vim: syntax=c
 package HTML::Inspect::Normalize;
 use parent 'Exporter';
+
+## TODO: query cleanup
+## TODO: relative urls
+## TODO? check outf encoding
+## TODO: check error handling
 
 use warnings;
 use strict;
@@ -12,7 +17,12 @@ use Inline 'C' => 'DATA';
 
 Inline->init;
 
-sub set_base($)      { _set_base(encode utf8 => $_[0]) }
+sub set_base($)      {
+my ($rc, $msg, $val) =
+    _set_base(encode utf8 => $_[0]);
+defined $val or warn "ERROR $rc=$msg\n";
+$val;
+}
 sub normalize_url($) { _normalize_url(encode utf8 => $_[0]) }
 
 1;
@@ -42,7 +52,7 @@ __C__
 #define UNENCODED       "abcdefghijklmnopqrstuvwxyz" \
                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
                         DIGITS \
-                        "$-_.+!*'(),"
+                        "$-_.!*'(),"
 #define IPv6_CHARS      DIGITS ":"
 #define IPv4_CHARS      DIGITS "."
 
@@ -61,8 +71,6 @@ typedef struct url {
 url default_url = { "https", "", "", "", "localhost", "/", "" };
 
 url global_base;
-
-static int normalize_part(char *out, char *part); /* XXX reorder */
 
 static char * rc;
 static char * errmsg;
@@ -100,26 +108,65 @@ static int unhex(char *part) {
     * then back in, only if needed.
     */
    char * writer = part;
-   while(part[0] != EOL) {
-       char c = *part++;
+   char   c;
+
+   while(c = *part++) {
        if(c=='%')
-       {   char h1 = tolower(*part++);
-           char h2 = h1 ? tolower(*part++) : EOL;
+       {   char h1 = tolower(*part++) & 0xFF;
+           char h2 = h1 ? tolower(*part++) & 0xFF : EOL;
 
            if( !isxdigit(h1) || !isxdigit(h2) ) {
                rc     = "HIN_ILLEGAL_HEX";
                errmsg = "Illegal hexadecimal digit";
                return 0;
            }
-           int d1 = h1 <= '9' ? h1 - '0' : h1 - 'a';
-           int d2 = h2 <= '9' ? h2 - '0' : h2 - 'a';
+           int d1 = h1 <= '9' ? h1 - '0' : h1 - 'a' +10;
+           int d2 = h2 <= '9' ? h2 - '0' : h2 - 'a' +10;
            c = (d1 << 4) + d2;
        }
-       *writer++ = c;
+       else
+       if(c=='+' || isblank(c) || c==0xA0) {   /* very special hex, and whitespaces */
+           c = ' ';
+       }
+
+       if(c) *writer++ = c;         /* do not take NUL */
    }
 
    *writer = EOL;
    return 1;
+}
+
+static int rehex(char *out, char *part) {
+    char *writer = out;
+    unsigned char this;
+
+    /*TODO? check utf8 bytes */
+    while(this = (*part++ & 0xFF)) {
+
+       if(strchr(UNENCODED, this)) {
+          *writer++ = this;
+       }
+       else
+       if(this==EOL) {
+           rc     = "NIH_CONTAINS_ZERO";   /* spoofing attempt? */
+           errmsg = "Illegal use of NUL byte";
+           return 0;
+       }
+       else {
+          sprintf(writer, "%%%02X", this);
+          writer += 3;
+       }
+
+    }
+
+    *writer = EOL;
+    return 1;
+}
+
+static int normalize_part(char *out, char *part) {
+    unhex(part);
+    if( !rehex(out, part)) return 0;
+    return 1;
 }
 
 static int normalize_scheme(url *norm, char **relative, url *base) {
@@ -201,7 +248,8 @@ static int normalize_host(url *norm, char *host) {
     }
 
     /* Normal or utf8 hostname.
-     * Whether we need IDN is not important: it also validates.
+     * Whether we need IDN is not important: it also validates and
+     * sets domain to lower-case.
      */
 
     uint8_t * idn;
@@ -336,11 +384,14 @@ static int resolve_external_address(url *norm, char **relative, url *base) {
 
     char host[MAX_STORE_PART];
     if(end) {
-        strncpy(host, *relative, end - *relative);
-        *relative = end +1;
+        size_t len = end - *relative;
+        strncpy(host, *relative, len);
+        host[len] = EOL;
+        *relative = end;
     }
     else {
         strcpy(host, *relative);
+        *relative += strlen(*relative);
     }
 
     if( !normalize_hostport(norm, host, base)) return 0;
@@ -348,26 +399,60 @@ static int resolve_external_address(url *norm, char **relative, url *base) {
     return 1;
 }
 
-static int normalize_part(char *out, char *part) {
-    /* XXX decode hex */
-    /* '+' -> blank */
-    /* remove \n\r\v\t */
-    /* check utf8 bytes */
-    /* encode hex which bytes are needed only */
-strcpy(out, part);
-    return 1;
-}
-
-static int normalize_path(url *norm, char **path) {
+static int normalize_path(url *out, char *path) {
     /* XXX split on / and ;, normalize all parts, rejoin */
     /* remove ./ and ../ */
-norm->path[0] = '/';
-norm->path[1] = EOL;
+    char   *begin, *end;
+    char   sep;
+    char   segment[MAX_STORE_PART];
+    size_t len;
+    char  *norm = (char *)&out->path;
+
+    while(path[0]!=EOL) {
+        begin   = path;
+        len     = strcspn(begin, "/;");
+        sep     = begin[len];
+        strncpy(segment, begin, len);
+        segment[len] = EOL;
+        path   += len;
+
+        if(segment[0]=='.' && segment[1]==EOL && norm[strlen(norm)-1]=='/') {
+            /* Remove "." segments.     /./ -> /
+             *   /.; -> ;   only when not first /
+             *   .  at end, simply remove
+             */
+            if(sep=='/' && strlen(norm)) {
+                norm[strlen(norm)-1] = EOL;
+            }
+        }
+        else
+        if(segment[0]=='.' && segment[1]=='.' && segment[2]==EOL
+           && sep!=';' && norm[strlen(norm)-1]=='/'
+          ) {
+            /* Remove ".." segments.   /a/../ => /
+             *   /a/..$ -> /   a/..;b unmodified
+             *   leading ..'s removed
+             */
+            if(strlen(norm) > 1) { norm[strlen(norm)-1] = EOL; }
+            end = rindex(norm, '/');
+            end[norm==end ? 1 : 0] = EOL;   /* protect leading slash */
+            if(sep != EOL) { path++;  sep = EOL; }
+        }
+        else
+        if( !normalize_part(&norm[strlen(norm)], segment)) return 0;
+
+        if(sep != EOL) {
+            strncat(norm, &sep, 1);
+            path++;
+        }
+    }
+
     return 1;
 }
 
 static int normalize_query(url *norm, char *query) {
     /* XXX split on & and =, normalize all parts, rejoin */
+strcpy(norm->query, query);
     return 1;
 }
 
@@ -377,7 +462,7 @@ static int path2abs(url *norm, char **relative, url *base) {
 }
 
 static int normalize(url *norm, char *relative, url *base) {
-    char * end;
+    char * end, * query;
 
     if(strlen(relative) > MAX_INPUT) {
         rc     = "HIN_INPUT_TOO_LONG";
@@ -405,12 +490,24 @@ static int normalize(url *norm, char *relative, url *base) {
             return 1;
         }
 
-        if( !normalize_path(norm, &relative) ) return 0;
+        query  = NULL;
+        if(end = index(relative, '?')) {
+            end[0] = EOL;
+            query  = end+1;
+        }
+        if( !normalize_path(norm, relative) ) return 0;
+
+        if(query) {
+            if( !normalize_query(norm, query) ) return 0;
+        }
 
         return 1;
     }
 
-    /* Relative address */
+    /*
+     * Relative address
+     */
+
     strcpy(norm->username, base->username);
     strcpy(norm->password, base->password);
     strcpy(norm->host, base->host);
@@ -422,6 +519,8 @@ static int normalize(url *norm, char *relative, url *base) {
         strcpy(norm->query, base->query);
         return 1;
     }
+
+    if( !normalize_path(norm, relative) ) return 0;
 
     return 1;
 }
