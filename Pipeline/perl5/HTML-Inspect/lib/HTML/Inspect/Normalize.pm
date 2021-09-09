@@ -22,7 +22,7 @@ Inline->init;
 # exception when a problem was found.  The base is normalized first.
 
 sub set_page_base($) {
-    my ($rc, $msg, $val) = _set_base(encode utf8 => $_[0]);
+    my ($val, $rc, $msg) = _set_base(encode utf8 => $_[0]);
     return ($val, $rc, $msg) if wantarray;
 
     defined $val
@@ -36,8 +36,8 @@ sub set_page_base($) {
 # Same returns as set_page_base
 
 sub normalize_url($) {
-    my ($rc, $msg, $val) = _normalize_url(encode utf8 => $_[0]);
-    return ($rc, $msg, $val) if wantarray;
+    my ($val, $rc, $msg) = _normalize_url(encode utf8 => $_[0]);
+    return ($val, $rc, $msg) if wantarray;
 
     defined $val
         or error __x"Invalid url '{url}': {msg}", url => $_[0], msg => $msg, _code => $rc;
@@ -59,9 +59,11 @@ __C__
 #include <arpa/inet.h>
 #include <idn2.h>
 
-#define MAX_INPUT_URL   1023
+/* Detailed discussion 
+   https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+ */
+#define MAX_INPUT_URL   2047
 #define MAX_STORE_PART  (4*(MAX_INPUT_URL+1))
-#define MAX_PORT_NUMBER 32767
 
 #define EOL    '\0'
 
@@ -75,6 +77,7 @@ __C__
 #define SCHEMA_CHARS    ALPHA "-"
 #define IPv6_CHARS      DIGITS ":"
 #define IPv4_CHARS      DIGITS "."
+#define MAX_PORT_NUMBER 32767
 
 typedef unsigned char byte;
 
@@ -118,6 +121,14 @@ static int strip_fragment(char **str) {
         end[0] = EOL;
     }
 
+    return 1;
+}
+
+static int reslash(char *str) {
+    while(*str) {
+        if(*str=='\\') *str = '/';
+        str++;
+    }
     return 1;
 }
 
@@ -528,11 +539,6 @@ static int normalize_query(url *out, char *query) {
     return 1;
 }
 
-static int path2abs(url *norm, char **relative, url *base) {
-    /* prepend base.path to relative remains */
-    return 1;
-}
-
 static int normalize(url *norm, char *relative, url *base) {
     char *end, *path, *query;
     char constructed_path[MAX_STORE_PART];
@@ -545,6 +551,7 @@ static int normalize(url *norm, char *relative, url *base) {
 
     if( !strip_blanks(&relative)) return 0;
     if( !strip_fragment(&relative)) return 0;
+    if( !reslash(relative)) return 0;
 
     norm->scheme[0] = norm->username[0] = norm->password[0] = norm->host[0] =
     norm->port[0] = norm->path[0] = norm->query[0] = EOL;
@@ -654,9 +661,9 @@ static void answer(url *result) {
     if(strlen(rc)==0) errmsg = "";
 
     inline_stack_reset;
+    inline_stack_push(sv_2mortal(newSVpv(strlen(rc) ? NULL : normalized, PL_na)));
     inline_stack_push(sv_2mortal(newSVpv(rc, PL_na)));
     inline_stack_push(sv_2mortal(newSVpv(errmsg, PL_na)));
-    inline_stack_push(sv_2mortal(newSVpv(strlen(rc) ? NULL : normalized, PL_na)));
     inline_stack_done;
 }
 

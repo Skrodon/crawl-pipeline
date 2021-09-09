@@ -15,7 +15,8 @@ our $VERSION = 0.11;
 
 use Log::Report 'html-inspect';
 
-use HTML::Inspect::Util qw(trim_attr xpc_find get_attributes absolute_url);
+use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes absolute_url);
+use HTML::Inspect::Normalize  qw(set_page_base);
 
 use HTML::Inspect::OpenGraph  ();            # mixin for collectOpenGraph()
 use HTML::Inspect::References ();            # mixin for collectReferences()
@@ -94,16 +95,27 @@ sub _init($self, $args) {
     my $doc = $self->{HI_doc} = $dom->documentElement;
     $self->{HI_xpc} = XML::LibXML::XPathContext->new($doc);
 
+    ### Establish the base for relative links.
+
+my $from;
     my $base;
     state $find_base_href = xpc_find '//base[@href][1]';
     if(my ($base_elem) = $find_base_href->($self)) {
-        # Sometimes, base does not contain scheme.
-        $base = absolute_url $base_elem->getAttribute('href'), $uri->as_string;
+        # Sometimes, base does not contain scheme, or is not clean
+$from = "PAGE ".$base_elem->getAttribute('href');
+        $base = normalize_url $base_elem->getAttribute('href'), $uri->as_string;
     }
     else {
+$from = "REQ $uri";
         $base = $uri->canonical->as_string;
     }
-    $self->{HI_base} = $base;
+
+    my ($url, $rc, $err) = set_page_base $base;  # for http in ::Normalize
+    unless($url) {
+        warn "BASE $rc: $err\n   $from\n   $base\n";
+        return ();
+    }
+    $self->{HI_base} = URI->new($base);          # base for other protocols (ftp)
 
     $self;
 }

@@ -28,6 +28,9 @@ test_base ' http://example.com ',     'http://example.com/',      'both side bla
 ### Fragment
 test_base 'http://example.com#abc',   'http://example.com/',      'remove fragment';
 
+### Reslash
+test_base 'http://example.com\\ab\\c\\', 'http://example.com/ab/c/', 'reslash';
+
 ### Scheme
 test_base 'http://example.com',       'http://example.com/',      'http';
 test_base 'https://example.com',      'https://example.com/',     'https';
