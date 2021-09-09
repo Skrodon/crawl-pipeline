@@ -426,7 +426,7 @@ static int resolve_external_address(url *norm, char **relative, url *base) {
         return 1;
     }
 
-    char *end = strpbrk(*relative, "@/");
+    char *end = strpbrk(*relative, "@/?");
     if(end && end[0]=='@') {
         /* Authorization */
         size_t auth_strlen = end - *relative;
@@ -470,6 +470,12 @@ static int normalize_path(url *out, char *path) {
     char   segment[MAX_STORE_PART];
     size_t len;
     char  *norm = (char *)&out->path;
+
+    if(path[0]==EOL) {
+        norm[0] = '/';
+        norm[1] = EOL;
+        return 1;
+    }
 
     while(*path) {
         begin   = path;
@@ -593,7 +599,7 @@ static int normalize(url *norm, char *relative, url *base) {
         }
         else {
             /* Relative path */
-            if(relative[0]=='#') {
+            if(relative[0]==EOL) {
                 strcpy(norm->path, base->path);
                 strcpy(norm->query, base->query);
                 return 1;

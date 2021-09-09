@@ -65,36 +65,37 @@ test_base 'http://example.com/.',     'http://example.com/',      'useless dot';
 test_base 'http://example.com/a/.',   'http://example.com/a/',    'dot keep /';
 test_base 'http://example.com/./a/',  'http://example.com/a/',    'dot path removed';
 test_base 'http://example.com/./a/././b', 'http://example.com/a/b','dot path removed multi';
-test_base 'http://example.com/.;a',    'http://example.com/;a',   'dot with attribute';
-test_base 'http://example.com/b/.;a',  'http://example.com/b/;a', 'dot with attribute';
-test_base 'http://example.com/.?a',    'http://example.com/?a',   'dot with query';
+test_base 'http://example.com/.;a',   'http://example.com/;a',    'dot with attribute';
+test_base 'http://example.com/b/.;a', 'http://example.com/b/;a',  'dot with attribute';
+test_base 'http://example.com/.?a',   'http://example.com/?a',    'dot with query';
 
-test_base 'http://example.com/..',     'http://example.com/',     'leading dot-dot';
-test_base 'http://example.com/../..',  'http://example.com/',     'leading dot-dot x2';
-test_base 'http://example.com/../a',   'http://example.com/a',    'leading dot-dot with more';
-test_base 'http://example.com/b/..',   'http://example.com/',     'trailing dot-dot';
-test_base 'http://example.com/b/../c', 'http://example.com/c',    'intermediate dot-dot';
+test_base 'http://example.com/..',    'http://example.com/',      'leading dot-dot';
+test_base 'http://example.com/../..', 'http://example.com/',      'leading dot-dot x2';
+test_base 'http://example.com/../a',  'http://example.com/a',     'leading dot-dot with more';
+test_base 'http://example.com/b/..',  'http://example.com/',      'trailing dot-dot';
+test_base 'http://example.com/b/../c','http://example.com/c',     'intermediate dot-dot';
 test_base 'http://example.com/b/../../c', 'http://example.com/c', 'too many interm dot-dot';
 
 test_base 'http://e.com/a/./b/.././../c', 'http://e.com/c',       'hard';
 
 ### PATH RELATIVE
 set_page_base "http://a.bc";
-test_norm '',                     'http://a.bc/',            'empty relative 1';
-test_norm '/',                    'http://a.bc/',            'absolute empty 1';
+test_norm '',                         'http://a.bc/',             'empty relative 1';
+test_norm '/',                        'http://a.bc/',             'absolute empty 1';
 
 set_page_base "http://a.bc/d?q";
-test_norm '',                     'http://a.bc/d?q',         'empty relative 2';
-test_norm '/',                    'http://a.bc/',            'absolute empty 2';
-test_norm '/a',                   'http://a.bc/a',           'absolute addition';
-test_norm '#f',                   'http://a.bc/d?q',         'some fragment';
-test_norm '?p',                   'http://a.bc/d?p',         'change of query';
-test_norm '../../e/',             'http://a.bc/e/',          'postprocessing happens';
+test_norm '',                         'http://a.bc/d?q',          'empty relative 2';
+test_norm '/',                        'http://a.bc/',             'absolute empty 2';
+test_norm '/a',                       'http://a.bc/a',            'absolute addition';
+test_norm '#f',                       'http://a.bc/d?q',          'some fragment';
+test_norm '?p',                       'http://a.bc/d?p',          'change of query';
+test_norm '../../e/',                 'http://a.bc/e/',           'postprocessing happens';
 
 ### QUERY
-test_base 'http://e.com/?a+b=%63',     'http://e.com/?a%20b=c',   'query hex encoding';
-test_base 'http://e.com/?pythaγoras',  'http://e.com/?pytha%CE%B3oras', 'query unicode';
-test_base 'http://e.com/?a+b=%63&aγ&', 'http://e.com/?a%20b=c&a%CE%B3&', 'query multi';
+test_base 'http://e.com?q',           'http://e.com/?q',          'query as root';
+test_base 'http://e.com/?a+b=%63',    'http://e.com/?a%20b=c',    'query hex encoding';
+test_base 'http://e.com/?pythaγoras', 'http://e.com/?pytha%CE%B3oras', 'query unicode';
+test_base 'http://e.com?a+b=%63&aγ&', 'http://e.com/?a%20b=c&a%CE%B3&', 'query multi';
 
 ### UNICODE
 test_base 'http://e.com/μαρκ', 'http://e.com/%CE%BC%CE%B1%CF%81%CE%BA', 'unicode';
