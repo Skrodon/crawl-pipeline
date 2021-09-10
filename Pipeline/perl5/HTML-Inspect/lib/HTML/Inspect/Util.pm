@@ -56,11 +56,12 @@ my %take_schemes = map +($_ => 1), qw/mailto http https ftp tel/;
 sub absolute_url($$) {
     my ($href, $base) = @_;
 
-    my $scheme = $href =~ /^([a-z-]+)\:/i ? lc($1) : 'https';  # base always http*
-    $take_schemes{$scheme} or return ();
+    my $scheme = $href =~ /^([^a-z0]+)\:/i ? lc($1) : undef;
+    $scheme && $take_schemes{$scheme}
+        or return ();
 
     my $url;
-    if($scheme eq 'https' || $scheme eq 'http') {
+    if(!$scheme || $scheme eq 'https' || $scheme eq 'http') {
         my ($abs, $rc, $msg) = normalize_url $href;
         return $abs if defined $abs;
 

@@ -7,6 +7,7 @@ use Log::Report;
 use Test::More;
 
 use HTML::Inspect::Normalize;
+use HTML::Inspect::Util  qw(absolute_url);
 
 # We can use 'set_base' to check much of the parsing
 
@@ -168,5 +169,9 @@ ok !defined $val, 'got error 12: ' . ($val // 'undef');
 is $rc,   "HIN_INCORRECT_UTF8";
 is $err,  "Incorrect UTF8 encoding, broken characters";
 
+
+### Check ::Util::absolute_url()
+
+ok ! defined absolute_url('data:xyz', ''), 'data should not be taken';
 
 done_testing;
