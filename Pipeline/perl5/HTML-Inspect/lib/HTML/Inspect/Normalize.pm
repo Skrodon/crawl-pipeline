@@ -77,7 +77,7 @@ __C__
 #define SCHEMA_CHARS    ALPHA "-"
 #define IPv6_CHARS      DIGITS ":"
 #define IPv4_CHARS      DIGITS "."
-#define MAX_PORT_NUMBER 32767
+#define MAX_PORT_NUMBER 65535
 
 typedef unsigned char byte;
 
