@@ -26,6 +26,13 @@ test_base '  http://example.com',     'http://example.com/',      'leading blank
 test_base 'http://example.com  ',     'http://example.com/',      'trailing blanks';
 test_base ' http://example.com ',     'http://example.com/',      'both side blanks';
 
+test_base "http://example.\rcom",     'http://example.com/',      'remove lf';
+test_base "http://example.\ncom",     'http://example.com/',      'remove cr';
+test_base "http://example.\tcom",     'http://example.com/',      'remove tab';
+test_base "http://example.\x{0B}com", 'http://example.com/',      'remove vt';
+test_base "http://example.\r\ncom",   'http://example.com/',      'remove crlf';
+test_base "http://example.\n  com",   'http://example.com/',      'blanks following line fold';
+
 ### Fragment
 test_base 'http://example.com#abc',   'http://example.com/',      'remove fragment';
 

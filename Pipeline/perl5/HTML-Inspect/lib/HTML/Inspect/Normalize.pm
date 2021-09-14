@@ -136,7 +136,7 @@ inline int utf8cont(unsigned char c) {
     return (c & 0b11000000) == 0b10000000;
 }
 
-static int unhex(char *part) {
+static int clean_part(char *part) {
    /* The part does not contain url serialization anymore.  The
     * changes are made in-place, because we reduce the number of
     * characters when %XX is found.  normalize_part() with put
@@ -144,7 +144,7 @@ static int unhex(char *part) {
     */
    unsigned char * reader = part;
    unsigned char * writer = part;
-   char   c;
+   unsigned char   c;
 
    while(c = *reader++) {
        if(c=='%')
@@ -167,11 +167,18 @@ static int unhex(char *part) {
            }
        }
        else
-       if(c=='+' || isblank(c) || c==0xA0) {   /* very special hex, and whitespaces */
+       if(c=='+' || c==' ') {       /* very special hex and space */
            c = ' ';
        }
+       else
+       if(isspace(c)) {             /* ignore other whitespaces */
+           c = EOL;
+           while(reader[0]==' ') {  /* ignore blanks after line fold */
+               reader++;
+           }
+       }
 
-       if(c) *writer++ = c;         /* do not take NUL */
+       if(c) *writer++ = c;          /* do not take NUL/EOL */
    }
    *writer = EOL;
 
@@ -224,7 +231,7 @@ static int rehex(char *out, char *part) {
 }
 
 static int normalize_part(char *out, char *part) {
-    unhex(part);
+    clean_part(part);
     if( !rehex(out, part)) return 0;
     return 1;
 }
@@ -263,13 +270,13 @@ static int normalize_authorization(url *norm, char *auth, url *base) {
     if(colon = index(auth, ':')) {
         colon[0] = EOL;         /* chop username */
         passwd   = colon+1;     /* remainer is password */
-        if( ! unhex(passwd)) return 0;
+        if( ! clean_part(passwd)) return 0;
     }
     else {
         passwd   = auth + strlen(auth);  /* EOL */
     }
 
-    if( ! unhex(auth)) return 0;
+    if( ! clean_part(auth)) return 0;
     if( ! normalize_part(norm->username, auth)) return 0;
     if(strcmp(norm->username, "anonymous")==0) {
         norm->username[0] = EOL;
@@ -280,7 +287,7 @@ static int normalize_authorization(url *norm, char *auth, url *base) {
 }
 
 static int normalize_host(url *norm, char *host) {
-    if( ! unhex(host)) return 0;
+    if( ! clean_part(host)) return 0;
 
     if(host[0]=='[') {
         /* IPv6 address */
@@ -330,7 +337,7 @@ static int normalize_host(url *norm, char *host) {
 }
 
 static int normalize_port(url *norm, char *port) {
-    if( ! unhex(port)) return 0;
+    if( ! clean_part(port)) return 0;
 
     int portnr = 0;
     while(isdigit(port[0])) {
