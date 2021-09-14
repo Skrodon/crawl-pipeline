@@ -17,7 +17,6 @@ use Log::Report 'html-inspect';
 use HTML::Inspect::Normalize qw(normalize_url);
 use URI          ();
 use Encode       qw(encode_utf8 _utf8_on is_utf8);
-use Net::LibIDN2 qw(idn2_lookup_u8 idn2_strerror IDN2_NFC_INPUT);
 
 # Deduplicate white spaces and trim string.
 sub trim_attr($) { ($_[0] // '') =~ s/\s+/ /grs =~ s/^ //r =~ s/ \z//r }
