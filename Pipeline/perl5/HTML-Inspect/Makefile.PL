@@ -24,7 +24,7 @@ WriteMakefile(
         'Log::Report'  => 1.32,
         'Net::LibIDN2' => 1.01,
         'URI'          => 5.09,
-        'URI::Fast'    => 0.54,
+        'URI::Fast'    => 0.55,
         'XML::LibXML'  => 2.0207,
     },
     test             => {TESTS         => 't/*.t'},
