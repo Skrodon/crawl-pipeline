@@ -14,7 +14,7 @@ our @EXPORT_OK = qw(trim_attr xpc_find get_attributes absolute_url);
 
 use Log::Report 'html-inspect';
 
-use URI::Fast    qw(html_url uri_encode uri_decode);
+use HTML::Inspect::Normalize qw(normalize_url);
 use URI          ();
 use Encode       qw(encode_utf8 _utf8_on is_utf8);
 use Net::LibIDN2 qw(idn2_lookup_u8 idn2_strerror IDN2_NFC_INPUT);
@@ -56,52 +56,24 @@ my %take_schemes = map +($_ => 1), qw/mailto http https ftp tel/;
 sub absolute_url($$) {
     my ($href, $base) = @_;
 
-    my $scheme = $href =~ /^([a-z]+)\:/i ? lc($1) : 'https';  # base always http*
-    $take_schemes{$scheme} or return ();
+    my $scheme = $href =~ /^([^a-z0]+)\:/i ? lc($1) : undef;
+    $scheme && $take_schemes{$scheme}
+        or return ();
 
     my $url;
-    if($scheme eq 'https' || $scheme eq 'http') {
-        # URI::Fast is only good for http normalization: then it is much faster
-        # than module URI.
+    if(!$scheme || $scheme eq 'https' || $scheme eq 'http') {
+        my ($abs, $rc, $msg) = normalize_url $href;
+        return $abs if defined $abs;
 
-        $url = html_url $href, $base;
-
-        if(my $port = $url->port) {
-            # not validated nor normalized by URI::Fast
-            $port =~ m/^[0-9]{1,8}$/ or return ();  # illegal ports
-            $url->port(undef)                       # default ports
-                if $port == ($scheme eq 'http' ? 80 : 432);
-        }
-
-        # Fix missing path encoding. See xt/benchmark_utf8.t
-        if($url->path =~ /[^\x20-\x7f]/)
-        {   my $path = $url->path =~ s!([^\x20-\xf0])!$b = $1; utf8::encode($b);
-                 join '', map sprintf("%%%02X", ord), split //, $b!gre;
-            $url->raw_path($path);
-        }
-
-        # Fix missing IDN encoding
-        if($url->host =~ /[^\x20-\x7f]/) {   # html_url has removed % encoding
-            my $host = encode_utf8($url->host) or return ();
-            my $rc   = 0;
-            my $host_idn = idn2_lookup_u8($host, IDN2_NFC_INPUT, $rc);
-            unless($host_idn) {
-                warning __x"IDN failed on '{host}': {rc}",
-                    rc => idn2_strerror($rc), host => $url->host, _code => $rc;
-                return ();
-            }
-            $url->host($host_idn);
-        }
+        warn "$rc: $msg\n    $href\n";
+        return ();
     }
     else {
         # about 2.2% of the links
         $url = URI->new_abs($href, $base)->canonical;
+        $url->fragment(undef);
+        return $url->as_string;
     }
-
-    # Fragments are useful for display, what we are not doing.
-    $url->fragment(undef);
-
-    $url->as_string;
 }
 
 1;
