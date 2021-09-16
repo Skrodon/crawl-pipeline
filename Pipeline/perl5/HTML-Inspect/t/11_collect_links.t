@@ -1,15 +1,15 @@
 use strict;
 use warnings;
 use utf8;
+
 use FindBin qw($Bin);
-use lib "$Bin/lib";
-use lib "$Bin/../lib";
+
 use Test::More;
-use TestUtils qw(slurp);
-use HTML::Inspect;
+use File::Slurper qw(read_text);
+use HTML::Inspect ();
 
 # Testing collectLinks() thoroughly here
-my $html      = slurp("$Bin/data/links.html");
+my $html      = read_text "$Bin/data/links.html";
 my $inspector = HTML::Inspect->new(location => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
 
 ###

@@ -21,6 +21,7 @@ WriteMakefile(
     VERSION_FROM     => $module_file,
     AUTHOR           => 'Красимир Беров <berov@cpan.org>',
     PREREQ_PM        => {
+        'File::Slurper'=> 0.12,
         'Log::Report'  => 1.32,
         'Net::LibIDN2' => 1.01,
         'URI'          => 5.09,

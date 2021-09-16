@@ -1,15 +1,16 @@
 use strict;
 use warnings;
 use utf8;
+
 use FindBin qw($Bin);
-use lib "$Bin/lib";
-use lib "$Bin/../lib";
 use Test::More;
-use TestUtils qw(slurp);
+use File::Slurper qw(read_text);
 
 require_ok('HTML::Inspect');
-my $html      = slurp("$Bin/data/collectMeta.html");
+
+my $html      = read_text "$Bin/data/collectMeta.html";
 my $inspector = HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html);
+
 # Should capital letters be acepted in name attributes content? Not
 # in standart metadata names, otherwise why not.
 # See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
@@ -23,9 +24,11 @@ my $expectedMetaNames = {
     'generator'   => "Хей, гиди Ванчо",
     'referrer'    => 'no-referrer'
 };
+
 my $collectedMetaNames = $inspector->collectMetaNames();    # cached already
 is_deeply($collectedMetaNames => $expectedMetaNames, 'collectMetaNames() returns  HIM_names');
 note explain $collectedMetaNames;
+
 my $expectedAllMeta = [
     {'charset' => 'UTF-8'},
     {'content' => 'Open Graph protocol',     'property' => 'og:title'},

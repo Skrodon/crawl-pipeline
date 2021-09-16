@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 use utf8;
+
 use FindBin qw($Bin);
-use lib "$Bin/lib";
-use lib "$Bin/../lib";
+
 use Test::More;
-use TestUtils qw(slurp);
-use HTML::Inspect;
+use HTML::Inspect ();
+use File::Slurper qw(read_text);
 
 # Testing collectOpenGraph() thoroughly here
 unless (-d "$Bin/data/open-graph-protocol-examples") {
@@ -15,9 +15,11 @@ unless (-d "$Bin/data/open-graph-protocol-examples") {
 
 # article-offset.html
 sub article_offset {
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
-    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/article-offset.html', html_ref => \$html);
-    my $og   = $i->collectOpenGraph();
+    my $html = read_text "$Bin/data/open-graph-protocol-examples/article-offset.html";
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/article-offset.html',
+       html_ref => \$html);
+
+    my $og   = $i->collectOpenGraph;
     note explain $og;
     is_deeply($og => {
             'article' => {
@@ -53,9 +55,9 @@ sub article_offset {
 
 # article-utc.html
 sub article_utc {
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/article-utc.html");
+    my $html = read_text "$Bin/data/open-graph-protocol-examples/article-utc.html";
     my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/article-utc.html', html_ref => \$html);
-    my $og   = $i->collectOpenGraph();
+    my $og   = $i->collectOpenGraph;
     note explain $og;
     is_deeply(
         $og => {
@@ -93,7 +95,7 @@ sub article_utc {
 
 #article.html
 sub article {
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/article.html");
+    my $html = read_text "$Bin/data/open-graph-protocol-examples/article.html";
     my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/article.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
@@ -133,7 +135,7 @@ sub article {
 
 # audio-array.html
 sub audio_array {
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/audio-array.html");
+    my $html = read_text "$Bin/data/open-graph-protocol-examples/audio-array.html";
     my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/audio-array.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
@@ -175,7 +177,7 @@ sub audio_array {
 
 # audio-url.html
 sub audio_url {
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/audio-url.html");
+    my $html = read_text "$Bin/data/open-graph-protocol-examples/audio-url.html";
     my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/audio-url.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
@@ -211,7 +213,7 @@ sub audio_url {
 
 # audio.html
 sub audio {
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/audio.html");
+    my $html = read_text "$Bin/data/open-graph-protocol-examples/audio.html";
     my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/audio.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     # note explain $og;
@@ -247,7 +249,7 @@ sub audio {
 
 # book-isbn10.html
 sub book_isbn10 {
-    my $html = slurp("$Bin/data/open-graph-protocol-examples/book-isbn10.html");
+    my $html = read_text "$Bin/data/open-graph-protocol-examples/book-isbn10.html";
     my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/book-isbn10.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
@@ -551,15 +553,18 @@ my $test_files = {
         },
     },
 };
+
 for my $filename (sort keys %$test_files) {
     # run only some tests
     # next unless $filename =~ /canadian|error|image|min|nomedia|palin|profile|required|video/;
     my $file = "$Bin/data/open-graph-protocol-examples/$filename";
-    ok(-f $file, "$filename found");
-    my $html = slurp($file);
+    ok -f $file, "$filename found";
+    my $html = read_text $file;
+
     my $i    = HTML::Inspect->new(location => "http://examples.opengraphprotocol.us/$filename", html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply($og => $test_files->{$filename}, "Right structure for $filename");
 }
+
 done_testing;

@@ -1,13 +1,13 @@
 use strict;
 use warnings;
 use utf8;
-use FindBin qw($Bin);
-use lib "$Bin/lib";
-use lib "$Bin/../lib";
+
 use Test::More;
-use TestUtils qw(slurp);
-require_ok('HTML::Inspect');
 use Log::Report 'html-inspect';
+use File::Slurper qw(read_text);
+use FindBin qw($Bin);
+
+require_ok('HTML::Inspect');
 
 my $constructor_and_doc = sub {
     my $inspector;
@@ -33,7 +33,7 @@ my $constructor_and_doc = sub {
 };
 
 my $collectMeta = sub {
-    my $html                = slurp("$Bin/data/collectMeta.html");
+    my $html                = read_text "$Bin/data/collectMeta.html";
     my $inspector           = HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html);
     my $expectedMetaClassic = {
         'charset'    => 'utf-8',
@@ -86,7 +86,7 @@ my $collectMeta = sub {
 };
 
 my $collectOpenGraph = sub {
-    my $html = slurp("$Bin/data/collectOpenGraph.html");
+    my $html = read_text "$Bin/data/collectOpenGraph.html";
 
     my $i  = HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html);
     my $og = $i->collectOpenGraph();
@@ -135,7 +135,7 @@ my $collectOpenGraph = sub {
 };
 
 my $collectReferences = sub {
-    my $html      = slurp("$Bin/data/links.html");
+    my $html      = read_text "$Bin/data/links.html";
     my $inspector = HTML::Inspect->new(location => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
 
     my $a_href    = $inspector->collectReferencesFor(a => 'href');
