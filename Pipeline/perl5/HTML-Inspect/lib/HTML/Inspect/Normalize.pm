@@ -16,10 +16,31 @@ use Inline 'C' => 'DATA';
 
 Inline->init;
 
-# set_page_base($base_url)
-# In LIST context, returns normalized_url (string), rc, and errmsg.
-# In SCALAR content, only returns the normalized_url and casts error
-# exception when a problem was found.  The base is normalized first.
+=head1 NAME
+
+HTML::Inspect::Normalize - normalize urls
+
+=head1 SYNOPSIS
+
+  set_page_base($base_url);  # used as base for relative urls
+  my $norm = normalize_url($relative_url);
+  my ($norm, $rc, $err) = normalize_url($relative_url);
+
+=head1 DESCRIPTION
+
+Although being part of module L<HTML::Inspect>, it has a right of its own:
+the functions really, really fast convert sloppy C<http> and C<https>
+urls as found on webpages into cleanly normalized urls.
+
+=head1 FUNCTIONS
+
+=head2 set_page_base($base_url)
+
+In LIST context, returns the normalized_url (string), rc, and errmsg.
+In SCALAR content, only returns the normalized_url and casts error
+exception when a problem was found.  The base is normalized before use.
+
+=cut
 
 sub set_page_base($) {
     my ($val, $rc, $msg) = _set_base(encode utf8 => $_[0]);
@@ -31,9 +52,12 @@ sub set_page_base($) {
     $val;
 }
 
-# normalize_url($url)
-# Normalize a URL relative to the base (which needs to be set first).
-# Same returns as set_page_base
+=head2 normalize_url($url)
+
+Normalize a URL relative to the base (which needs to be set first).
+Same returns as L<set_page_base()>.
+
+=cut
 
 sub normalize_url($) {
     my ($val, $rc, $msg) = _normalize_url(encode utf8 => $_[0]);
@@ -44,6 +68,52 @@ sub normalize_url($) {
 
     $val;
 }
+
+=head1 DETAILS
+
+The following actions are taken:
+
+=over 4
+
+=item * leading and trailing blanks are stripped
+
+=item * spaces (CR, LF, TAB, VTAB) are moved, and following blanks as well
+
+=item * relative urls are converted to absolute
+
+=item * '+' and included blanks are converted to C<%20>
+
+=item * hex representation of normal characters (which includes comma and more) is converted back into their character
+
+=item * characters which need to be encoded are converted to hex
+
+=item * hex digits are upper-cased
+
+=item * utf8 characters get hex encoded
+
+=item * hex encoding must be valid utf8, possibly multi-byte
+
+=item * fragment is removed
+
+=item * empty path will becomde '/'
+
+=item * remove C< ./ > and C< ../ >
+
+=item * hostnames with utf8 get IDN encoded
+
+=item * hostname syntax verified
+
+=item * default port numbers removed
+
+=item * port numbers leading zeros removed, restricted to max 65535
+
+=back
+
+=head1 SEE ALSO
+
+L<HTML::Inspect>, L<URI::Fast>
+
+=cut
 
 1;
 
