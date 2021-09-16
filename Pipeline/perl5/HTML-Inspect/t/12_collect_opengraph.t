@@ -16,7 +16,7 @@ unless (-d "$Bin/data/open-graph-protocol-examples") {
 # article-offset.html
 sub article_offset {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article-offset.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article-offset.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/article-offset.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply($og => {
@@ -54,7 +54,7 @@ sub article_offset {
 # article-utc.html
 sub article_utc {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article-utc.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article-utc.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/article-utc.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply(
@@ -94,7 +94,7 @@ sub article_utc {
 #article.html
 sub article {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/article.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/article.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/article.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply(
@@ -134,7 +134,7 @@ sub article {
 # audio-array.html
 sub audio_array {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/audio-array.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/audio-array.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/audio-array.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply(
@@ -176,7 +176,7 @@ sub audio_array {
 # audio-url.html
 sub audio_url {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/audio-url.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/audio-url.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/audio-url.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply(
@@ -212,7 +212,7 @@ sub audio_url {
 # audio.html
 sub audio {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/audio.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/audio.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/audio.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     # note explain $og;
     is_deeply(
@@ -248,7 +248,7 @@ sub audio {
 # book-isbn10.html
 sub book_isbn10 {
     my $html = slurp("$Bin/data/open-graph-protocol-examples/book-isbn10.html");
-    my $i    = HTML::Inspect->new(request_uri => 'http://examples.opengraphprotocol.us/book-isbn10.html', html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => 'http://examples.opengraphprotocol.us/book-isbn10.html', html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply(
@@ -557,7 +557,7 @@ for my $filename (sort keys %$test_files) {
     my $file = "$Bin/data/open-graph-protocol-examples/$filename";
     ok(-f $file, "$filename found");
     my $html = slurp($file);
-    my $i    = HTML::Inspect->new(request_uri => "http://examples.opengraphprotocol.us/$filename", html_ref => \$html);
+    my $i    = HTML::Inspect->new(location => "http://examples.opengraphprotocol.us/$filename", html_ref => \$html);
     my $og   = $i->collectOpenGraph();
     note explain $og;
     is_deeply($og => $test_files->{$filename}, "Right structure for $filename");

@@ -77,3 +77,4 @@ _Deparsed_XSubs.pm$
 \.travis.yml
 .+\.tdy
 
+^_Inline

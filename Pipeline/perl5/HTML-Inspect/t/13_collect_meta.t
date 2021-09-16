@@ -9,7 +9,7 @@ use TestUtils qw(slurp);
 
 require_ok('HTML::Inspect');
 my $html      = slurp("$Bin/data/collectMeta.html");
-my $inspector = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+my $inspector = HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html);
 # Should capital letters be acepted in name attributes content? Not
 # in standart metadata names, otherwise why not.
 # See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name

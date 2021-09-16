@@ -20,23 +20,21 @@ my $constructor_and_doc = sub {
     try { HTML::Inspect->new(html_ref => \"<B>FooBar</B>") };
     like($@ => qr/is\smandatory/, '_init croaks ok4');
     my $req_uri = 'http://example.com/doc.html';
-    $inspector = HTML::Inspect->new(request_uri => $req_uri, html_ref => \"<B>FooBar</B>");
+    $inspector = HTML::Inspect->new(location => $req_uri, html_ref => \"<B>FooBar</B>");
     isa_ok($inspector => 'HTML::Inspect');
-    is($req_uri => $inspector->requestURI, 'requestURI ok');
-    isa_ok(HTML::Inspect->new(request_uri => URI->new('http://example.com/doc.htm'), html_ref => \"<B>FooBar</B>"),
+    is($req_uri => $inspector->location, 'location ok');
+    isa_ok(HTML::Inspect->new(location => URI->new('http://example.com/doc.htm'), html_ref => \"<B>FooBar</B>"),
         'HTML::Inspect');
-    isa_ok(HTML::Inspect->new(request_uri => URI->new('http://example.com/doc.htm')->canonical, html_ref => \"<B>FooBar</B>"),
+    isa_ok(HTML::Inspect->new(location => URI->new('http://example.com/doc.htm')->canonical, html_ref => \"<B>FooBar</B>"),
         'HTML::Inspect');
-    # note $inspector->doc;
-    isa_ok($inspector->doc, 'XML::LibXML::Element');
-    like($inspector->doc => qr|<b>FooBar</b>|, '$inspector->doc, lowercased ok');
-
-    like($inspector->doc("hehe") => qr/FooBar/, '$inspector->doc() is a read-only getter');
+    # note $inspector->_doc;
+    isa_ok($inspector->_doc, 'XML::LibXML::Element');
+    like($inspector->_doc => qr|<b>FooBar</b>|, 'doc, lowercased ok');
 };
 
 my $collectMeta = sub {
     my $html                = slurp("$Bin/data/collectMeta.html");
-    my $inspector           = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+    my $inspector           = HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html);
     my $expectedMetaClassic = {
         'charset'    => 'utf-8',
         'http-equiv' =>
@@ -90,7 +88,7 @@ my $collectMeta = sub {
 my $collectOpenGraph = sub {
     my $html = slurp("$Bin/data/collectOpenGraph.html");
 
-    my $i  = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
+    my $i  = HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html);
     my $og = $i->collectOpenGraph();
     is(ref $og          => 'HASH',                 'collectOpenGraph() returns a HASH reference');
     is($og->{og}{title} => 'Open Graph protocol',  'content is trimmed');
@@ -138,7 +136,7 @@ my $collectOpenGraph = sub {
 
 my $collectReferences = sub {
     my $html      = slurp("$Bin/data/links.html");
-    my $inspector = HTML::Inspect->new(request_uri => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
+    my $inspector = HTML::Inspect->new(location => 'https://html.spec.whatwg.org/multipage/dom.html', html_ref => \$html);
 
     my $a_href    = $inspector->collectReferencesFor(a => 'href');
     note explain $a_href;

@@ -5,7 +5,7 @@ use utf8;
 
 use parent 'Exporter';
 use Log::Report 'TestUtils';
-our @EXPORT_OK = qw(slurp);    # symbols to export on request
+our @EXPORT_OK = qw(slurp);
 
 sub slurp {
     open my $fh, '<', $_[0] or fault "Cannot read data from $_[0]";

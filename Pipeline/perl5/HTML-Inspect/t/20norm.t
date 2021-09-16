@@ -111,6 +111,7 @@ test_base 'http://e.com/μαρκ', 'http://e.com/%CE%BC%CE%B1%CF%81%CE%BA', 'uni
 ### HEX encoding
 test_base 'http://e.com/a%6D%237%40%41', 'http://e.com/am%237%40A', 'rehex';
 test_base 'http://e.com/%2F%25+%20 %3F', 'http://e.com/%2F%25%20%20%20%3F', 'rehex blanks';
+test_base 'http://e.com/3,4!*',          'http://e.com/3,4!*',      'rehex keep safe chars';
 
 ### IDN
 test_base 'http://müller.de/abc', 'http://xn--mller-kva.de/abc', 'idn';
@@ -179,6 +180,8 @@ is $err,  "Incorrect UTF8 encoding, broken characters";
 
 ### Check ::Util::absolute_url()
 
-ok ! defined absolute_url('data:xyz', ''), 'data should not be taken';
+{  local $SIG{__WARN__} = sub { };
+   ok ! defined absolute_url('data:xyz', ''), 'data should not be taken';
+}
 
 done_testing;

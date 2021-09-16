@@ -26,7 +26,7 @@ timethis(
     -3,
     sub {
         my $html = slurp("$Bin/../t/data/collectMeta.html");
-        HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html)->collectMeta();
+        HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html)->collectMeta;
 
     }
 );

@@ -35,15 +35,14 @@ HTML::Inspect - Inspect a HTML document
 =head1 SYNOPSIS
 
     my $source    = 'http://example.com/doc';
-    my $inspector = HTML::Inspect->new(request_uri => $source, html_ref => \$html);
+    my $inspector = HTML::Inspect->new(location => $source, html_ref => \$html);
     my $classic   = $inspector->collectMetaClassic;
 
 =head1 DESCRIPTION
 
-C<HTML::Inspect> uses L<XML::LibXML> to parse a document as fast as possible and
-returns different logical parts of it into self explanatory structures of data,
-which can further be used for document analisys as part of a bigger pipeline.
-See C<t/*.t> files for examples of use and returned results.
+This module extracts information from HTML, using a clean parser (L<XML::LibXML>)
+Returned structures may need further processing.  Please suggest additional
+extractors.
 
 =head1 Constructors
 
@@ -51,15 +50,19 @@ See C<t/*.t> files for examples of use and returned results.
 
     my $self = $class->new(%options);
 
-Requires arguments: C<request_uri> and C<html_ref>.  The C<request_uri>
-is an absolute url as a string or L<URI> instance.  The C<html_ref>
-is a reference to a (possibly troublesome) HTML string.
+The required C<html_ref> is a reference to a (possibly troublesome) HTML string.
+Passed as reference to avoid copying large strings.
+
+The required C<location> option is an absolute url as a string or L<URI>
+instance, which explains where the HTML was found.  It is used as base
+of relative URLs found in the HTML, unless it contains as C<< <base> >>
+element.
 
 =cut
 
 sub new {
     my $class = shift;
-    (bless {}, $class)->_init({@_});
+    (bless {}, $class)->_init( {@_} );
 }
 
 sub _init($self, $args) {
@@ -67,8 +70,8 @@ sub _init($self, $args) {
     ref $html_ref eq 'SCALAR'        or panic "html_ref not SCALAR";
     $$html_ref =~ m!\<\s*/?\s*\w+!   or error "Not HTML: '" . substr($$html_ref, 0, 20) . "'";
 
-    my $req = $args->{request_uri} or panic '"request_uri" is mandatory';
-    my $uri = $self->{HI_request_uri} = blessed $req ? $req : URI->new($req);
+    my $req = $args->{location}      or panic '"location" is mandatory';
+    my $loc = $self->{HI_location} = blessed $req ? $req : URI->new($req);
 
     my $dom = XML::LibXML->load_html(
         string            => $html_ref,
@@ -84,28 +87,24 @@ sub _init($self, $args) {
 
     ### Establish the base for relative links.
 
-    my $base;
+    my ($base, $rc, $err);
     state $find_base_href = xpc_find '//base[@href][1]';
     if(my ($base_elem) = $find_base_href->($self)) {
-        # Sometimes, base is not absolute or normalized
-        $base = normalize_url $base_elem->getAttribute('href'), $uri->as_string;
-
-        my ($url, $rc, $err) = set_page_base $base;
-        unless($url) {
+        ($base, $rc, $err) = set_page_base $base_elem->getAttribute('href');
+        unless($base) {
             warning __x"Illegal base href '{href}' in {url}: {err}",
-                href => $base_elem->getAttribute('href'), url => $uri, err => $err;
+                href => $base_elem->getAttribute('href'), url => $loc, err => $err;
         }
     }
     else {
-        $base = $uri->canonical->as_string;
-        my ($url, $rc, $err) = set_page_base $base;
-        unless($url) {
-            warning __x"Illegal page uri '{url}': {err}", url => $uri, err => $err;
+        my ($base, $rc, $err) = set_page_base $loc->as_string;
+        unless($base) {
+            warning __x"Illegal page location '{url}': {err}", url => $loc, err => $err;
             return ();
         }
     }
-
     $self->{HI_base} = URI->new($base);   # base needed for other protocols (ftp)
+
     $self;
 }
 
@@ -113,39 +112,32 @@ sub _init($self, $args) {
 
 =head1 Accessors
 
-=head2 doc
+=head2 location
 
-    my $doc = $self->doc;
+    my $uri = $self->location;
 
-Readonly.  Returns the C<XML::LibXML::Element>, representing the root
-node of the document.
+Readonly.  The L<URI> object which represents the C<location> parameter
+which was passed as default base for relative links to C<new()>.
+
 =cut
 
-sub doc { $_[0]->{HI_doc} }
-
-=head2 requestURI
-
-    my $uri = $self->requestURI;
-
-Readonly.
-The L<URI> object which represents the C<request_uri> parameter which was
-passed as default base for relative links to C<new()>.
-=cut
-
-sub requestURI { $_[0]->{HI_request_uri} }
+sub location { $_[0]->{HI_location} }
 
 =head2 base
 
     my $uri = $self->base;
 
 Readonly.  The base URI, which is used for relative links in the page.
-This is the C<requestURI>, unless the HTML contains a C<< <base href>
+This is the C<location>, unless the HTML contains a C<< <base href>
 >> declaration.  The base URI is a string representation, in absolute
 and normalized form.
 
 =cut
 
 sub base { $_[0]->{HI_base} }
+
+# The root XML::LibXML::Element of the current document.
+sub _doc { $_[0]->{HI_doc} }
 
 # Returns the XPathContext for the current document.  Used via ::Util::xpc_find
 sub _xpc { $_[0]->{HI_xpc} }

@@ -6,8 +6,6 @@ use strict;
 
 use HTML::Inspect      ();
 use HTTP::Response     ();
-use URI::Fast          qw(html_url);
-
 use MIME::Types        ();
 my $mt = MIME::Types->new;
 
@@ -51,8 +49,8 @@ sub inspectHTML()
        || $headers->header('Content-Location');
 
     $self->{OWR_html} = HTML::Inspect->new(
-        html_ref    => $self->decodedHtmlContent,
-        request_uri => defined $location && length $location ? html_url($location, $self->uri) : $self->uri,
+        html_ref => $self->decodedHtmlContent,
+        location => defined $location && length $location ? $location : $self->uri,
     );
 }
 

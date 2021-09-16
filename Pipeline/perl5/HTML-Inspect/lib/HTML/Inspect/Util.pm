@@ -35,7 +35,7 @@ sub xpc_find($) {
     sub { $_[0]->_xpc->findnodes($compiled) };    # Call with $self as param
 }
 
-# function get_attributes($doc_element)
+# function get_attributes($element)
 # Returns a HASH of all attributes found for an HTML element, which is an
 # XML::LibXML::Element.
 
@@ -56,7 +56,7 @@ sub absolute_url($$) {
     my ($href, $base) = @_;
 
     my $scheme = $href =~ /^([^a-z0]+)\:/i ? lc($1) : undef;
-    $scheme && $take_schemes{$scheme}
+    ! $scheme || $take_schemes{$scheme}
         or return ();
 
     my $url;

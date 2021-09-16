@@ -32,7 +32,7 @@ my $html = slurp("$Bin/../t/data/open-graph-protocol-examples/video-movie.html")
 timethis(
     -3,
     sub {
-        HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html)->collectOpenGraph();
+        HTML::Inspect->new(location => 'http://example.com/doc', html_ref => \$html)->collectOpenGraph();
 
     }
 );
