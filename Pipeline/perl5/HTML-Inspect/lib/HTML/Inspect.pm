@@ -18,9 +18,9 @@ use Log::Report 'html-inspect';
 use HTML::Inspect::Util       qw(trim_attr xpc_find get_attributes absolute_url);
 use HTML::Inspect::Normalize  qw(set_page_base);
 
-use HTML::Inspect::OpenGraph  ();            # mixin for collectOpenGraph()
-use HTML::Inspect::References ();            # mixin for collectReferences()
-use HTML::Inspect::Meta       ();            # mixin for collectMeta*()
+use HTML::Inspect::OpenGraph  ();    # mixin for collectOpenGraph()
+use HTML::Inspect::References ();    # mixin for collectRef*()
+use HTML::Inspect::Meta       ();    # mixin for collectMeta*()
 
 use XML::LibXML ();
 use Scalar::Util qw(blessed);
@@ -34,26 +34,13 @@ HTML::Inspect - Inspect a HTML document
 
 =head1 SYNOPSIS
 
-    my $html         = slurp("t/data/collectMeta.html");
-    my $inspector    = HTML::Inspect->new(request_uri => 'http://example.com/doc', html_ref => \$html);
-    my $collectedMeta = $inspector->collectMetaClassic();
-    # $collectedMeta is:
-    #{
-    #    charset      => 'utf-8',
-    #    name         => {
-    #        Алабала => 'ница',
-    #        generator => "Хей, гиди Ванчо",
-    #        description => 'The Open Graph protocol enables...'
-    #    },
-    #    'http-equiv' => {
-    #        'content-type' => 'text/html;charset=utf-8',
-    #        refresh => '3;url=https://www.mozilla.org'
-    #    }
-    #};
+    my $source    = 'http://example.com/doc';
+    my $inspector = HTML::Inspect->new(request_uri => $source, html_ref => \$html);
+    my $classic   = $inspector->collectMetaClassic;
 
 =head1 DESCRIPTION
 
-HTML::Inspect uses L<XML::LibXML> to parse a document as fast as possible and
+C<HTML::Inspect> uses L<XML::LibXML> to parse a document as fast as possible and
 returns different logical parts of it into self explanatory structures of data,
 which can further be used for document analisys as part of a bigger pipeline.
 See C<t/*.t> files for examples of use and returned results.
@@ -64,9 +51,9 @@ See C<t/*.t> files for examples of use and returned results.
 
     my $self = $class->new(%options);
 
-Requires arguments: C<request_uri> and C<html_ref>.  The C<request_uri> is an
-absolute url as a string or L<URI::Fast> or L<URI> instance.
-The C<html_ref> is a reference to the valid HTML string.
+Requires arguments: C<request_uri> and C<html_ref>.  The C<request_uri>
+is an absolute url as a string or L<URI> instance.  The C<html_ref>
+is a reference to a (possibly troublesome) HTML string.
 
 =cut
 
@@ -112,7 +99,7 @@ $from = "REQ $uri";
 
     my ($url, $rc, $err) = set_page_base $base;  # for http in ::Normalize
     unless($url) {
-        warn "BASE $rc: $err\n   $from\n   $base\n";
+        warning "Illegal base '{base}' derived from '{from}' $rc: $err\n   $from\n   $base\n";
         return ();
     }
     $self->{HI_base} = URI->new($base);          # base for other protocols (ftp)
@@ -128,9 +115,8 @@ $from = "REQ $uri";
 
     my $doc = $self->doc;
 
-Readonly accessor.
-Returns instance of XML::LibXML::Element, representing the root node of the
-document and everything in it.
+Readonly.  Returns the C<XML::LibXML::Element>, representing the root
+node of the document.
 =cut
 
 sub doc { $_[0]->{HI_doc} }
@@ -139,7 +125,7 @@ sub doc { $_[0]->{HI_doc} }
 
     my $uri = $self->requestURI;
 
-Readonly accessor.
+Readonly.
 The L<URI> object which represents the C<request_uri> parameter which was
 passed as default base for relative links to C<new()>.
 =cut
@@ -150,17 +136,16 @@ sub requestURI { $_[0]->{HI_request_uri} }
 
     my $uri = $self->base;
 
-Readonly accessor.
-The base URI, which is used for relative links in the page.  This is the
-C<requestURI> unless the HTML contains a C<< <base href> >> declaration.  The
-base URI is normalized.
+Readonly.  The base URI, which is used for relative links in the page.
+This is the C<requestURI>, unless the HTML contains a C<< <base href>
+>> declaration.  The base URI is a string representation, in absolute
+and normalized form.
+
 =cut
 
 sub base { $_[0]->{HI_base} }
 
-# Returns the XPathContext for the current document.
-# Used via HTML::Inspect::Util::xpc_find in respective roles — Meta, OpenGraph,
-# References.
+# Returns the XPathContext for the current document.  Used via ::Util::xpc_find
 sub _xpc { $_[0]->{HI_xpc} }
 
 #-------------------------
@@ -204,7 +189,7 @@ sub collectLinks($self) {
 
 Returns a HASH reference with all C<< <meta> >> information of traditional content:
 the single C<charset> and all C<http-equiv> records, plus the subset of names which
-are listed on F<https://www.w3schools.com/tags/tag_meta.asp>.  There are far too
+are listed on F<https://www.w3schools.com/tags/tag_meta.asp>.  People defined far too
 many names to be useful for everyone.
 
 Example:
@@ -230,13 +215,13 @@ Example:
 
    my $array = $html->collectMeta(%options);
 
-Returns a list of B<all> kinds of C<< <meta> >> records, which have a wide
+Returns an ARRAY of B<all> kinds of C<< <meta> >> records, which have a wide
 variety of fields and may be order dependend!!!
 
 Example:
 
-   [ { 'http-equiv' => 'Content-Type', 'content' => 'text/html; charset=UTF-8' },
-     { 'name' => 'viewport', 'content' => 'width=device-width, initial-scale=1.0' },
+   [ { http-equiv => 'Content-Type', content => 'text/html; charset=UTF-8' },
+     { name => 'viewport', content => 'width=device-width, initial-scale=1.0' },
    ]
 
 =cut
