@@ -69,8 +69,10 @@ test_base 'http://example.com/',      'http://example.com/',      'only root pat
 test_base 'http://example.com/a',     'http://example.com/a',     'two level path';
 test_base 'http://example.com/a/bc',  'http://example.com/a/bc',  'two level path';
 test_base 'http://example.com/a/bc/', 'http://example.com/a/bc/', 'directory';
+test_base 'http://example.com/a//c//', 'http://example.com/a/c/', 'doubled slashes';
 
 test_base 'http://example.com/.',     'http://example.com/',      'useless dot';
+test_base 'http://example.com/./',    'http://example.com/',      'useless dot 2';
 test_base 'http://example.com/a/.',   'http://example.com/a/',    'dot keep /';
 test_base 'http://example.com/./a/',  'http://example.com/a/',    'dot path removed';
 test_base 'http://example.com/./a/././b', 'http://example.com/a/b','dot path removed multi';

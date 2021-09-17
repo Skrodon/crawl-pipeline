@@ -99,6 +99,8 @@ The following actions are taken:
 
 =item * remove C< ./ > and C< ../ >
 
+=item * removed repeating slashes
+
 =item * hostnames with utf8 get IDN encoded
 
 =item * hostname syntax verified
@@ -564,6 +566,13 @@ static int normalize_path(url *out, char *path) {
         begin   = path;
         len     = strcspn(begin, "/;");
         sep     = begin[len];
+
+        if(len==0 && sep=='/' && strlen(norm)) {
+            /* Remove double slash */
+            path++;
+            continue;
+        }
+
         strncpy(segment, begin, len);
         segment[len] = EOL;
         path   += len;
