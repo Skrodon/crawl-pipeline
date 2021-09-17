@@ -54,6 +54,7 @@ test_base 'http://:cde@exAmPle.cOm',  'http://:cde@example.com/', 'password';
 test_base 'http://exAmPle.cOm',       'http://example.com/',      'hostname in caps';
 test_base 'http://',                  'http://localhost/',        'missing host';
 test_base 'http:///',                 'http://localhost/',        'missing host 2';
+test_base 'http://a.b.c.de.:80/f',    'http://a.b.c.de/f',        'hostname trailing dot';
 
 ### Port
 test_base 'http://exAmPle.cOm:80',    'http://example.com/',      'remove default port';
