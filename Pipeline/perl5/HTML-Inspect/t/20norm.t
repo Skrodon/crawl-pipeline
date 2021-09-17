@@ -84,6 +84,7 @@ test_base 'http://example.com/../a',  'http://example.com/a',     'leading dot-d
 test_base 'http://example.com/b/..',  'http://example.com/',      'trailing dot-dot';
 test_base 'http://example.com/b/../c','http://example.com/c',     'intermediate dot-dot';
 test_base 'http://example.com/b/../../c', 'http://example.com/c', 'too many interm dot-dot';
+test_base 'http://www.example.com/a/c/../b/search', 'http://www.example.com/a/b/search', 'middle dot-dot';
 
 test_base 'http://e.com/a/./b/.././../c', 'http://e.com/c',       'hard';
 

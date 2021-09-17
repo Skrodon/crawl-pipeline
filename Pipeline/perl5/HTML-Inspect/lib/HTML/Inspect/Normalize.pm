@@ -103,6 +103,8 @@ The following actions are taken:
 
 =item * hostname syntax verified
 
+=item * remove trailing dot from hostname
+
 =item * default port numbers removed
 
 =item * port numbers leading zeros removed, restricted to max 65535
@@ -356,7 +358,7 @@ static int normalize_authorization(url *norm, char *auth, url *base) {
     return 1;
 }
 
-static int normalize_host(url *norm, char *host, url *base) {
+static int normalize_host(url *norm, char *host) {
     if( ! clean_part(host)) return 0;
 
     if(host[0]=='[') {
@@ -400,10 +402,9 @@ static int normalize_host(url *norm, char *host, url *base) {
         return 0;
     }
 
-    /* idn keeps trailing dot */
+    /* idn libs keeps trailing dot. */
     int len = strlen(idn);
-    if(len && idn[len-1]=='.') idn[len-1] = EOL;
-    if(! strlen(idn)) idn = base->host;
+    if(len > 1 && idn[len-1]=='.') idn[len-1] = EOL;
 
     strcpy(norm->host, idn);
     idn2_free(idn);
@@ -484,7 +485,7 @@ static int normalize_hostport(url *norm, char *host, url *base) {
         strcpy(norm->host, base->host);
     }
     else {
-        if( !normalize_host(norm, host, base)) return 0;
+        if( !normalize_host(norm, host)) return 0;
     }
 
     if(port && strlen(port)) {
@@ -586,7 +587,7 @@ static int normalize_path(url *out, char *path) {
              */
             if(strlen(norm) > 1) { norm[strlen(norm)-1] = EOL; }
             end = rindex(norm, '/');
-            end[norm==end ? 1 : 0] = EOL;   /* protect leading slash */
+            end[1] = EOL;
             if(sep != EOL) { path++;  sep = EOL; }
         }
         else
