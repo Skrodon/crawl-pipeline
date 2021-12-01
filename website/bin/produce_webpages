@@ -34,8 +34,8 @@ my $tt      = Template->new(INCLUDE_PATH => [ 'templates', '.' ]);
 
 my @produced;
 process_dir $source, $outtree,
- { today   => strftime("%F", localtime)
- };
+ +{ today   => strftime("%F", localtime)
+  };
 
 sub process_dir($$$)
 {   my ($from, $to, $data) = @_;
@@ -128,7 +128,7 @@ sub process_raw($$$)
     shift @raw while @raw && $raw[0] =~ m/ ^ \s* $ /x;
     my $raw  = join '', @raw;
 
-    my $title = $raw =~ m!<h1>(.*?)</h1>! ? $1 : '';
+    my $title = $raw =~ m!<h1>(.*?)</h1>!i ? $1 : '';
     $title =~ s/<[^>]*>/ /g;
     $title =~ s/<[^>]*>/ /g;
     $title = "Pipeline; $title" unless $title =~ /Pipeline/;
@@ -136,6 +136,9 @@ sub process_raw($$$)
 
     local $data->{is_frontpage} =
         $t =~ m!^public_html/index.html$! ? 'yes' :undef;
+
+	# Add an HR before each H2
+	$raw =~ s!<h2>!<hr>\n<h2>!g;
 
     ### First, produce the body of the page in raw
 
@@ -145,7 +148,7 @@ sub process_raw($$$)
         or die "Content processing error: ", $tt->error, "\n";
 
     my ($intro, @content) = split /\n\-\-(left|right)\s*\r?\n/, $content;
-    my @sections;
+    my @sections = +{ left => $intro };
 	while(my $where = shift @content)
     {   if($where eq 'left')
         {   push @sections, +{ left => shift @content };
@@ -155,7 +158,6 @@ sub process_raw($$$)
             $sections[-1]{right} = shift @content;
         }
     }
-    local $data->{intro}    = $intro;
     local $data->{sections} = \@sections;
 
     ### Now compose the whole page

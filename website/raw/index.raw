@@ -8,14 +8,14 @@ information. Crawlers attempt to download that data on a regular
 basis. This project helps people who are interested to use data which
 third party crawlers have collected.</p>
 
---left
+--right
 <h2>Current set-up</h2>
 
 <p>At the moment, the "Crawl Pipeline" runs on one server, with 6 batches in parallel. It is able to process the CommonCrawl published data-set, which is 350TB per month. It runs two Tasks.</p>
 
 <p>Have a look at the available filters and extraction rules, to see whether we offer enough to keep you from crawling yourself.</p>
 
---right
+--left
 <h2>The pipeline process</h2>
 
 <p>The abstract concept:</p>

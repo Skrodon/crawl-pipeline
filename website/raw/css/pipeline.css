@@ -157,7 +157,7 @@ h1 {
 	font-size:3.2em;
 }
 
-h2 {
+H2 {
 	margin-bottom:10px;
     font-family: 'EB Garamond', serif;
     color: #0983c8 !important;
@@ -165,7 +165,7 @@ h2 {
     margin-top: 14px;
 }
 
-h3 { font-size:1.8em; font-weight: 500; }
+H3 { font-size:1.8em; font-weight: 500; }
 
 h4 { font-size:1.5em; }
  
@@ -182,7 +182,7 @@ h5 { font-size:1.1em; }
 #content A {
 	text-decoration: none;
 	cursor: pointer;
-	color: #1F1F1F;
+	color: #0983c8;
 }
 
 #content A:hover  { text-decoration: underline; }

@@ -15,7 +15,6 @@
 <ul id="menu_nav" class="menu nav">
 [% INCLUDE menu_explain.tt %]
 [% INCLUDE menu_tasks.tt %]
-<li class="nav-item"><a class="nav-link" href="/products/">Products</a></li>
 <li class="nav-item"><a class="nav-link" href="/coop/">Cooperation</a></li>
 <li class="nav-item"><a class="nav-link" href="/projects/">Projects</a></li>
 </ul>
