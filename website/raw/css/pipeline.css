@@ -165,11 +165,14 @@ H2 {
     margin-top: 14px;
 }
 
-H3 { font-size:1.8em; font-weight: 500; }
+H3 {
+	font-size:1.8em;
+	font-weight: 500;
+}
 
-h4 { font-size:1.5em; }
+h4 { font-size: 1.5em; }
  
-h5 { font-size:1.1em; }
+h5 { font-size: 1.1em; }
 
 #content HR {
     border-top: 2px solid #82ceeb;
@@ -201,9 +204,22 @@ h5 { font-size:1.1em; }
 }
 
 
-//
-// CODE display
-//
+/*
+ * CODE display
+ */
+
+.codeblock_light_header {
+    background: none;
+    color: #6cb0e4;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-top: 0px;
+    letter-spacing: 8px;
+    font-size: 0.8em;
+    margin-bottom: 0px;
+}
 
 .copybanner {
     width: 80px;
@@ -236,6 +252,7 @@ h5 { font-size:1.1em; }
 	padding: 20px;
 	margin-top: 2px;
 	border-bottom: 2px solid #bfdaf4;
+	margin-bottom: 1.5ex;
 }
 
 .codeblock_light OL {
@@ -249,8 +266,12 @@ h5 { font-size:1.1em; }
 	margin-left: 18px;
 }
 
+.codeblock_light PRE {
+	line-height: 130%;
+	margin-bottom: 0px;
+}
 
-.codeblock OL LI::marker {
+.codeblock_light OL LI::marker {
     unicode-bidi: isolate;
     font-variant-numeric: tabular-nums;
     text-transform: none;
@@ -270,9 +291,12 @@ HR.dropdown-divider {
 	width: 100%;
 }
 
-#content PRE {
-	line-height: 130%;
-    padding-left: 20px;
+TABLE {
+	width: 100%;
+}
+
+TD {
+	vertical-align: top;
 }
 
 /*

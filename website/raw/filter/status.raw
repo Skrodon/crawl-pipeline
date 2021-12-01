@@ -26,3 +26,7 @@ numeric HTTP response codes.  The abstract names are:</p>
 
 <p>The Hit information will not refer to the abstract names when used
 to configure this filter.</p>
+
+--right
+[% INCLUDE $list_incl %]
+

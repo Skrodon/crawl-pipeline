@@ -8,6 +8,12 @@ possibilities "classic".  That subset of features found in the wild can
 be found at
 <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name">MDN "standard metadata names"</a></p>
 
+--right
+[% INCLUDE $list_incl %]
+
+--left
+<h2>Classic meta elements</h2>
+
 <p>The classic <code>&lt;meta&gt;</code> elements come in three forms:</p>
 <ul>
 <li>with attribute <code>name</code>, with a restricted set of names</li>
@@ -38,6 +44,7 @@ so many and old extensions have been made to the list of W3Schools.</p>
 <p>With convincing arguments, a few names MAY be added to this "classic"
 list later.</p>
 
+--right
 <h2>Produced data-structure</h2>
 
 <p>How and where the data-structure with the facts are transported is

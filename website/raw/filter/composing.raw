@@ -30,3 +30,7 @@ select when html AND ((domain_nl AND lang_nl) OR cities)
 other clarifying syntax.  But do use the two-step approach: separate
 filter steps from filter logic. Constructing the filter is an iterative
 process: you probably want to fine-tune your initial attempts.</p>
+
+--right
+[% INCLUDE $list_incl %]
+

@@ -14,3 +14,7 @@ but also <code>www.example.com</code>.</p>
 </JSON>
 
 <p>The <code>name</code> lists the (first) filter pattern which matched the <code>host</code> component of the response location URI.</p>
+
+--right
+[% INCLUDE $list_incl %]
+

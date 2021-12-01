@@ -1,5 +1,9 @@
 <h1>OpenGraph</h1>
 
+--right
+[% INCLUDE $list_incl %]
+
+--left
 <h2>Output rules</h2>
 
 <ul>
@@ -22,6 +26,7 @@
 
 [TODO: include examples for each of the <code>og.type</code> variations. In JSON format]
 
+--right
 <h2>Currently not supported</h2>
 
 <p>Extensions on OpenGraph may be included, when used by multiple

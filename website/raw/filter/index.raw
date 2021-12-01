@@ -7,8 +7,25 @@ HTTP-request/response/text results, produced by CommonCrawl.  The filters,
 however, are abstract enough to work with many other data providers and
 formats.  What do you need?  What data can you offer to other people?</p>
 
-<a href="/filter/composing.html">Composing filters</a>
+<ul>
+<li><a href="/filter/composing.html">Composing filters</a></li>
+</ul>
 
+
+<h2>Filter hit information</h2>
+
+<p>Each filter rule can provide you with the reason why it got triggered.
+You may be interested to collect those facts (for instance for debugging
+purposes), but you may also not be interested.  The hit information has
+a standard format:</p>
+
+<JSON>
+  { "rule": "<some name>", "<fact>": "<data>" }
+</JSON>
+
+<p>Each filter rule describes which name it uses, and which additional information it provides.</p>
+
+--right
 <h2>Filters</h2>
 
 <p>A Task can use the following Filters to select Products:</p>
@@ -26,16 +43,3 @@ formats.  What do you need?  What data can you offer to other people?</p>
 
 <p>More filters will be created when the need arises.  Expensive filter
 actions are shared with other Tasks which run on the same Pipeline.</p>
-
-<h2>Filter hit information</h2>
-
-<p>Each filter rule can provide you with the reason why it got triggered.
-You may be interested to collect those facts (for instance for debugging
-purposes), but you may also not be interested.  The hit information has
-a standard format:</p>
-
-<JSON>
-  { "rule": "<some name>", "<fact>": "<data>" }
-</JSON>
-
-<p>Each filter rule describes which name it uses, and which additional information it provides.</p>

@@ -26,3 +26,6 @@ three forms:</p>
 { "rule": "requires text", "size": 2345, "words":  312 }  # minimum_words
 </JSON>
 
+--right
+[% INCLUDE $list_incl %]
+

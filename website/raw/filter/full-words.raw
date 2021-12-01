@@ -6,6 +6,33 @@ the filter which matches text.</p>
 
 <p>This filter has one option: <code>case_sensitive</code> (default false).</p>
 
+--right
+[% INCLUDE $list_incl %]
+
+--left
+<h2>Hit information</h2>
+
+<p>The filter will produce a Hit for every word which is found in the
+text, removing duplicates.</p>
+
+<p>When the match is case-sensitive (not the default), every word will
+be shown as this Hit:</p>
+
+<JSON>
+{ "rule": "full word", "word": "<word>" }
+</JSON>
+
+<p>When your match is case-insensitive (the default behavior), then each
+Hit looks like this:</p>
+
+<JSON>
+{ "rule": "full word-i", "word": "<word>" }
+</JSON>
+
+<p>where the <code>&gt;word&lt;</code> is using the same casing are used
+in your filter rule.</p>
+
+--right
 <h2>Characters with various notations</h2>
 
 <p>There is a big issue with none-ASCII characters: they usually have
@@ -30,24 +57,3 @@ you here.  Use the text match filter with a pattern like this:</p>
       )nchen \b
 </PLAIN>
 
-<h2>Hit information</h2>
-
-<p>The filter will produce a Hit for every word which is found in the
-text, removing duplicates.</p>
-
-<p>When the match is case-sensitive (not the default), every word will
-be shown as this Hit:</p>
-
-<JSON>
-{ "rule": "full word", "word": "<word>" }
-</JSON>
-
-<p>When your match is case-insensitive (the default behavior), then each
-Hit looks like this:</p>
-
-<JSON>
-{ "rule": "full word-i", "word": "<word>" }
-</JSON>
-
-<p>where the <code>&gt;word&lt;</code> is using the same casing are used
-in your filter rule.</p>

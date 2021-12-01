@@ -19,3 +19,7 @@ and its pattern.</p>
 </JSON>
 
 <p>Only unique matches are reported.</p>
+
+--right
+[% INCLUDE $list_incl %]
+

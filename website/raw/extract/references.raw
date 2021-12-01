@@ -15,6 +15,10 @@
   script   src
 </PLAIN>
 
+--right
+[% INCLUDE $list_incl %]
+
+--left
 <h2>Extracted data-structure</h2>
 
 <p>All links are collected and converted to the canonical (normalized)
@@ -41,6 +45,9 @@ your decision, but the output looks like this:</p>
      ]
 }
 </JSON>
+
+--right
+<h2>Custom subsetting</h2>
 
 <p>You may select a sub-set for your extraction (for instance only
 "img_src") because the full list is really large: average about 150 URLs

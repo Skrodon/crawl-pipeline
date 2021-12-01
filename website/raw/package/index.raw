@@ -1,4 +1,4 @@
-<h1>Result packers</h1>
+<h1>Result packagers</h1>
 
 <p>The shear quantity of extracted data require adaptation to the needs
 of processing it on your servers. Many Tasks will produce hundreds of
@@ -14,3 +14,6 @@ moment, the following are foreseen:</p>
 <li>7zip files, like zip files but much smaller so better for longer
     storage.</li>
 </ul>
+
+--right
+[% INCLUDE $list_incl %]

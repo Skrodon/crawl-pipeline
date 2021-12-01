@@ -77,3 +77,7 @@ object (like <code>og:image</code>).  Anyway: this is what you get
     }
 ]
 </JSON>
+
+--right
+[% INCLUDE $list_incl %]
+

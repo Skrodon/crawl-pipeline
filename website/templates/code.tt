@@ -1,7 +1,12 @@
-[% produced by the script %]
+[%# produced by the production script for JSON,XML,PLAIN,PERL %]
 
+[% IF header %]
 <div class="codeblock_light_header">EXAMPLE</div>
+[% END %]
+[% IF copy %]
 <p><button class="copybanner">COPY</button></p>
-<div class="codeblock_light"><ol>
-<li>html = any HTML or XML</li>
-<li>domain_nl = domain in .nl</li>
+[% END %]
+<div id="[% unique %]-[% format %]" class="codeblock_light"
+  data-format="[% format %]">
+	[% content %]
+</div>

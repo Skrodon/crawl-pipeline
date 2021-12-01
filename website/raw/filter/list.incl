@@ -1,0 +1,25 @@
+<hr>
+<h2>Writing Tasks</h2>
+
+<ul>
+<li>Configure filters:
+	<table>
+	<tr><td>
+		<a href="/filter/content-type.html">Content Type</a><br>
+		<a href="/filter/domain.html">Domain</a><br>
+		<a href="/filter/full-words.html">Full Words</a><br>
+  	</td><td>
+		<a href="/filter/language.html">Language</a><br>
+		<a href="/filter/match-text.html">Match Text</a><br>
+		<a href="/filter/origin.html">Origin</a><br>
+  	</td><td>
+		<a href="/filter/status.html">Status</a><br>
+		<a href="/filter/text-size.html">Text Size</a><br>
+	</td></tr>
+</table>
+    </li>
+<li><a href="/filter/composing.html">Composing filters</a></li>
+<li><a href="/extract/">Extracting knowlegde</a></li>
+<li><a href="/package/">Packaging Results</a></li>
+</ul>
+

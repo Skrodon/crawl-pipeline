@@ -1,0 +1,24 @@
+<hr>
+<h2>Writing Tasks</h2>
+
+<ul>
+<li><a href="/filter/">Configure filters</a></li>
+<li><a href="/filter/composing.html">Composing filters</a></li>
+<li>Extracting knowlegde:
+    <table>
+	<tr><td>
+		<a href="normalize.html">URL normalization</a><br />
+		<a href="meta-classic.html">classic &lt;meta&gt;</a><br />
+		<a href="meta-name.html">&lt;meta&gt; names</a><br />
+	</td><td>
+		<a href="meta-all.html">all &lt;meta&gt;</a><br />
+		<a href="references.html">references</a><br />
+		<a href="links.html">&lt;link&gt;</a><br />
+	</td><td>
+		<a href="opengraph.html">OpenGraph</a><br />
+	</td></tr>
+	</table>
+</li>
+<li><a href="/package/">Packaging Results</a></li>
+</ul>
+

@@ -1,4 +1,4 @@
-<h1>URL normalization rules</h1>
+<h1>URL normalization</h1>
 
 <p>All extracts based on <code>HTML::Inspect</code> produce normalized
 (canonical) URLs.  The main rules are written down in RFC3986 and explained
@@ -9,6 +9,12 @@ about URI normalization</a></p>
 <li>Interesting real-life
     <a href="/projects/202104-warc-stats.html">HTML link statistics</a>
 </ul>
+
+--right
+[% INCLUDE $list_incl %]
+
+--left
+<h2>Normalization rules</h2>
 
 <p>Explicitly, our URIs are created according to the following rules:</p>
 <ul>
@@ -44,4 +50,3 @@ about URI normalization</a></p>
 <li>Probably most important: all url components are validated so do not
     need additional checks.</li>
 </ul>
-

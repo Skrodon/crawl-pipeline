@@ -33,3 +33,6 @@ canonical URL: you do not need to clean it up any further.</p>
  }
 </JSON>
 
+--right
+[% INCLUDE $list_incl %]
+

@@ -1,4 +1,4 @@
-<h1>Extraction of all name records in &lt;meta&gt;</h1>
+<h1>Name records in &lt;meta&gt;</h1>
 
 <p>When you want more <code>&lt;meta name&gt;</code> records from the
 HTML than the limited list offered by the "classic" meta extraction,
@@ -11,6 +11,10 @@ names which may be of your only interest.  Please specify which
 fields you like to get.  A long list of names is described on <a
 href="https://wiki.whatwg.org/wiki/MetaExtensions">WhatWG</a>.</p>
 
+--right
+[% INCLUDE $list_incl %]
+
+--left
 <h2>Produced data-structure</h2>
 
 <p>The <code>name</code> attributes are unique.  Both <code>name</code>
