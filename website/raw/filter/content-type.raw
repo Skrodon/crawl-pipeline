@@ -1,4 +1,4 @@
-<h1>Filter based on content-type</h1>
+<h1>Filter on content-type</h1>
 
 <p>Often you want to select Products based on content type, for instance only PDFs of HTML.  You may provide a list of regular expressions or
 abstract names like "any html", "html5 only", or "LibreOffice

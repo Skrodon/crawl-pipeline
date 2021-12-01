@@ -1,4 +1,4 @@
-<h1>Filter based on text size</h1>
+<h1>Filter on text size</h1>
 
 <p>This filter will return a Hit, only when there is a text extract
 for the response, and when this extract has a certain minimum size
@@ -21,10 +21,13 @@ own restrictions as well.</p>
 three forms:</p>
 
 <JSON>
-{ "rule": "requires text", "size": 2345 }                 # minimum_size
-{ "rule": "requires text", "size": 2345, "chars": 1234 }  # minimum_chars
-{ "rule": "requires text", "size": 2345, "words":  312 }  # minimum_words
+{ "rule": "requires text", "size": 2345 }
+{ "rule": "requires text", "size": 2345, "chars": 1234 }
+{ "rule": "requires text", "size": 2345, "words":  312 }
 </JSON>
+
+<p>Respectively for <code>minimum_size</code>, <code>minimum_chars</code>
+and <code>minimum_words</code>.
 
 --right
 [% INCLUDE $list_incl %]

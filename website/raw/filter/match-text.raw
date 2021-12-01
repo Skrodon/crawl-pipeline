@@ -1,4 +1,4 @@
-<h1>Filter based on patterns</h1>
+<h1>Filter on patterns</h1>
 
 <p>This filter searches for patterns in the extract text for a webpage.
 Be aware that the text MAY contain line wraps on unexpected places.

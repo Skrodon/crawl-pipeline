@@ -1,4 +1,4 @@
-<h1>Filter based on Origin</h1>
+<h1>Filter on Origin</h1>
 
 <p>The "Origin" of the crawled data is the (abstract) name of an
 organization which has provided the data for the pipeline.  The origin

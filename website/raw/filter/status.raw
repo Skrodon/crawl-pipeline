@@ -1,4 +1,4 @@
-<h1>Filter based on response status</h1>
+<h1>Filter on status</h1>
 
 <p>The HTTP-response status in the Product may differ from "200 OK".
 By default, you will only see those.  However, pipelines may also process

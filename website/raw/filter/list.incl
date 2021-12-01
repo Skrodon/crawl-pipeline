@@ -5,16 +5,16 @@
 <li>Configure filters:
 	<table>
 	<tr><td>
-		<a href="/filter/content-type.html">Content Type</a><br>
+		<a href="/filter/content-type.html">Content&nbsp;Type</a><br>
 		<a href="/filter/domain.html">Domain</a><br>
-		<a href="/filter/full-words.html">Full Words</a><br>
+		<a href="/filter/full-words.html">Full&nbsp;Words</a><br>
   	</td><td>
 		<a href="/filter/language.html">Language</a><br>
-		<a href="/filter/match-text.html">Match Text</a><br>
+		<a href="/filter/match-text.html">Match&nbsp;Text</a><br>
 		<a href="/filter/origin.html">Origin</a><br>
   	</td><td>
 		<a href="/filter/status.html">Status</a><br>
-		<a href="/filter/text-size.html">Text Size</a><br>
+		<a href="/filter/text-size.html">Text&nbsp;Size</a><br>
 	</td></tr>
 </table>
     </li>

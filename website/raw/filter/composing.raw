@@ -14,16 +14,16 @@ you need to give us a formal description of your need.</p>
 
 <p>Then, use the labels to produce a formula.</p>
 
-<p>Example:</p>
-
+<HEADER>Example filter composition</HEADER>
 <PLAIN>
 html      = any HTML or XML
 domain_nl = domain in .nl
 lang_nl   = language NLD or FRY
-cities    = words "Amsterdam", "Arnhem", "Gouda"; include hit
-bike      = pattern "bike|bicycle|fiets.*; no filter, only include hit
+cities    = words "Amsterdam", "Arnhem", "Gouda"
+bike      = pattern "bike|bicycle|fiets.*
 
-select when html AND ((domain_nl AND lang_nl) OR cities)
+select where html AND ((domain_nl AND lang_nl) OR cities)
+include hits for bikes and cities
 </PLAIN>
 
 <p>There is no strict formalism, so feel invited to use comments and
