@@ -13,6 +13,7 @@
 				<div id="menu_inner">
 
 <ul id="menu_nav" class="menu nav">
+<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
 [% INCLUDE menu_explain.tt %]
 [% INCLUDE menu_tasks.tt %]
 <li class="nav-item"><a class="nav-link" href="/coop/">Cooperation</a></li>

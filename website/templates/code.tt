@@ -1,11 +1,11 @@
 [%# produced by the production script for JSON,XML,PLAIN,PERL %]
 
-[% IF header %]
-<div class="codeblock_light_header">EXAMPLE</div>
-[% END %]
 [% IF copy %]
-<p><button class="copybanner">COPY</button></p>
+<p><button class="copybanner" onClick="copyToClipboard($('#c-[% unique %]'))"
+>COPY</button></p>
+<pre id="c-[% unique %]" style="display: none">[% copy %]</pre>
 [% END %]
+
 <div id="[% unique %]-[% format %]" class="codeblock_light"
   data-format="[% format %]">
 	[% content %]

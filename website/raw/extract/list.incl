@@ -7,15 +7,15 @@
 <li>Extracting knowlegde:
     <table>
 	<tr><td>
-		<a href="normalize.html">URL normalization</a><br />
-		<a href="meta-classic.html">classic &lt;meta&gt;</a><br />
-		<a href="meta-name.html">&lt;meta&gt; names</a><br />
+		<a href="/extract/normalize.html">URL normalization</a><br />
+		<a href="/extract/meta-classic.html">classic &lt;meta&gt;</a><br />
+		<a href="/extract/meta-name.html">&lt;meta&gt; names</a><br />
 	</td><td>
-		<a href="meta-all.html">all &lt;meta&gt;</a><br />
-		<a href="references.html">references</a><br />
-		<a href="links.html">&lt;link&gt;</a><br />
+		<a href="/extract/meta-all.html">all &lt;meta&gt;</a><br />
+		<a href="/extract/references.html">references</a><br />
+		<a href="/extract/links.html">&lt;link&gt;</a><br />
 	</td><td>
-		<a href="opengraph.html">OpenGraph</a><br />
+		<a href="/extract/opengraph.html">OpenGraph</a><br />
 	</td></tr>
 	</table>
 </li>

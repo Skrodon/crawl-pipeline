@@ -4,7 +4,8 @@
 of the page.  When you want to search for parts of words, you must use
 the filter which matches text.</p>
 
-<p>This filter has one option: <code>case_sensitive</code> (default false).</p>
+<p>This filter has one option: <code>case_sensitive</code>
+(default <code>false</code>: defaults to case-insensitive matching).</p>
 
 --right
 [% INCLUDE $list_incl %]
@@ -19,18 +20,16 @@ text, removing duplicates.</p>
 be shown as this Hit:</p>
 
 <JSON>
-{ "rule": "full word", "word": "<word>" }
+{ "rule": "full word", "word": "Pizza" }
 </JSON>
 
-<p>When your match is case-insensitive (the default behavior), then each
-Hit looks like this:</p>
+<p>When your match is case-<b>in</b>sensitive (the default behavior),
+the word is returned with the casing you provided: it does not show the
+detected capitalization.  Each Hit looks like this:</p>
 
 <JSON>
-{ "rule": "full word-i", "word": "<word>" }
+{ "rule": "full word-i", "word": "Pizza" }
 </JSON>
-
-<p>where the <code>&gt;word&lt;</code> is using the same casing are used
-in your filter rule.</p>
 
 --right
 <h2>Characters with various notations</h2>
@@ -39,21 +38,21 @@ in your filter rule.</p>
 many different ways to write them.  For instance, when you would like
 to find the city of München in HTML, there are four options</p>
 
-<PLAIN>
-  M\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}nchen
-  Mu\N{COMBINING CIRCUMFLEX ACCENT}nchen
-  Muenchen
-  Munchen           # lazy author
+<PLAIN copy>
+M\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}nchen
+Mu\N{COMBINING CIRCUMFLEX ACCENT}nchen
+Muenchen
+Munchen           # lazy author
 </PLAIN>
 
 <p>Some words have many of these, so only a regular expression can help
 you here.  Use the text match filter with a pattern like this:</p>
 
-<PLAIN>
-  \b M(?: u |
-         ue |
-         \N{LATIN SMALL LETTER U WITH CIRCUMFLEX} |
-         u\N{COMBINING CIRCUMFLEX ACCENT}
-      )nchen \b
+<PLAIN copy>
+\b M(?: u |
+        ue |
+        \N{LATIN SMALL LETTER U WITH CIRCUMFLEX} |
+        u\N{COMBINING CIRCUMFLEX ACCENT}
+    )nchen \b
 </PLAIN>
 

@@ -113,12 +113,16 @@ sub _show_code($)
 		{	$content = qq{<pre class="$format-fragment">$html</pre>};
 		}
 
+		my $copy;
+		if($options{copy})
+		{   $copy = encode_entities $body;
+		}
+
 		my %vars = (
 			unique  => $unique, 
 			format  => $format,
 			content => $content,
-			header  => "HEADER",
-			copy    => $options{copy},
+			copy    => $copy,
 		);
 
 		my $code;
@@ -137,7 +141,7 @@ sub _show_code($)
 
 	return <<__TABS;
 <script>\$( function() { \$("#$unique").tabs({ active: $active }) } )</script>
-<div id="$unique" class="code-alts">
+<div id="$unique" class="code-alternatives">
   <ul>
   $heads
   </ul>
@@ -164,7 +168,7 @@ sub process_raw($$$)
 		$t =~ m!^public_html/index.html$! ? 'yes' :undef;
 
 	# Add an HR before each H2
-	$raw =~ s!<h2>!<hr>\n<h2>!g;
+ 	$raw =~ s!<h2>!<hr>\n<h2>!g;
 
 	### First, produce the body of the page in raw
 
@@ -196,6 +200,7 @@ sub process_raw($$$)
 	{   s! (\<a[^>]*\shref=)(['"]?)(.+?)\2([^>]*\> .*? \</a\>) !
 		  process_link($t, $1, $3, $4) !sgeix;
 
+		s!<HEADER>(.*?)</HEADER>!<div class="codeblock_light_header">$1</div>!g;
 		s!((?:\<(XML|JSON|PERL|PLAIN)[\s>].*?\</\2\>\s*)+)!_show_code($1)!gse;
 	}
 
@@ -247,11 +252,11 @@ sub process_link($$$$)
 		$post =~ s!\</a\b.*$!!i;
 		return qq{<s>$post</s>};
 	}
-#   elsif($fn =~ m/^\Q$outtree$link\E$/)
-#   {   $post =~ s/.*?\>//;
-#       $post =~ s!\</a\b.*$!!i;
-#       return qq{<span class="myself">$post</span>};
-#   }
+    elsif($fn =~ m/^\Q$outtree$link\E$/)
+    {   $post =~ s/.*?\>//;
+        $post =~ s!\</a\b.*$!!i;
+        return qq{<span class="myself">$post</span>};
+    }
 	else
 	{   my (undef, $first) = split m!/!, $fn;
 		my $p   = "/$first/index.html";

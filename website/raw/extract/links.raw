@@ -11,22 +11,22 @@ canonical URL: you do not need to clean it up any further.</p>
 
 <p>Sometime webpages have a huge number of links.  The URIs themselves (when a <code>href</code> attribute is present) will also be listed in the references extractor, but this link extractor will take all attribute fields it finds.  The lower-case version of the attribute name is used as key.</p>
 
-<p>Example output:</p>
+<HEADER>Example output:</HEADER>
 <JSON>
 {  "canonical": [ {
-          "href": "https://www.boatjump.com/en_us/rental-of/yacht/puerto-portals"
+          "href": "https://boat.com/en_us/rental-of/yacht/puerto-portals"
        }
     ],
     "shortcut icon": [ {
           "type": "image/x-icon",
-          "href": "https://www.boatjump.com/assets/favicon/favicon-783e85a14e.ico"
+          "href": "https://boat.com/assets/favicon/favicon-783e85a14e.ico"
        }
     ],
     "alternate": [ {
-          "href": "https://www.boatjump.com/es/alquiler-de/yate/puerto-portals",
+          "href": "https://boat.com/es/alquiler-de/yate/puerto-portals",
           "hreflang": "es"
        },
-       {  "href": "https://www.boatjump.com/en/rental-of/yacht/puerto-portals",
+       {  "href": "https://boat.com/en/rental-of/yacht/puerto-portals",
           "hreflang": "en"
        }
     ]

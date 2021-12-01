@@ -8,12 +8,6 @@ possibilities "classic".  That subset of features found in the wild can
 be found at
 <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name">MDN "standard metadata names"</a></p>
 
---right
-[% INCLUDE $list_incl %]
-
---left
-<h2>Classic meta elements</h2>
-
 <p>The classic <code>&lt;meta&gt;</code> elements come in three forms:</p>
 <ul>
 <li>with attribute <code>name</code>, with a restricted set of names</li>
@@ -21,7 +15,15 @@ be found at
 <li>with attribute <code>http-equiv</code></li>
 </ul>
 
+--right
+[% INCLUDE $list_incl %]
+
+--left
+<h2>The classic elements</h2>
+
 <p>This extractor only takes <code>name</code> values for:</p>
+
+<HEADER>META NAME values taken</HEADER>
 <PLAIN>
 application-name
 author

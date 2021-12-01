@@ -3,6 +3,8 @@
 <p>Many HTML elements contain URIs pointing to other internet locations.</p>
 
 <p>The following attributes are collected when you need all:</p>
+
+<HEADER>Reference attributes with links</HEADER>
 <PLAIN>
   a        href
   area     href
@@ -37,7 +39,7 @@ your decision, but the output looks like this:</p>
         "https://www.google.com/"
      ],
      "script_src" : [
-        "https://grupovilanova.es/wp-includes/js/jquery/jquery.min.js?ver=3.5.1"
+        "https://my.es/wp-includes/js/jquery/jquery.min.js?ver=3.5.1"
      ],
      "a_href" : [
         "mailto:info@grupovilanova.es",
@@ -50,14 +52,14 @@ your decision, but the output looks like this:</p>
 <h2>Custom subsetting</h2>
 
 <p>You may select a sub-set for your extraction (for instance only
-"img_src") because the full list is really large: average about 150 URLs
-per HTML file.</p>
+<code>img_src</code>) because the full list is really large: average
+about 150 URLs per HTML file.</p>
 
 <p>You may also restrict the returned data with the following limits:</p>
 <ul>
 <li>maximum links per set</li>
 <li>only http/https</li>
-<li>only mailto</li>
+<li>only <code>mailto</code></li>
 <li>matching some regular expression, for instance top-level domain
     or extension.</li>
 </ul>

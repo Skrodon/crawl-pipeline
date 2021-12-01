@@ -1,9 +1,13 @@
 <h1>URL normalization</h1>
 
-<p>All extracts based on <code>HTML::Inspect</code> produce normalized
-(canonical) URLs.  The main rules are written down in RFC3986 and explained
+<p>Various extracts contain (relative) URLs.  As long as we now that
+the extract contains a URL, we will normalize that into an normalized
+(cannonicalized) absolute URL.  This is a complex process.</p>
+
+<p>The main normalization rules are written down in RFC3986 and explained
 on <a href="https://en.wikipedia.org/wiki/URI_normalization">Wikipedia page
-about URI normalization</a></p>
+about URI normalization</a>.  But it also handles HTML quircks, as long
+as most browsers support them.<p>
 
 <ul>
 <li>Interesting real-life
@@ -15,6 +19,10 @@ about URI normalization</a></p>
 
 --left
 <h2>Normalization rules</h2>
+
+<p>We use the Perl module <code>HTML::Inspect</code> to normalize
+(partial, relative) URLs found on webpages into absolute, RFC compliant
+URLs (not on CPAN yet).</p>
 
 <p>Explicitly, our URIs are created according to the following rules:</p>
 <ul>
@@ -33,8 +41,12 @@ about URI normalization</a></p>
     <li>utf8 auth, path and query characters are hex encoded and verified</li>
     <li>utf8 in hostnames is converted into IDN</li>
     </ul></li>
-<li>RFC3986 normalizations are applied by
-    <code>HTML::Inspect::Normalize</code> (not on CPAN yet), like
+</ul>
+
+--right
+<hr>
+<ul>
+<li>RFC3986 normalizations:
     <ul>
     <li>"<code>../</code>" and "<code>./</code>" removal</li>
     <li>remove repeating slashes</li>
@@ -45,6 +57,7 @@ about URI normalization</a></p>
     <li>hostnames are lower-cased</li>
     <li>remove trailing dot from hostname</li>
     <li>superfluous port numbers are removed</li>
+    <li>superfluous port number digits are removed</li>
     <li>The fragment is removed.</li>
     </ul></li>
 <li>Probably most important: all url components are validated so do not
