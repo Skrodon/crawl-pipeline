@@ -1,0 +1,16 @@
+<footer id="footer_outer">
+	<div class="wrap">
+		<div id="footer_inner">
+			<div id="footer_copy">
+
+Copyright&nbsp;©&nbsp;2021. "Pipeline" designed by
+<a href="https://yeti-design.nl" title="Yeti Design">Yeti Design</a>
+
+			</div>
+		</div>
+	</div>
+</footer>
+
+<div id="scroll_top">
+	<a id="scroll_top_a" href="">TODO</a>
+</div>

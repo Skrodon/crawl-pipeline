@@ -1,0 +1,30 @@
+<h1>Filter based on Origin</h1>
+
+<p>The "Origin" of the crawled data is the (abstract) name of an
+organization which has provided the data for the pipeline.  The origin
+gives a license to use the data which you MUST comply to.  See the
+License page.</p>
+
+<p>You may specify more than one source as one rule. You may also give an
+abstract description like "sources which allow me to keep the data for
+one month".  On the moment, we do not know which kinds of restrictions
+sources impose or users need to have.</p>
+
+<h2>List of origins</h2>
+
+<p>Currently defined origins:</p>
+
+<ul>
+<li><a href="https://commoncrawl.org">CommonCrawl</a>, about 350TB
+    crawl results per month.</li>
+</ul>
+
+<h2>Hit information</h2>
+
+<p>When this filter-rule matches, you may collect this hit:</p>
+<JSON>
+{ "rule": "origin",
+  "origin": "CommonCrawl"
+}
+</JSON>
+

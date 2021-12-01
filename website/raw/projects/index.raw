@@ -1,0 +1,25 @@
+
+<h1>Projects</h1>
+
+<ul>
+<li><a href="202104-warc-stats.html">2021-04 WARC statistics</a>,
+    counting link types.</li>
+</ul>
+
+<h2>Example project; Bavarian Food</h2>
+
+<p>One of the first Tasks for the Pipeline was contributed by the
+University of Passau (Germany).  It want to detect (and extract)
+websites in Bayern (county of Bavaria) which relate to local food.
+In the first step, their Task contains all webpages written in German
+(under any domain) or in any language under TLD <code>.bayern</code>,
+which have an extracted text of at least 300 words.  It also report
+discovered city-names.</p>
+
+<h2>Example project; link extract</h2>
+
+<p>For the use of other infrastructural projects, related to the
+Skrodon Project, there is link extractor Task.  For each HTML response,
+<code>&lt;meta&gt;</code>, <code>&lt;link&gt;</code>, and href/src link
+data is collected for further processing.  Links and data are nicely
+normalized.</p>

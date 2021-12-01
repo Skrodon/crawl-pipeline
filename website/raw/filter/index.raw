@@ -1,0 +1,41 @@
+<h1>Pipeline filters</h1>
+
+<p>The "Crawl Pipeline" converts crawl results from third party
+crawlers into a standardized "Product".  Potentially, there are
+many kinds of products, but at the moment these are only successful
+HTTP-request/response/text results, produced by CommonCrawl.  The filters,
+however, are abstract enough to work with many other data providers and
+formats.  What do you need?  What data can you offer to other people?</p>
+
+<a href="/filter/composing.html">Composing filters</a>
+
+<h2>Filters</h2>
+
+<p>A Task can use the following Filters to select Products:</p>
+
+<ul>
+<li><a href="/filter/status.html">filter Status</a>, which response codes do you want to see</li>
+<li><a href="/filter/origin.html">filter Origin</a>, restrict the source of the data</li>
+<li><a href="/filter/language.html">filter Language</a>, restrict the results based on the detected language of the response</li>
+<li><a href="/filter/text-size.html">filter Text Size</a>, restrict based on the size of the extracted text from the response</li>
+<li><a href="/filter/content-type.html">filter Content Type</a>, restrict based on the content (mime) type of the response</li>
+<li><a href="/filter/domain.html">filter Domain</a>, restrict to a set of websites or TLDs</li>
+<li><a href="/filter/full-words.html">filter Full Words</a>, one of the words must be present in the extracted text</li>
+<li><a href="/filter/match-text.html">filter Match Text</a>, one of the patterns (regular expressions) must be present in the extracted text</li>
+</ul>
+
+<p>More filters will be created when the need arises.  Expensive filter
+actions are shared with other Tasks which run on the same Pipeline.</p>
+
+<h2>Filter hit information</h2>
+
+<p>Each filter rule can provide you with the reason why it got triggered.
+You may be interested to collect those facts (for instance for debugging
+purposes), but you may also not be interested.  The hit information has
+a standard format:</p>
+
+<JSON>
+  { "rule": "<some name>", "<fact>": "<data>" }
+</JSON>
+
+<p>Each filter rule describes which name it uses, and which additional information it provides.</p>

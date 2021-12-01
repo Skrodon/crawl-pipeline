@@ -1,0 +1,28 @@
+<h1>Filter based on text size</h1>
+
+<p>This filter will return a Hit, only when there is a text extract
+for the response, and when this extract has a certain minimum size
+(in UTF8)</p>
+
+<p>The text extraction effort is shared.  The text extraction may be
+done by the origin (like in the CommonCrawl case), and may have their
+own restrictions as well.</p>
+
+<p>You have to specify exactly one of the following:</p>
+<ul>
+<li><code>minimum_size</code>, counts any printable or blanks</li>
+<li><code>minimum_chars</code>, counts only printables, not blanks</li>
+<li><code>minimum_words</code>, counts "\w+" sequences</li>
+</ul>
+
+<h2>Hit information</h2>
+
+<p>When you are interested in the actual counts, you get one of these
+three forms:</p>
+
+<JSON>
+{ "rule": "requires text", "size": 2345 }                 # minimum_size
+{ "rule": "requires text", "size": 2345, "chars": 1234 }  # minimum_chars
+{ "rule": "requires text", "size": 2345, "words":  312 }  # minimum_words
+</JSON>
+

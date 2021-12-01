@@ -1,0 +1,16 @@
+<h1>Result packers</h1>
+
+<p>The shear quantity of extracted data require adaptation to the needs
+of processing it on your servers. Many Tasks will produce hundreds of
+Gigabytes per day, so optimization is lower various costs.</p>
+
+<p>The crawl Pipeline is able to generate close to any format.  At the
+moment, the following are foreseen:</p>
+
+<ul>
+<li>WARC-archives, about 1Gbyte each, accompanied by a meta-data index</li>
+<li>Zip files, about 1Gbyte each: data records and metadata per Product
+    in separate directories.</li>
+<li>7zip files, like zip files but much smaller so better for longer
+    storage.</li>
+</ul>

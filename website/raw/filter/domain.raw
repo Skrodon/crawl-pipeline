@@ -1,0 +1,16 @@
+<h1>Filter by domain name/website</h1>
+
+<p>With a list of domains, you can filter websites.  When you specify
+<code>.nl</code>, you get everything under TLD nl (Netherlands).
+With <code>example.com</code>, you will get <code>example.com</code>,
+but also <code>www.example.com</code>.</p>
+
+<h2>Hit information</h2>
+
+<p>When you have this Hit included in your results, it looks something like:</p>
+
+<JSON>
+{ "rule": "domain name", "name": "example.com" }
+</JSON>
+
+<p>The <code>name</code> lists the (first) filter pattern which matched the <code>host</code> component of the response location URI.</p>

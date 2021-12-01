@@ -1,0 +1,79 @@
+<h1>List of all &lt;meta&gt; records</h1>
+
+<p>The <code>&lt;meta&gt;</code> elements come in many forms, with a
+wide variety in attributes.  When you want to get a subset which is not
+"classic", or not "only names", then you get a more complex data-structure
+back.  You MAY specify your own filter to restrict the output volume.</p>
+
+<h2>Produced data-structure</h2>
+
+<p>The output is an array of objects (HASHes, associative arrays),
+each a single parsed <code>&lt;meta&gt;</code> element.</p>
+
+<p>The order of elements in the file is kept, because that MIGHT be
+important.  For instance, the order is important for OpenGraph data to
+relate attributes (like <code>og:image:width</code>) to the correct
+object (like <code>og:image</code>).  Anyway: this is what you get
+(shown in JSON)</p>
+
+<JSON>
+[
+    {
+       "http-equiv" : "X-UA-Compatible",
+       "content" : "IE=Edge"
+    },
+    {
+       "http-equiv" : "Content-Type",
+       "content" : "text/html; charset=utf-8"
+    },
+    {
+       "content" : "Tiki Wiki CMS Groupware - https://tiki.org",
+       "name" : "generator"
+    },
+    {
+       "name" : "twitter:domain",
+       "content" : "http://www.example.com/menu/"
+    },
+    {
+       "property" : "og:url",
+       "content" : "http://www.example.com/menu"
+    },
+    {
+       "name" : "description",
+       "content" : "<Please add a description>",
+       "property" : "og:description"
+    },
+    {
+       "content" : "I spent so much time on this useful information!",
+       "name" : "twitter:description"
+    },
+    {
+       "property" : "og:site_name",
+       "content" : "Visit my site!"
+    },
+    {
+       "name" : "twitter:site",
+       "content" : "Visit my site!"
+    },
+    {
+       "property" : "og:title",
+       "content" : "My First Website"
+    },
+    {
+       "name" : "twitter:title",
+       "content" : "My First Website"
+    },
+    {
+       "property" : "og:type",
+       "content" : "website"
+    },
+    {
+       "content" : "summary",
+       "name" : "twitter:card"
+    },
+    {
+       "content" : "themes/base_files/favicons/browserconfig.xml",
+       "name" : "msapplication-config"
+    }
+]
+</JSON>

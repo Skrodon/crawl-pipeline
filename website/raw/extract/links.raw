@@ -1,0 +1,35 @@
+<h1>Extract the &lt;link&gt; elements</h1>
+
+<p>Links have many different purposes, and more and more are added.
+They also have a wide variety in attributes, as can be seen on the
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link">MDN page about 'link'</a></p>
+
+<p>The links will be <a href="normalize.html">normalized</a> into a
+canonical URL: you do not need to clean it up any further.</p>
+
+<h2>Extracted structure</h2>
+
+<p>Sometime webpages have a huge number of links.  The URIs themselves (when a <code>href</code> attribute is present) will also be listed in the references extractor, but this link extractor will take all attribute fields it finds.  The lower-case version of the attribute name is used as key.</p>
+
+<p>Example output:</p>
+<JSON>
+{  "canonical": [ {
+          "href": "https://www.boatjump.com/en_us/rental-of/yacht/puerto-portals"
+       }
+    ],
+    "shortcut icon": [ {
+          "type": "image/x-icon",
+          "href": "https://www.boatjump.com/assets/favicon/favicon-783e85a14e.ico"
+       }
+    ],
+    "alternate": [ {
+          "href": "https://www.boatjump.com/es/alquiler-de/yate/puerto-portals",
+          "hreflang": "es"
+       },
+       {  "href": "https://www.boatjump.com/en/rental-of/yacht/puerto-portals",
+          "hreflang": "en"
+       }
+    ]
+ }
+</JSON>
+

@@ -1,0 +1,66 @@
+<h1>"Classic" &lt;meta&gt; elements</h1>
+
+<p>Many extensions have been made to the <code>&lt;meta&gt;</code>
+elements in HTML pages.  Not only have people be adding new values
+for <code>name</code>, but also various attributes where added,
+like <code>property</code>.  Let's call the official short list of
+possibilities "classic".  That subset of features found in the wild can
+be found at
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name">MDN "standard metadata names"</a></p>
+
+<p>The classic <code>&lt;meta&gt;</code> elements come in three forms:</p>
+<ul>
+<li>with attribute <code>name</code>, with a restricted set of names</li>
+<li>with attribute <code>charset</code></li>
+<li>with attribute <code>http-equiv</code></li>
+</ul>
+
+<p>This extractor only takes <code>name</code> values for:</p>
+<PLAIN>
+application-name
+author
+creator
+color-scheme
+description
+generator
+googlebot
+keywords
+publisher
+referrer
+robots
+theme-color
+viewport
+</PLAIN>
+
+<p>This extractor does take all <code>http-equiv</code> records, because
+so many and old extensions have been made to the list of W3Schools.</p>
+
+<p>With convincing arguments, a few names MAY be added to this "classic"
+list later.</p>
+
+<h2>Produced data-structure</h2>
+
+<p>How and where the data-structure with the facts are transported is
+your decision, but the output looks like this:</p>
+
+<JSON>
+{
+   "name" : {
+      "description" : "The Open Graph protocol enables...",
+      "generator" : "Хей, гиди Ванчо"
+   },
+   "charset" : "utf-8",
+   "http-equiv" : {
+      "content-type" : "text/html;charset=utf-8",
+      "refresh" : "3;url=https://www.mozilla.org",
+      "content-disposition" : ""
+   }
+}
+</JSON>
+
+<p>Both the <code>name</code> and <code>http-equiv</code> can appear with
+multiple <code>&lt;meta&gt;</code>-elements, and have a unique label.
+Therefore, they are produces as simple associative array (HASH) with
+only simple values.  Always UTF-8 and entity decoded.</p>
+
+

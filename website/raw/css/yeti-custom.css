@@ -1,0 +1,271 @@
+/* Add your own custom css to this file. You may wish to use css !important calls to override css from the template css files.
+----------------------------------------------------------- */
+
+body {
+  color: #000000;
+    font-weight: 400;
+}
+#s5_component_wrap_inner h1 {
+    color: #37529b;
+    font-family: 'EB Garamond', serif;
+    font-size: 2.4em;
+}
+#s5_component_wrap_inner h2 {
+    font-family: 'EB Garamond', serif;
+    color: #0983c8 !important;
+    font-size: 1.6em !important;
+    margin-top: 14px;
+}
+hr {
+    border-top: 1px solid #82ceeb;
+    border-width: 1px;
+    background-color: #82ceeb;
+}
+.incode {
+    background-color: #ebebeb;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+.highlightcode {
+    background-color: #FFFFFF;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+
+/* ----- MENU en LOGO ----- */ 
+
+#s5_menu_wrap.s5_wrap_fmfullwidth {
+    z-index: 100 !important;
+    background-image: url(../../../images/bgmenu_pipeline.jpg);
+    background-repeat: repeat-x;
+    background-color: #23185c;
+    background-size: contain;
+}
+.s5_wrap_fmfullwidth #s5_logo_wrap {
+    margin-top: -2px;
+}
+.s5_wrap_fmfullwidth #s5_logo_wrap img {
+    transform: scale(1);
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
+    margin-right: 40px;
+}
+.s5_responsive_mobile_present #s5_responsive_mobile_drop_down_menu {
+    width: 40%;
+}
+
+/* ----- SUBMENU ----- */ 
+#subMenusContainer a, #s5_nav li li a, #subMenusContainer li.subParentBtn, #subMenusContainer li.subMenuBtn {
+    color: #000000 !important;
+    background-color: #FFFFFF !important;
+}
+#subMenusContainer div.s5_sub_wrap ul ul, #subMenusContainer div.s5_sub_wrap_lower ul ul, #subMenusContainer div.s5_sub_wrap_rtl ul ul, #subMenusContainer div.s5_sub_wrap_lower_rtl ul ul  {
+    background-color: #FFFFFF !important;
+    padding: 10px;
+    border-radius: none !important;
+}
+#subMenusContainer li.subParentBtn, #subMenusContainer li.subMenuBtn {
+    padding: 0 5px 5px;
+    min-width: 150px;
+}
+.S5_submenu_item {
+    padding: 8px 0px !important;
+ }
+
+/* ----- MENU ----- */ 
+#s5_nav li {
+    height: 42px;
+    padding-right: 0px;
+    padding-top: 10px;
+    padding-bottom: 0px;
+    margin-right: 20px;
+    overflow: hidden;
+    line-height: 40px;
+    margin-left: 20px;
+}
+#s5_nav li .s5_level1_span1 {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+ol {
+    display: block;
+    list-style-type: decimal;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    padding-inline-start: 40px;
+}
+li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+ol li::marker {
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+    text-transform: none;
+    text-indent: 0px !important;
+    text-align: start !important;
+    text-align-last: start !important;
+    color: #399edc;
+    margin-right: 15px;
+    font-size: 0.8em;
+    border-radius: 15px;
+    opacity: 0.5;
+  background-color: #000000;
+}
+
+/* ----- LOGO ONDERIN UIT ----- */ 
+#s5_logo_wrap2 {
+    display: none;
+}
+
+/* ----- SWITCH LETTERGROOTTE UIT ----- */ 
+#fontControls {
+    display: none;
+}
+
+
+/* ----- BULLETS ----- */ 
+
+ul.ul_bullet li {
+    background: url(../../../images/bullet-1.png) no-repeat scroll 0 7px transparent !important;
+    margin-top: 0px;
+    padding-left: 30px;
+}
+
+/* ----- MENU HOOGTE ----- */ 
+.s5_wrap_fmfullwidth #s5_menu_inner {
+    margin-top: 60px;
+}
+
+/* ----- SUBMENU ----- */ 
+#subMenusContainer a, #s5_nav li li a {
+    color: #000000;
+    padding-left: 30px;
+}
+
+/* ----- FORM ----- */ 
+
+div.fcp_wrapper {
+    border: 2px dashed #d0e3f7;
+    background-color: #f9fcfe;
+    padding: 50px;
+}
+div.fcp_line input:not([type="submit"]), div.fcp_line textarea, div.fcp_line select {
+    border: 1px solid #d0e3f7;
+}
+div.fcp_line label {
+    font-size: 85%;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+#s5_center_area1 {
+    padding-top: 10px;
+}
+#s5_top_row1_area_inner {
+    padding-bottom: 40px;
+    padding-top: 40px;
+}
+
+/* ----- CODEBLOCK -----  */
+
+#s5_nav li:hover {
+    border-bottom: 4px solid #1842a2; 
+}
+
+/* ----- CODEBLOCK -----  */
+
+.codeblock_light_header {
+    background: none;
+    color: #6cb0e4;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-top: 0px;
+    letter-spacing: 8px;
+    font-size: 0.8em;
+    margin-bottom: 0px;
+}
+.codeblock_light {
+    font-family: 'Cutive Mono', monospace;
+    font-size: 0.95em;
+    background: linear-gradient(90deg, rgb(241 249 255) 0%, rgb(223 242 251) 100%);   
+    color: #000000;
+    padding: 20px;
+    margin-top: 2px;
+    border-bottom: 2px solid #bfdaf4;
+}
+
+
+/* ----- TRIANGLES IN CODEBLOCK ----- */  
+
+#triangle-topright {
+    width: 0;
+    height: 0;
+    border-top: 16px solid #ffffff;
+    border-left: 16px solid transparent;
+    float: right;
+}
+#triangle-bottomleft {
+    width: 0;
+    height: 0;
+    border-bottom: 16px solid #ffffff;
+    border-right: 16px solid transparent;
+    margin-top: 20px;
+}
+
+.copybanner {
+    width: 80px;
+    height: 30px;
+    background: #6cb0e4;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16% 50%);
+    float: right;
+    margin: 26px 0px !important;
+    letter-spacing: 2px;
+    font-size: 0.6em;
+}
+
+/* ----- FONTS ----- */  
+
+#s5_component_wrap_inner h2, #s5_component_wrap_inner h1 {
+    color: #37529b;
+}
+
+#s5_component_wrap_inner h2 {
+    color: #37529b;
+    font-size: 1.5em;
+}
+h3 {
+    font-size: 1em;
+    font-weight: 800;
+    margin-top: 20px;
+}
+
+.s5_pricetable_column.recommended, .s5_pricetable_column, div.catItemReadMore, .userItemReadMore, div.catItemCommentsLink, .userItemCommentsLink, a.readmore-link, a.comments-link, div.itemCommentsForm form input#submitCommentButton, #middle_content .s5_imagerot_wrap img, #s5_login, #s5_register, #s5_bottom_menu_wrap ul.menu a, #s5_footer a, .jdGallery .carousel .carouselInner .thumbnail, .jdExtCarousel .carouselInner .thumbnail, #s5_bottom_row3_area2 .module_round_box ul.menu a, .s5_va_active span.s5_va_h3_inner_span, .s5_va_inactive span.s5_va_h3_inner_span, #s5_top_menu ul li a, .s5_rowselector, .S5_menu_module_group img, .jdGallery a.left, .jdGallery a.right, #s5_scrolltopvar, #s5_top_menu_wrap li a, #s5_is_leftarrow, #s5_is_rightarrow, .S5_parent_subtext, .S5_submenu_item, .S5_subtext, .inputbox, .registration input, .login input, .contact-form input, #jform_contact_message, input, .s5_scrolltop_fadeout, .s5_scrolltop_fadein, .dropdown-menu li > a:hover, .dropdown-menu li > a:focus, .dropdown-submenu:hover > a, .dropdown-menu .active > a, .dropdown-menu .active > a:hover, .nav-list > .active > a, .nav-list > .active > a:hover, .nav-pills > .active > a, .nav-pills > .active > a:hover, .btn-group.open .btn-primary.dropdown-toggle, .btn-primary:hover, .btn-primary, .item-page .dropdown-menu li > a:hover, .blog .dropdown-menu li > a:hover, .item .dropdown-menu li > a:hover, #searchForm .btn-toolbar .btn, #cboxLoadedContent input, .s5_button, #cboxContent, #s5_qc_security_img, .MultiBoxContainer, .module_round_box-gray, .module_round_box-outlined, h3.s5_demo_h3, .pages_highlight_box, textarea, .validate, .faq_question, .ourteam_roundimage_inner, .ourteam_roundimage_hover, .module_round_box-highlight1, .module_round_box-highlight2, .module_round_box-dark, ul.dropdown-menu.actions, .chzn-container .chzn-results li:hover, .chzn-container-single .chzn-single, #s5_nav li:hover span.s5_level1_span1, #s5_nav li.mainMenuParentBtnFocused, #s5_nav li.mainMenuParentBtnFocused span.s5_level1_span1, #s5_register, #s5_login, #login-form li:nth-child(3n+0) a, .s5_highlight1, a.k2ReadMore, button, .s5_button, .s5_button_highlight, p.readmore a, #cboxLoadedContent input.button, .article-info dd, #s5_accordion_menu h3.s5_am_parent, #s5_accordion_menu h3.s5_am_not_parent, .btn.dropdown-toggle, #cboxLoadedContent button, .sq_innerpadding, .s5_pricetable_column_padding, #s5_modpos_5, #s5_masonry_articles li a, .videocontent, .module_round_box.highlight1, .module_round_box.highlight2, .module_round_box.border_highlight1, .module_round_box.border_highlight2, .module_round_box.border, .module_round_box.gray, .module_round_box.dark, li#current.active, .controls .btn {
+    -moz-border-radius: 0px !important;
+    -webkit-border-radius: 0px !important;
+    border-radius: 0px !important;
+}
+
+@media screen and (max-width: 970px){
+/* TABLET PORTRAIT MODE CSS
+----------------------------------------------------------- */
+#s5_logo_wrap, #s5_logo_wrap2 {
+    float: inherit;
+    margin-top: 8px;
+    cursor: pointer;
+    max-width: 200px!important;
+}
+  #s5_menu_wrap {
+    min-height: 240px;
+}
+  .s5_responsive_mobile_present #s5_responsive_mobile_bar_active {
+    font-size: 10pt;
+    font-family: 'Cantarell',Helvetica,Arial,sans-serif;
+}

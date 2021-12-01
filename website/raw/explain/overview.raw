@@ -1,0 +1,85 @@
+<h1>Overview</h1>
+
+<p>The Pipeline is an open infrastructure: you may contribute hardware,
+but you can also share other people's offerings.</p>
+
+<p>At the moment, the pipeline only processes crawl information
+which are published statically by third parties.  A logical next
+step would be, to integrate this Pipeline logic inside the
+crawling efforts.</p>
+
+--left
+<h2>Tasks</h2>
+
+<p>When you are interested in crawled website information, you
+submit a <em>Task</em> to the people running this project.  Tasks
+are components which run in the processing pipelines.
+Such Task consists of:</p>
+
+<ul>
+<li>filter rules: which response is useful for you
+<li>extract rules: what data would you like to collect from it (knowledge extract effort is shared)
+<li>packaging: how the extracted data is transported to you
+</ul>
+
+<p>Have a look at the available filters and extraction rules, to see
+whether we offer enough to keep you from crawling yourself.</p>
+
+--right
+
+<h2>Products</h2>
+
+<p>For matter of terminology only, the Pipeline is processing "Products".
+A <em>Product</em> is an abstraction (object) representing one crawled
+URI, the retrieved response, related metadata, and facts collected via
+processing (for instance, extracted text).</p>
+
+<p>The Pipeline consumes Crawler output (usually huge WARC (Web ARChive)
+files), and merges the contained data into these abstract Products. In
+case of CommonCrawl data, it takes the related request, response and
+metadata WARC-records from one WARC archive, additional metadata from a
+"WAT" WARC, and extracted text from a "WET" WARC: five parts from three
+files into one abstract object presented to the Task.</p>
+
+<p>When you are creating a Task, you do not need to know anything
+about the interface which the Product object offers: you will submit
+Filter rules, Extraction wishes, and Packaging instructions.  This is
+an iterative cooperation with the developers and maintainers of the
+Pipeline.</p>
+
+--left
+
+<h2>Processing</h2>
+
+<p>The Tasks of everyone together, are distribed over all
+the processing Pipelines.</p>
+
+<ul>
+<li>The application run on a large number of servers.</li>
+<li>Each server runs a number of processing batches (Pipelines) in
+    parallel.</li>
+<li>Each batch processes a large number of crawled pages,
+    usually inserted via WARC files.</li>
+<li>The page request, response, and some meta-data are each combined
+    into <em>Product</em>.</li>
+<li>Each of the Tasks gets a chance to extract information from
+    the Product.</li>
+<li>You MUST download the extracts at least every day, otherwise
+    they are removed.</li>
+</ul>
+
+--right
+
+<h2>Data Licensing</h2>
+
+<p>What you can do with the data which you receive depends on the
+Licenses which are imposed by the Crawlers, the jurisdiction of the actual
+Crawler, and the laws in your jurisdiction.  Websites may contain data
+which falls under the GDPR: the European privacy laws.  Your Tasks fall
+under the European Data Processing regulations.</p>
+
+<p>When you are not storing this data for a long term or transform the
+data which breaks GDPR restrictions (for instance, by breaking up texts
+into single lines), then you are probably fine.  For other uses, consult
+a lawyer.  Together with the <a href="https://opensearchfoundation.org">
+Open Search Foundation</a>, we try to establish standard legal rules.</p>

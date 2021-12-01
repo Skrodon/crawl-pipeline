@@ -1,0 +1,30 @@
+<div id="menu_wrap_outer">
+	<div id="menu_wrap_padding">
+		<div id="menu_wrap">
+			<div class="wrap">
+				<div id="menu_logo_wrap">
+
+<a href="/"><img
+  src="/image/logo_pipeline.jpg" width="239" height="120"
+  alt="Website Home"
+ /></a>
+
+				</div>
+				<div id="menu_inner">
+
+<ul id="menu_nav" class="menu nav">
+[% INCLUDE menu_explain.tt %]
+[% INCLUDE menu_tasks.tt %]
+<li class="nav-item"><a class="nav-link" href="/products/">Products</a></li>
+<li class="nav-item"><a class="nav-link" href="/coop/">Cooperation</a></li>
+<li class="nav-item"><a class="nav-link" href="/projects/">Projects</a></li>
+</ul>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="menu_spacer">
+</div>

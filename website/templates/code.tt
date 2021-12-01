@@ -1,0 +1,7 @@
+[% produced by the script %]
+
+<div class="codeblock_light_header">EXAMPLE</div>
+<p><button class="copybanner">COPY</button></p>
+<div class="codeblock_light"><ol>
+<li>html = any HTML or XML</li>
+<li>domain_nl = domain in .nl</li>

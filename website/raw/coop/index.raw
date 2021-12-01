@@ -1,0 +1,24 @@
+<h1>Cooperation</h1>
+
+<h2>Current set-up</h2>
+
+<p>At the moment, the "Crawl Pipeline" runs on one server, with 9 batches
+in parallel.  It is able to process the CommonCrawl published data-set,
+which is 350TB per month.  It runs three Tasks.</p>
+
+<h2>Joining the Pipeline</h2>
+
+<p>You can join in different ways:</p>
+<ol>
+<li>contributing WARC archives, produced by your crawler</li>
+<li>become a data user: submit you Task</li>
+<li>host a server which runs some pipeline processes</li>
+</ol>
+
+<p>The easiest option is number 2: please use our data instead of
+processing CommonCrawl data yourself.  Or even crawling yourself.
+Let us reuse resources.</p>
+
+<p>Contact <a href="mailto:mark@overmeer.net">mark@overmeer.net</a>,
+Mark Overmeer (in English, Dutch, or German)</p>
+

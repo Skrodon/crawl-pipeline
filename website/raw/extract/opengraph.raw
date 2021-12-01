@@ -1,0 +1,36 @@
+<h1>OpenGraph</h1>
+
+<h2>Output rules</h2>
+
+<ul>
+<li>We only support structures which are described on
+    <a href="https://ogp.me">https://ogp.me</a>.  This looks like the
+    best description.  Some extensions do exist, but with unknown status
+    in the community (see below)  We do not monitor discussion forums
+    about OpenGraph.</li>
+<li>We do handle non-standard prefixes, when they are correctly declared
+    via <code>prefix</code> attributes in the HTML anywhere. (But probably
+    no-one else does handle this correctly).</li>
+<li>When a property MAY have attributes (like <code>og:image</code>) it
+    is called a <em>Structure</em>.  We will always return it as a Hash
+    (associative array) even when there are not attributes specified.</li>
+<li>When a property MAY repeat (be an array, like <code>og:image</code>)
+    it will always either be missing from the returned data-set or an
+    <em>Array</em>. Even when only found once, it will be returned as Array
+    of length one.</li>
+</ul>
+
+[TODO: include examples for each of the <code>og.type</code> variations. In JSON format]
+
+<h2>Currently not supported</h2>
+
+<p>Extensions on OpenGraph may be included, when used by multiple
+parties. We currently know about the following proposals:</p>
+<ul>
+<li><a href="https://developer.yoast.com/features/opengraph/extensions-and-addons/">Yoast
+    WooCommerce SEO extensions</a>, uses own <code>product</code> and some
+    <code>ya:ovs</code></li>
+<li><a href="https://yandex.com/support/video/partners/open-graph.html">Yandex
+    video extensions</a>. Their <code>ya:ovs:<code> metadata records
+    need to be merged inside the preceding video structure.</li>
+</ul>

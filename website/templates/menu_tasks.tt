@@ -1,0 +1,10 @@
+<li class="nav-item dropdown">
+	<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+	    href="#" role="button" aria-expanded="false">Tasks</a>
+	<ul class="dropdown-menu">
+	<li><a class="dropdown-item" href="/tasks/">Expression</a></li>
+	<li><a class="dropdown-item" href="/filter/">Filters</a></li>
+	<li><a class="dropdown-item" href="/extract/">Extractors</a></li>
+	<li><a class="dropdown-item" href="/package/">Packagers</a></li>
+	</ul>
+</li>

@@ -1,0 +1,85 @@
+<h1>Extract Product information</h1>
+
+<p>After the filters have selected products which you want to receive,
+you should narrow the data down to what you really are interested in. The
+input of the Pipeline is more than 10 TeraByte per day, and you probably
+want to reduce that to a few GigaBytes per day to process yourself. The
+extraction can be formatted and packaged in many ways. Here we only
+focus on the content.</p>
+
+<p>At the moment, we only process <a
+href="https://commoncrawl.org">CommonCrawl</a> data.  For sources to be
+added in the future, we do not yet know what can be offered.</p>
+
+<p>Useful information:</p>
+<ul>
+<li><a href="https://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.1/">WARC specification v1.1</a></li>
+</ul>
+
+<h1>Available data</h1>
+
+<p>Standardized data:</p>
+<ul>
+<li>(raw) HTTP request (bytes sent)</li>
+<li>(raw) HTTP response (bytes received)</li>
+</ul>
+
+<p>In standard WARC Format</p>
+<ul>
+<li>request as WARC record; raw HTTP request wrapped in WARC headers</li>
+<li>response as WARC record; raw HTTP response wrapped in WARC headers</li>
+</ul>
+
+<p>CommonCrawl specific content</p>
+
+<ul>
+<li><a href="https://commoncrawl.org/the-data/get-started/#WAT-Format">CommonCrawl specific metadata (WAT)</a>, JSON string</li>
+<li>CommonCrawl specific metadata; JSON wrapped in WARC headers</li>
+<li><a href="https://commoncrawl.org/the-data/get-started/#WET-Format">CommonCrawl extracted text (WET)</a>; multi-line file without any mark-up</li>
+<li>CommonCrawl extracted text; wrapped in WARC headers</li>
+</ul>
+
+<p>Pipeline:</p>
+<ul>
+<li>Hits produced by the filter rules; JSON or other serialization</li>
+</ul>
+
+<p>HTML inspection (JSON or other serialization)</p>
+<ul>
+<li>all produced URLs are <a href="normalize.html">URL normalization rules</a>
+    with respect to the page they were found in. You have various options
+    to reduce the list of links, because there are so many!</li>
+<li>the <a href="meta-classic.html">classic meta elements</a>
+    from <code>&lt;meta&gt;</code> elements: the relatively small
+    subset of traditional meta fields.</li>
+<li>a table with <a href="meta-name.html">extract meta names</a> from
+    <code>&lt;meta&gt;</code> elements, simple key values.</li>
+<li>a list of <a href="meta-all.html">extract meta all</a> from
+    <code>&lt;meta&gt;</code> elements, including all attributes.</li>
+<li>all kinds of <a href="references.html">extract references</a>,
+    like <code>href</code> and <code>src</code></li>
+<li>facts from <a href="links.html">extract link elements</a>, via
+    <code>&lt;link&gt;</code> elements</li>
+<li><a href="opengraph.html">extract OpenGraph</a> data extract</li>
+</ul>
+
+<h2>Ideas for other extracts</h2>
+
+<p>Ask for them to be implemented, if you have a use for it:</p>
+<ul>
+<li>Various <a href="https://en.wikipedia.org/wiki/Microformat">Microformats</a>
+    like vcard, hMedia, ...</li>
+<li><a href="https://developer.twitter.com/en/docs/twitter-for-websites/cards/">TwitterCards</a></li>
+<li><a href="https://agls.gov.au/">AGLS Metadata Standard</a>,
+    Australian governmental standard which shows as <code>&lt;meta
+    name="AGLSTERMS.*"&gt;</code></li>
+<li>RDFa content in HTML</li>
+<li>DublinCore <code>&lt;meta name="dc.*"&gt;</code> and
+    <code>&lt;meta name="dcterm.*"&gt;</code></li>
+<li>Cookies set by the Response</li>
+<li>Which CMS framework is used</li>
+<li>Response time</li>
+</ul>
+
+<p>More ideas? Please report them, even if you do not need them (yet).</p>
+

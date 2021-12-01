@@ -1,0 +1,47 @@
+<h1>URL normalization rules</h1>
+
+<p>All extracts based on <code>HTML::Inspect</code> produce normalized
+(canonical) URLs.  The main rules are written down in RFC3986 and explained
+on <a href="https://en.wikipedia.org/wiki/URI_normalization">Wikipedia page
+about URI normalization</a></p>
+
+<ul>
+<li>Interesting real-life
+    <a href="/projects/202104-warc-stats.html">HTML link statistics</a>
+</ul>
+
+<p>Explicitly, our URIs are created according to the following rules:</p>
+<ul>
+<li>As absolute base for relative URLs, it uses
+    <ul>
+    <li>the <code>&lt;base href&gt;</code> from the document, otherwise</li>
+    <li>the <code>Location:</code> header of the response,</li>
+    <li>otherwise the request URI</li>
+    </ul></li>
+<li>HTML formatting issues are circumvented
+    <ul>
+    <li>leading and trailing blanks are stripped</li>
+    <li>backslashes become forward slashes</li>
+    <li>tab, cr, lf, and vt are removed including following blanks</li>
+    <li>blanks are recoded to <code>%20</code></li>
+    <li>utf8 auth, path and query characters are hex encoded and verified</li>
+    <li>utf8 in hostnames is converted into IDN</li>
+    </ul></li>
+<li>RFC3986 normalizations are applied by
+    <code>HTML::Inspect::Normalize</code> (not on CPAN yet), like
+    <ul>
+    <li>"<code>../</code>" and "<code>./</code>" removal</li>
+    <li>remove repeating slashes</li>
+    <li>"<code>+</code>" is recoded to "<code>%20</code>"</li>
+    <li>lower-casing scheme</li>
+    <li>upper-casing percent-encoded characters</li>
+    <li>unneeded percent encodings are removed</li>
+    <li>hostnames are lower-cased</li>
+    <li>remove trailing dot from hostname</li>
+    <li>superfluous port numbers are removed</li>
+    <li>The fragment is removed.</li>
+    </ul></li>
+<li>Probably most important: all url components are validated so do not
+    need additional checks.</li>
+</ul>
+

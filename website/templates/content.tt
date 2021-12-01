@@ -1,0 +1,26 @@
+<div id="content" class="wrap container">
+	<section class="intro col">
+
+[% intro %]
+
+	</section>
+
+[% FOR section IN sections %]
+	<section class="chapter row">
+		<div class="section_left col">
+			<hr>
+
+[% section.left %]
+
+		</div>
+		<div class="section_right col">
+			<hr>
+
+[% section.right %]
+
+		</div>
+	</section>
+[% END %]
+
+</div>
+

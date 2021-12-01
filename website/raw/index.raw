@@ -1,0 +1,35 @@
+<h1>Crawl Pipeline</h1>
+
+<p>The "Crawl Pipeline" is an infrastructural project, which gives
+access to data which has been collected by <em>Crawlers</em>: automated
+processes which collect the content of websites. All public websites
+together probably contain more than one PetaByte of useful textual
+information. Crawlers attempt to download that data on a regular
+basis. This project helps people who are interested to use data which
+third party crawlers have collected.</p>
+
+--left
+<h2>Current set-up</h2>
+
+<p>At the moment, the "Crawl Pipeline" runs on one server, with 6 batches in parallel. It is able to process the CommonCrawl published data-set, which is 350TB per month. It runs two Tasks.</p>
+
+<p>Have a look at the available filters and extraction rules, to see whether we offer enough to keep you from crawling yourself.</p>
+
+--right
+<h2>The pipeline process</h2>
+
+<p>The abstract concept:</p>
+
+<ul>
+<li>The "Crawl Pipeline" runs on a large number of servers.</li>
+<li>Each server runs a number of processing batches in parallel.</li>
+<li>Each batch processes a large number of crawled request/response pairs, usually stored in WARC files.</li>
+<li>Interested parties define Tasks, which are applied to each crawled pair separately.</li>
+<li>Every Task consists of
+    <ul>
+    <li>filter rules: which response is useful for you</li>
+    <li>extract rules: what data would you like to collect from it (knowledge extract effort is shared)</li>
+    <li>packaging: how the extracted data is transported to you</li>
+    </ul></li>
+<li>You MUST download the result packages at least every day, otherwise they are removed.</li>
+</ul>

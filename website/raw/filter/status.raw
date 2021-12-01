@@ -1,0 +1,28 @@
+<h1>Filter based on response status</h1>
+
+<p>The HTTP-response status in the Product may differ from "200 OK".
+By default, you will only see those.  However, pipelines may also process
+failures and redirects.</p>
+
+<p>This filter can be configured to select based on abstract names or
+numeric HTTP response codes.  The abstract names are:</p>
+
+<ul>
+<li><code>info</code>, informational status codes <code>1xx</code></li>
+<li><code>success</code>, successful status codes <code>2xx</code></li>
+<li><code>redirect</code>, redirection status codes, <code>3xx</code></li>
+<li><code>error</code>, any error status code, <code>4xx</code> and <code>5xx</code></li>
+<li><code>client_error</code>, the server thinks the crawler has a problem, codes <code>4xx</code></li>
+<li><code>server_error</code>, the server has internal problems, codes <code>5xx</code></li>
+</ul>
+
+<h2>Hit information</h2>
+
+<p>When you want details about the status in your metadata, the format is</p>
+
+<JSON>
+{ "rule": "response status", "code": 200 }
+</JSON>
+
+<p>The Hit information will not refer to the abstract names when used
+to configure this filter.</p>

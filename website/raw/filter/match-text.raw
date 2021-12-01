@@ -1,0 +1,21 @@
+<h1>Filter based on patterns</h1>
+
+<p>This filter searches for patterns in the extract text for a webpage.
+Be aware that the text MAY contain line wraps on unexpected places.
+This search is rather expensive.</p>
+
+<p>This filter rule gets configured with PAIRS: the name of the pattern
+and its pattern.</p>
+
+<h2>Hit information</h2>
+
+<p>When you include the actual matches in your result, you will get one Hit for each matching pattern.  Each Hit looks like this:</p>
+
+<JSON>
+{ "rule": "match text",
+  "pattern": "<name>",
+  "matches": [ "<match1>", "<match2>" ]
+}
+</JSON>
+
+<p>Only unique matches are reported.</p>

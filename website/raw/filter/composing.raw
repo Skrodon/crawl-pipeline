@@ -1,0 +1,32 @@
+<h1>Composing filters</h1>
+
+<p>Correctly implementing the filters requires deep understanding of the
+internals of the Pipeline (which also do change every once in a while),
+so that's a job we do for you. To be able to implement the filter,
+you need to give us a formal description of your need.</p>
+
+<p>For each of the filter rules you need</p>
+<ul>
+<li>give it a label, like "A" or "lang_nl"
+<li>tell the filter parameter, for instance "language NLD or FRY"
+<li>tell whether you would like to get the 'hit' information in the result.
+</ul>
+
+<p>Then, use the labels to produce a formula.</p>
+
+<p>Example:</p>
+
+<PLAIN>
+html      = any HTML or XML
+domain_nl = domain in .nl
+lang_nl   = language NLD or FRY
+cities    = words "Amsterdam", "Arnhem", "Gouda"; include hit
+bike      = pattern "bike|bicycle|fiets.*; no filter, only include hit
+
+select when html AND ((domain_nl AND lang_nl) OR cities)
+</PLAIN>
+
+<p>There is no strict formalism, so feel invited to use comments and
+other clarifying syntax.  But do use the two-step approach: separate
+filter steps from filter logic. Constructing the filter is an iterative
+process: you probably want to fine-tune your initial attempts.</p>

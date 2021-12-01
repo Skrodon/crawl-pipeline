@@ -1,0 +1,41 @@
+<h1>Real-life HTML links statistics</h1>
+
+<p>MarkOv collected some data from one CommonCrawl WARC
+file, published April 2021.  The WARC file has name
+<code>CC-MAIN-20210410105831-20210410135831-00000</code>.</p>
+
+<p>Some facts about the _Normalized_ URL (URL in the _canonical_ form),
+created via URI::Fast v0.52.  Most facts are on the string as discovered
+in any attribute that HTML has to offer which MAY contain a link.</p>
+
+<PLAIN>
+#     50_025  100.0%  successful responses in the WARC archive
+#     41_912   83.8%  parseable HTML, used to extract links
+<PLAIN>
+
+<p>About the contained relative links:</p>
+<PLAIN>
+#  9_525_806  100.0%  links
+#     29_140    0.3%  blank links
+#      2_746    0.0%  empty query (trailing '?')
+#    165_393    1.7%  empty fragment (trailing '#')
+#     56_843    0.6%  contains blank(s)
+#    151_208    1.6%  contains '+'
+#    114_258    1.2%  contains utf8 (1_347_928 characters)
+#      1_326    0.0%  normalized to ipv4 hosts
+#      6_753    0.1%  normalized with default port number
+</PLAIN>
+
+<p>About the used schemes: (in normalize results)</p>
+<PLAIN>
+#  7_613_385   80.0%  https:
+#  1_695_666   17.8%  http:
+#     60_295    0.6%  data:
+#        550    0.0%  about:
+#    112_975    1.2%  javascript:
+#          4    0.0%  ftp:
+#     18_771    0.2%  mailto:
+#     16_697    0.2%  tel:
+#      7_463    0.1%  other schemes and broken links
+</PLAIN>
+

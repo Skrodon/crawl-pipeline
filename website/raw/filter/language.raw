@@ -1,0 +1,26 @@
+<h1>Filter based on Language</h1>
+
+<p>You may filter results based on the language detected in the response.
+The languages are in
+<a href="https://en.wikipedia.org/wiki/ISO_639-3">ISO-639-3</a> form
+(three letters long)</p>
+
+<h2>How the language is found</h2>
+
+<p>There are various ways to determine the language used.</p>
+
+<p>For the CommonCrawl data-set, the language is determined via the
+CDL2 detector which produces a very detailed count on various languages
+seen in the HTML pages.  The filter will check only the major language
+discovered per page.</p>
+
+<p>Which information will be used to detect the language on other data-sets is not yet determined.  There are many ways: in the response headers, request headers, and the HTML.</p>  TODO
+
+<h2>Hit information</h2>
+
+<p>When you are interested in the detected language, then you may as
+for the Hit which has the form:</p>
+
+<JSON>
+{ "rule": "language", "lang": "nld" }
+</JSON>

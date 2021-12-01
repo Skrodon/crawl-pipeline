@@ -1,0 +1,20 @@
+<h1>Filter based on content-type</h1>
+
+<p>Often you want to select Products based on content type, for instance only PDFs of HTML.  You may provide a list of regular expressions or
+abstract names like "any html", "html5 only", or "LibreOffice
+products".</p>
+
+<p>Some crawlers will only produce a very limited number of types
+(for instance, CommonCrawl is more than 90% HTML with accidental other
+types like PDF).  Filtering is therefore useful (for response status
+200 replies)</p>
+
+<h2>Hits information</h2>
+
+<p>When you include the hit is your results, you will get something like</p>
+
+<JSON>
+{ "rule": "content type", "type": "text/html" }
+</JSON>
+
+<p>The <code>type</code> is always lower-case.</p>
