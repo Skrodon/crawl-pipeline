@@ -110,7 +110,6 @@ SECTION {
 
 #footer_outer {
 	padding-bottom: 20px;
-	padding-top: 20px;
 	background: #f2f8fe;
 	font-size: .8em;
 }
@@ -118,25 +117,6 @@ SECTION {
 #footer_copy {
 	display: block;
 	text-align: right;
-}
-
-#scroll_top {
-	visibility: visible;
-	display: block;
-	position: relative;
-}
-
-.s5_scrolltotop  {	
-	width: 23px;
-	height: 27px;
-	cursor: pointer;
-	float: right;
-	top: -108px;
-	right: 0;
-	position: absolute;
-	margin-left: 15px;
-	margin-right: 7px;
-	background:transparent url(../images/s5_scroll_arrow.png) no-repeat;
 }
 
 h1, h2, h3, h4, h5 {
