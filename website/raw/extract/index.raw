@@ -11,11 +11,6 @@ focus on the content.</p>
 href="https://commoncrawl.org">CommonCrawl</a> data.  For sources to be
 added in the future, we do not yet know what can be offered.</p>
 
-<p>Useful information:</p>
-<ul>
-<li><a href="https://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.1/">WARC specification v1.1</a></li>
-</ul>
-
 --right
 [% INCLUDE $list_incl %]
 
@@ -43,6 +38,9 @@ added in the future, we do not yet know what can be offered.</p>
 <li>CommonCrawl extracted text; wrapped in WARC headers</li>
 </ul>
 
+--right
+<hr>
+
 <p>Pipeline:</p>
 <ul>
 <li>Hits produced by the filter rules; JSON or other serialization</li>
@@ -67,7 +65,7 @@ added in the future, we do not yet know what can be offered.</p>
 <li><a href="opengraph.html">extract OpenGraph</a> data extract</li>
 </ul>
 
---right
+--left
 <h2>Ideas for other extracts</h2>
 
 <p>Ask for them to be implemented, if you have a use for it:</p>
@@ -84,6 +82,13 @@ added in the future, we do not yet know what can be offered.</p>
 <li>Cookies set by the Response</li>
 <li>Which CMS framework is used</li>
 <li>Response time</li>
+</ul>
+
+--right
+<h2>Useful information:</h2>
+
+<ul>
+<li><a href="https://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.1/">WARC specification v1.1</a></li>
 </ul>
 
 <p>More ideas? Please report them, even if you do not need them (yet).</p>
