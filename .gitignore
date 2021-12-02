@@ -3,4 +3,5 @@ MYMETA.yml
 blib/
 pm_to_blib
 _Inline/
-
+perl5/*/Makefile
+*/perl5/*/Makefile
