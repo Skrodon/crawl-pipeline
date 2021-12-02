@@ -4,7 +4,7 @@
 
  - Where is your work environment? --> `WORKDIR`
  - Where are your website documents?  --> `HVOST`
- - Put `PIPELINE_WEBSITE="$VHOST/crawl-pipeline"` in your login profile.
+ - Put `export PIPELINE_WEBSITE="$VHOST/crawl-pipeline"` in your login profile.
  - `cd $WORKDIR && git clone git@github.com:markov2/crawl-pipeline`
  - Now create an (apache httpd) virtual host with document root `$PIPELINE_WEBSITE`.  This is your test instance of the website.
 
