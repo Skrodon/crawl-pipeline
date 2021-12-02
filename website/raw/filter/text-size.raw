@@ -21,9 +21,10 @@ own restrictions as well.</p>
 three forms:</p>
 
 <JSON>
-{ "rule": "requires text", "size": 2345 }
-{ "rule": "requires text", "size": 2345, "chars": 1234 }
-{ "rule": "requires text", "size": 2345, "words":  312 }
+[ { "rule": "text size", "size": 2345 },
+  { "rule": "text size", "size": 2345, "chars": 1234 },
+  { "rule": "text size", "size": 2345, "words":  312 }
+]
 </JSON>
 
 <p>Respectively for <code>minimum_size</code>, <code>minimum_chars</code>

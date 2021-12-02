@@ -1,10 +1,10 @@
 <hr>
 <h2>Writing Tasks</h2>
 
-<ul>
+<ol>
 <li><a href="/filter/">Configure filters</a></li>
 <li><a href="/filter/composing.html">Composing filters</a></li>
-<li>Extracting knowlegde:
+<li><a href="/extract/">Extracting knowlegde:</a>
     <table>
 	<tr><td>
 		<a href="/extract/normalize.html">URL normalization</a><br />
@@ -20,5 +20,5 @@
 	</table>
 </li>
 <li><a href="/package/">Packaging Results</a></li>
-</ul>
+</ol>
 

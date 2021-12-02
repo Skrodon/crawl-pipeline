@@ -162,7 +162,7 @@ sub filterRequiresText(%)
     sub {
         my $product = shift;
         my $size  = $product->contentSize or return ();
-        my %facts = (rule => 'requires text', size => $size);
+        my %facts = (rule => 'text size', size => $size);
         return () if $minsize > $size || $minchars > $size || $minwords > $size;
 
         if($minchars)

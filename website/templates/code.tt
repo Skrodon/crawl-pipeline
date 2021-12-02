@@ -1,8 +1,8 @@
 [%# produced by the production script for JSON,XML,PLAIN,PERL %]
 
 [% IF copy %]
-<p><button class="copybanner" onClick="copyToClipboard($('#c-[% unique %]'))"
->COPY</button></p>
+<button class="copybanner" onClick="copyToClipboard($('#c-[% unique %]'))"
+>COPY</button>
 <pre id="c-[% unique %]" style="display: none">[% copy %]</pre>
 [% END %]
 

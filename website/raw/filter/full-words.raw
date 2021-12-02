@@ -48,11 +48,13 @@ Munchen           # lazy author
 <p>Some words have many of these, so only a regular expression can help
 you here.  Use the text match filter with a pattern like this:</p>
 
-<PLAIN copy>
-\b M(?: u |
-        ue |
-        \N{LATIN SMALL LETTER U WITH CIRCUMFLEX} |
-        u\N{COMBINING CIRCUMFLEX ACCENT}
-    )nchen \b
+<HEADER>Linenumbers just as example</HEADER>
+<PLAIN copy nrs>
+\b M (?:
+     u |
+     ue |
+     \N{LATIN SMALL LETTER U WITH CIRCUMFLEX} |
+     u\N{COMBINING CIRCUMFLEX ACCENT}
+     ) nchen \b
 </PLAIN>
 
