@@ -17,7 +17,8 @@ megabytes per day: cheap and fast.</p>
 <p>Let us <a href="/explain/">explain</a> the details.</p>
 
 --right
-<h2>...image</h2>
+<hr>
+<img src="/image/bird-view.svg" width="400">
 
 --left
 <h2>The infrastructure</h2>
