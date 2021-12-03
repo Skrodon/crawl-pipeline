@@ -22,23 +22,13 @@ crawling efforts.</p>
     which are applied to each collected page;</li>
 <li>Each Task defines <a href="/filter/">filter rules</a> and
     <a href="/extract/">extraction tools</a>.  The result are
-    <a href="/package/">packaged</a> for download.</li>
+    <a href="/package/">packaged</a> for download;</li>
 <li>You MUST download the result packages at least every day, otherwise
-    they are removed.</li>
+    they are removed;</li>
+<li>Legal restrictions MAY apply to the data you have received, especially
+    around long-term storage.  You need to study the
+    <a href="/explain/license.html">data license</a>.
 </ul>
 
-
 --right
-<h2>Data Licensing</h2>
-
-<p>What you can do with the data which you receive depends on the
-Licenses which are imposed by the Crawlers, the jurisdiction of the actual
-Crawler, and the laws in your jurisdiction.  Websites may contain data
-which falls under the GDPR: the European privacy laws.  Your Tasks fall
-under the European Data Processing regulations.</p>
-
-<p>When you are not storing this data for a long term or transform the
-data which breaks GDPR restrictions (for instance, by breaking up texts
-into single lines), then you are probably fine.  For other uses, consult
-a lawyer.  Together with the <a href="https://opensearchfoundation.org">
-Open Search Foundation</a>, we try to establish standard legal rules.</p>
+[% INCLUDE $list_incl %]

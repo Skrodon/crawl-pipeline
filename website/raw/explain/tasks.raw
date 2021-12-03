@@ -13,3 +13,6 @@ Such Task consists of:</p>
 
 <p>Have a look at the available filters and extraction rules, to see
 whether we offer enough to keep you from crawling yourself.</p>
+
+--right
+[% INCLUDE $list_incl %]

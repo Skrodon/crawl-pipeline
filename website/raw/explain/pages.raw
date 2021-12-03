@@ -18,3 +18,6 @@ Filter rules, Extraction wishes, and Packaging instructions.  This is
 an iterative cooperation with the developers and maintainers of the
 Pipeline.</p>
 
+
+--right
+[% INCLUDE $list_incl %]
