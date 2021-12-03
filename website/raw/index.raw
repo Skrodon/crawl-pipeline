@@ -46,10 +46,28 @@ enough to keep you from crawling yourself.  Can we run your Task?</p>
 --left
 <h2>Sponsors</h2>
 
-NLnet, ProcoliX
+<div id="sponsors">
+	<div class="sponsor">
+		<a href="https://nlnet.nl">
+			<img src="/image/nlnet.svg" width="150" /><br />
+			<img src="/image/NGI0-discovery.svg" width="150" /><br />
+			NLnet Foundation</a>
+	</div>
+	<div class="sponsor">
+		<a href="https://procolix.com">
+			<img src="/image/procolix.png" width="200" /><br />
+			ProcoliX</a> hosting
+		</a>
+	</div>
+</div>
 
 --right
 <h2>Cooperating</h2>
 
-OSF
-
+<div id="sponsors">
+    <div class="sponsor">
+        <a href="https://opensearchfoundation.org">
+			<img src="/image/osf.png" width="200" /><br />
+			The Open Search Foundation</a>
+	</div>
+</div>
