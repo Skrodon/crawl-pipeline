@@ -1,0 +1,34 @@
+<h1>Internals</h1>
+
+<p>The Pipeline is an open infrastructure: you may contribute hardware,
+but you can also share other people's offerings.  At the moment, there
+is sufficient harware capacity.</p>
+
+<p>At the moment, the pipeline only processes crawl information
+which are published statically by third parties.  A logical next
+step would be, to integrate this Pipeline logic inside the
+crawling efforts.</p>
+
+<h2>The Pipeline process</h2>
+
+<p>The abstract concept is quite simple:</p>
+
+<ul>
+<li>The "Crawl Pipeline" runs on a large number of servers;</li>
+<li>Each server runs a number of pipeline batches in parallel;</li>
+<li>Each batch process takes a large number of crawled
+    <a href="/explain/pages.html">Pages</a>;</li>
+<li>Interested parties define <a href="/explain/tasks.html">Tasks</a>,
+    which are applied to each collected page;</li>
+<li>Each Task defines <a href="/filter/">filter rules</a> and
+    <a href="/extract/">extraction tools</a>.  The result are
+    <a href="/package/">packaged</a> for download;</li>
+<li>You MUST download the result packages at least every day, otherwise
+    they are removed;</li>
+<li>Legal restrictions MAY apply to the data you have received, especially
+    around long-term storage.  You need to study the
+    <a href="/explain/license.html">data license</a>.
+</ul>
+
+--right
+[% INCLUDE $list_incl %]

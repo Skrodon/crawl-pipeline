@@ -1,35 +1,55 @@
 <h1>Crawl Pipeline</h1>
 
-<p>The "Crawl Pipeline" is an infrastructural project, which gives
-access to data which has been collected by <em>Crawlers</em>: automated
-processes which collect the content of websites. All public websites
-together probably contain more than one PetaByte of useful textual
-information. Crawlers attempt to download that data on a regular
-basis. This project helps people who are interested to use data which
-third party crawlers have collected.</p>
+<p>The "Crawl Pipeline" is an <b>open infrastructural</b> project, which
+gives access to data which has been collected by web <em>Crawlers</em>:
+automated processes which collect the content of websites.  Instead of
+crawling your own data for your own project, you can get your usefull
+data from us: cooperation to get better quality, a wider reach, using
+less resources.</p>
+
+<p>All public websites together contain more than one PetaByte
+of data. At the moment, many organizations run their own crawlers
+for their own purpose.  When you switch to use our infrastructure,
+you do not have to crawl yourself: just collect the extract which
+is required for your project.  You may only need to handle a few
+megabytes per day: cheap and fast.</p>
+
+<p>Let us <a href="/explain/">explain</a> the details.</p>
 
 --right
-<h2>Current set-up</h2>
-
-<p>At the moment, the "Crawl Pipeline" runs on one server, with 6 batches in parallel. It is able to process the CommonCrawl published data-set, which is 350TB per month. It runs two Tasks.</p>
-
-<p>Have a look at the available filters and extraction rules, to see whether we offer enough to keep you from crawling yourself.</p>
+<h2>...image</h2>
 
 --left
-<h2>The pipeline process</h2>
+<h2>The infrastructure</h2>
 
-<p>The abstract concept:</p>
+<p>At the moment, the "Crawl Pipeline" runs on one server, with 9 batches
+in parallel. It is able to process the CommonCrawl published data-set,
+which is 350TB per month. It runs three Tasks.</p>
+
+<p>Have a look at the provided <a href="/filter/">filter rules</a>
+and <a href="/extract/">extraction options</a>, to see whether we offer
+enough to keep you from crawling yourself.  Can we run your Task?</p>
+
+--right
+<h2>Application</h2>
 
 <ul>
-<li>The "Crawl Pipeline" runs on a large number of servers.</li>
-<li>Each server runs a number of processing batches in parallel.</li>
-<li>Each batch processes a large number of crawled request/response pairs, usually stored in WARC files.</li>
-<li>Interested parties define Tasks, which are applied to each crawled pair separately.</li>
-<li>Every Task consists of
-    <ul>
-    <li>filter rules: which response is useful for you</li>
-    <li>extract rules: what data would you like to collect from it (knowledge extract effort is shared)</li>
-    <li>packaging: how the extracted data is transported to you</li>
-    </ul></li>
-<li>You MUST download the result packages at least every day, otherwise they are removed.</li>
+<li>The use of our infrastructure is available for <em>free</em> (fair
+    use);</li>
+<li>You may use the data commercially, but the main use is research
+    and education;</li>
+<li>You have to respect the GDPR (and other EU law) on the source data,
+    which means that each <a href="/projects/">project</a> starts
+    with an action plan.
 </ul>
+
+--left
+<h2>Sponsors</h2>
+
+NLnet, ProcoliX
+
+--right
+<h2>Cooperating</h2>
+
+OSF
+

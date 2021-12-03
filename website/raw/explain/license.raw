@@ -1,0 +1,16 @@
+<h1>Data Licensing</h1>
+
+<p>What you can do with the data which you receive depends on the
+Licenses which are imposed by the Crawlers, the jurisdiction of the actual
+Crawler, and the laws in your jurisdiction.  Websites may contain data
+which falls under the GDPR: the European privacy laws.  Your Tasks fall
+under the European Data Processing regulations.</p>
+
+<p>When you are not storing this data for a long term or transform the
+data which breaks GDPR restrictions (for instance, by breaking up texts
+into single lines), then you are probably fine.  For other uses, consult
+a lawyer.  Together with the <a href="https://opensearchfoundation.org">
+Open Search Foundation</a>, we try to establish standard legal rules.</p>
+
+--right
+[% INCLUDE $list_incl %]

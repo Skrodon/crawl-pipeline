@@ -4,7 +4,7 @@
 
  - Where is your work environment? --> `WORKDIR`
  - Where are your website documents?  --> `HVOST`
- - Put `PIPELINE_WEBSITE="$VHOST/crawl-pipeline"` in your login profile.
+ - Put `export PIPELINE_WEBSITE="$VHOST/crawl-pipeline"` in your login profile.
  - `cd $WORKDIR && git clone git@github.com:markov2/crawl-pipeline`
  - Now create an (apache httpd) virtual host with document root `$PIPELINE_WEBSITE`.  This is your test instance of the website.
 
@@ -21,7 +21,7 @@
 
 ## Processing
 
-"make" calls `bin/produce_website` which is a smart script, whic
+System command `make` uses the `Makefile` to call `bin/produce_website` which is a smart script, which:
   - copies all files which are not ending in `.raw` or `.incl` to the same location in the produced website.  Be warned: also files which end on `.html` will get copied "as is".
   - every file which ends on `.raw` will lead to an html file with the same base name.
   - `.incl` files are included in `.raw` files, and will not produce a separate html file by themselves.
@@ -29,17 +29,18 @@
 
 # Syntax of RAW files
 
-  - Each file starts with a `<h1>`, which is automatically also used for the `<title>`
+  - Each raw file starts with a `<h1>`, which is automatically also used for the `<title>`
   - External links (`a href`) will automatically get a `target="blank"`, hence open in a separate window.
-  - Links (`a href`) to the page itself are replaces by a `<span class="myself"` which shows them bold and unclickable.
+  - Links (`a href`) to the page itself are replaced by a `<span class="myself"` which shows them bold and unclickable.
   - Each `<h2>` gets a `<hr>` in front of it.
   - The file starts filling the left column.  A `--right` will indicate the start of a block to be displayed in the right column.  And this block ends with a `--left` or EndOfFile.  Etcetera.
+  - You are not required to switch between columns on each `<h2>`: whatever produces the nicest visuals.
   - The nicest presentation of the page is more important than a logical order of the blocks.
-  - You may decide to split between columns when a chapter gets too large.  No problem, but you need to add an `<hr>` yourself in your continuation block.
+  - You may decide to split between columns when a chapter gets too large.  No problem, but you need to add an `<hr>` yourself to start the continuation block.
   - You can use special code blocks, described below.
 
 Libraries:
-  - use Bootstrap 5 for layout and widgets
+  - use Bootstrap-5 for layout and widgets
   - use jQuery for dynamics
   - use fontawesome for icons: try to avoid using tiny images
 
@@ -70,6 +71,7 @@ Example:
     { "answer": 42 }
   </JSON>
   <XML>
-     <xml><answer>42</answer></xml>
+     <response><answer>42</answer></response>
   </XML>
 ```
+This example will create a tabbed block with two tabs, named `XML` and `JSON`.  The example in JSON is copyable and shows line-numbers.  Not for the XML.  The special characters in the XML and JSON will cleanly be escaped.  Do not make the lines too long!
