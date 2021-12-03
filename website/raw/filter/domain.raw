@@ -1,19 +1,25 @@
 <h1>Filter by domain</h1>
 
-<p>With a list of domains, you can filter websites.  When you specify
-<code>.nl</code>, you get everything under TLD nl (Netherlands).
-With <code>example.com</code>, you will get <code>example.com</code>,
-but also <code>www.example.com</code>.</p>
+<p>With a list of domains, you can filter websites: on top-level
+domain (TLD), domain name, or sub-domain website.  The parameter
+may contain complex regular expressions.</p>
+
+<p>For example, When you specify <code>.nl</code>, you get everything
+under TLD nl (Netherlands).  With <code>example.com</code>, you will
+get <code>example.com</code>, but also <code>www.example.com</code>.</p>
 
 <h2>Hit information</h2>
 
 <p>When you have this Hit included in your results, it looks something like:</p>
 
 <JSON>
-{ "rule": "domain name", "name": "example.com" }
+{ "rule": "domain name",
+  "name": "example.com"
+}
 </JSON>
 
-<p>The <code>name</code> lists the (first) filter pattern which matched the <code>host</code> component of the response location URI.</p>
+<p>The <code>name</code> lists the (first) filter pattern which matched
+the <code>host</code> component of the response location URI.</p>
 
 --right
 [% INCLUDE $list_incl %]

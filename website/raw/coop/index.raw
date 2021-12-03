@@ -1,24 +1,32 @@
 <h1>Cooperation</h1>
 
+<p>The core feature for the Pipeline is <b>open cooperation</b>: we
+sincery hope that many projects will share their crawling efforts,
+both in reusing crawled data as in implementation of quality
+improvements.  Please join us!</p>
+
 <h2>Current set-up</h2>
 
-<p>At the moment, the "Crawl Pipeline" runs on one server, with 9 batches
-in parallel.  It is able to process the CommonCrawl published data-set,
+<p>At the moment, the "Crawl Pipeline" runs on one server, provided
+for free by independ Dutch hosting provider
+<a href="https://procolix.com">ProcoliX</a>.
+The server runs 6 pipes in parallel.  It is able to process the
+<a href="https://commoncrawl.org">CommonCrawl</a> published data-set,
 which is 350TB per month.  It runs three Tasks.</p>
 
+--right
 <h2>Joining the Pipeline</h2>
 
 <p>You can join in different ways:</p>
 <ol>
-<li>contributing WARC archives, produced by your crawler</li>
-<li>become a data user: submit you Task</li>
-<li>host a server which runs some pipeline processes</li>
+<li>contributing (WARC) archives, collected by your crawler</li>
+<li>become a data user: submit you <a href="/explain/tasks.html">Task</a></li>
+<li>host a server which runs a set of pipeline processes</li>
 </ol>
 
-<p>The easiest option is number 2: please use our data instead of
-processing CommonCrawl data yourself.  Or even crawling yourself.
-Let us reuse resources.</p>
+<p>The preferred contribution is number&nbsp;2: please use our
+service instead of processing CommonCrawl data yourself. Let us reuse
+resources!</p>
 
 <p>Contact <a href="mailto:mark@overmeer.net">mark@overmeer.net</a>,
 Mark Overmeer (in English, Dutch, or German)</p>
-

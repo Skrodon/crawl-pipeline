@@ -4,20 +4,24 @@
 abstract names like "any html", "html5 only", or "LibreOffice
 products".</p>
 
-<p>Some crawlers will only produce a very limited number of types
-(for instance, CommonCrawl is more than 90% HTML with accidental other
-types like PDF).  Filtering is therefore useful (for response status
-200 replies)</p>
+<p>Some crawlers will only produce a very limited number of types (for
+instance, CommonCrawl is more than 90% HTML with accidental other types
+like PDF).  Filtering on content-type is therefore useful (for response
+status 200 replies)</p>
 
 <h2>Hit information</h2>
 
 <p>When you include the hit is your results, you will get something like</p>
 
 <JSON>
-{ "rule": "content type", "type": "text/html" }
+{ "rule": "content type",
+  "type": "text/html"
+}
 </JSON>
 
-<p>The <code>type</code> is always lower-case.</p>
+<p>The <code>type</code> value is always lower-case and normalized
+to IANA definitions and following
+<a href="https://www.ietf.org/rfc/rfc2046.html">RFC&nbsp;2046</a>.</p>
 
 --right
 [% INCLUDE $list_incl %]

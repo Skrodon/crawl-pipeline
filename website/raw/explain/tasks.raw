@@ -2,17 +2,23 @@
 
 <p>When you are interested in crawled website information, you
 submit a <em>Task</em> to the people running this project.  Tasks
-are components which run in the processing pipelines.
-Such Task consists of:</p>
+are components which run in the processing pipelines.</p>
 
+<p>Every Task should have exactly one purpose: write different
+Tasks when you have different needs.</p>
+
+<h2>Task components</h2>
+
+<p>Each Task has the following components:</p>
 <ul>
-<li>filter rules: which response is useful for you
-<li>extract rules: what data would you like to collect from it (knowledge extract effort is shared)
-<li>packaging: how the extracted data is transported to you
+<li><a href="/filter/">Filter rules</a>: which page contains useful
+    data for you;</a>
+<li><a href="/extract/">Extraction tools</a>: what data would you
+    like to collect from it (knowledge extract effort is shared); and</li>
+<li><a href="/package/">Packaging options</a>: how the extracted data
+    is transported to you.  Usually downloading zips or WARCs via http
+    or ftp.
 </ul>
-
-<p>Have a look at the available filters and extraction rules, to see
-whether we offer enough to keep you from crawling yourself.</p>
 
 --right
 [% INCLUDE $list_incl %]

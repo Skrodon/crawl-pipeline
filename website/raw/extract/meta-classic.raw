@@ -4,24 +4,32 @@
 elements in HTML pages.  Not only have people be adding new values
 for <code>name</code>, but also various attributes where added,
 like <code>property</code>.  Let's call the official short list of
-possibilities "classic".  That subset of features found in the wild can
-be found at
-<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name">MDN "standard metadata names"</a></p>
+possibilities "classic".<p>
 
 <p>The classic <code>&lt;meta&gt;</code> elements come in three forms:</p>
 <ul>
-<li>with attribute <code>name</code>, with a restricted set of names</li>
-<li>with attribute <code>charset</code></li>
-<li>with attribute <code>http-equiv</code></li>
+<li>with attribute <code>name</code>, with a restricted set of names;</li>
+<li>with attribute <code>charset</code>, maximum one; and</li>
+<li>with attribute <code>http-equiv</code>, all of them.</li>
 </ul>
+
+<p>This extractor does take all <code>http-equiv</code> records, because
+there are few and old extensions have been made to the list reported
+by W3Schools.
+There SHOULD be only one meta element with a <code>charset</code>.</p>
 
 --right
 [% INCLUDE $list_incl %]
 
 --left
-<h2>The classic elements</h2>
+<h2>The classic name attributes</h2>
 
-<p>This extractor only takes <code>name</code> values for:</p>
+<p>The classic set of names can be found at
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name">MDN
+"standard metadata names"</a>, but with convincing arguments, a few
+names MAY be added.</p>
+
+<p>This extractor currently takes <code>name</code> values for:</p>
 
 <HEADER>META NAME values taken</HEADER>
 <PLAIN>
@@ -39,12 +47,6 @@ robots
 theme-color
 viewport
 </PLAIN>
-
-<p>This extractor does take all <code>http-equiv</code> records, because
-so many and old extensions have been made to the list of W3Schools.</p>
-
-<p>With convincing arguments, a few names MAY be added to this "classic"
-list later.</p>
 
 --right
 <h2>Produced data-structure</h2>

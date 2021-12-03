@@ -18,8 +18,8 @@
 	</td></tr>
 </table>
     </li>
-<li><a href="/filter/composing.html">Composing filters</a></li>
 <li><a href="/extract/">Extracting knowlegde</a></li>
-<li><a href="/package/">Packaging Results</a></li>
+<li><a href="/package/">Packaging results</a></li>
+<li><a href="/filter/composing.html">Task Composition</a></li>
 </ol>
 

@@ -1,29 +1,35 @@
-<h1>Composing filters</h1>
+<h1>Task Composition</h1>
 
-<p>Correctly implementing the filters requires deep understanding of the
-internals of the Pipeline (which also do change every once in a while),
-so that's a job we do for you. To be able to implement the filter,
-you need to give us a formal description of your need.</p>
+<p>Correctly implementing the <a href="/explain/tasks.html">Tasks</a>
+requires deep understanding of the internals of the Pipeline (which also
+do change every once in a while), so that's a job we do for you. To be
+able to implement the filter, you need to give us a formal description
+of your need.</p>
 
 <p>For each of the filter rules you need</p>
 <ul>
-<li>give it a label, like "A" or "lang_nl"
-<li>tell the filter parameter, for instance "language NLD or FRY"
+<li>give it a label, like "A" or "lang_nl";</li>
+<li>tell the filter parameter, for instance "language NLD or FRY";</li>
 <li>tell whether you would like to get the 'hit' information in the result.
 </ul>
 
 <p>Then, use the labels to produce a formula.</p>
 
-<HEADER>Example filter composition</HEADER>
+<HEADER>Example of Task composition</HEADER>
 <PLAIN>
+# Filters
 html      = any HTML or XML
 domain_nl = domain in .nl
 lang_nl   = language NLD or FRY
 cities    = words "Amsterdam", "Arnhem", "Gouda"
 bike      = pattern "bike|bicycle|fiets.*
 
-select where html AND ((domain_nl AND lang_nl) OR cities)
-include hits for bikes and cities
+# Extract
+Select where html AND ((domain_nl AND lang_nl) OR cities)
+Include hits for bikes and cities
+
+# Packaging
+To be downloaded as zip via ftp.
 </PLAIN>
 
 <p>There is no strict formalism, so feel invited to use comments and
