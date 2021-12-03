@@ -1,0 +1,44 @@
+<h1>Internals</h1>
+
+<p>The Pipeline is an open infrastructure: you may contribute hardware,
+but you can also share other people's offerings.  At the moment, there
+is sufficient harware capacity.</p>
+
+<p>At the moment, the pipeline only processes crawl information
+which are published statically by third parties.  A logical next
+step would be, to integrate this Pipeline logic inside the
+crawling efforts.</p>
+
+<h2>The Pipeline process</h2>
+
+<p>The abstract concept is quite simple:</p>
+
+<ul>
+<li>The "Crawl Pipeline" runs on a large number of servers;</li>
+<li>Each server runs a number of pipeline batches in parallel;</li>
+<li>Each batch process takes a large number of crawled
+    <a href="/explain/pages.html">Pages</a>;</li>
+<li>Interested parties define <a href="/explain/tasks.html">Tasks</a>,
+    which are applied to each collected page;</li>
+<li>Each Task defines <a href="/filter/">filter rules</a> and
+    <a href="/extract/">extraction tools</a>.  The result are
+    <a href="/package/">packaged</a> for download.</li>
+<li>You MUST download the result packages at least every day, otherwise
+    they are removed.</li>
+</ul>
+
+
+--right
+<h2>Data Licensing</h2>
+
+<p>What you can do with the data which you receive depends on the
+Licenses which are imposed by the Crawlers, the jurisdiction of the actual
+Crawler, and the laws in your jurisdiction.  Websites may contain data
+which falls under the GDPR: the European privacy laws.  Your Tasks fall
+under the European Data Processing regulations.</p>
+
+<p>When you are not storing this data for a long term or transform the
+data which breaks GDPR restrictions (for instance, by breaking up texts
+into single lines), then you are probably fine.  For other uses, consult
+a lawyer.  Together with the <a href="https://opensearchfoundation.org">
+Open Search Foundation</a>, we try to establish standard legal rules.</p>

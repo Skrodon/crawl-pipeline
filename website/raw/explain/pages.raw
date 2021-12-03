@@ -1,0 +1,20 @@
+<h1>Pipeline Pages</h1>
+
+<p>For matter of terminology only, the Pipeline is processing "Pages".
+A <em>Page</em> is an abstraction (object) representing one crawled
+URI, the retrieved response, related metadata, and facts collected via
+processing (for instance, extracted text).</p>
+
+<p>The Pipeline consumes Crawler output (usually huge WARC (Web ARChive)
+files), and merges the contained data into these abstract Pages. In
+case of CommonCrawl data, it takes the related request, response and
+metadata WARC-records from one WARC archive, additional metadata from a
+"WAT" WARC, and extracted text from a "WET" WARC: five parts from three
+files into one abstract object presented to the Task.</p>
+
+<p>When you are creating a Task, you do not need to know anything
+about the interface which the Page object offers: you will submit
+Filter rules, Extraction wishes, and Packaging instructions.  This is
+an iterative cooperation with the developers and maintainers of the
+Pipeline.</p>
+

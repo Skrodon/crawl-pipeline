@@ -2,6 +2,8 @@
 	<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
 	    href="#" role="button" aria-expanded="false">Explain</a>
 	<ul class="dropdown-menu">
-	<li><a class="dropdown-item" href="/explain/overview.html">Overview</a></li>
+	<li><a class="dropdown-item" href="/explain/">Overview</a></li>
+	<li><a class="dropdown-item" href="/explain/tasks.html">Pipeline Tasks</a></li>
+	<li><a class="dropdown-item" href="/explain/pages.html">Pipeline Pages</a></li>
 	</ul>
 </li>
