@@ -6,7 +6,7 @@
 	<meta name="viewport" content="initial-scale=1.0" />
 
 	<title>[% title %]</title>
-	<link href="/image/favicon.ico" rel="shortcut icon"
+	<link href="/style/favicon.ico" rel="shortcut icon"
 		type="image/vnd.microsoft.icon" />
 
 	[%#- bootstrap 5 + Popper %]
@@ -20,8 +20,8 @@
 	<link href="/fontawesome-free-5.15.4-web/css/all.css" rel="stylesheet" />
 
 	[%#- My own %]
-	<link href="/css/pipeline.css" rel="stylesheet" />
-    <script src="/js/pipeline.js"></script>
+	<link href="/style/pipeline.css" rel="stylesheet" />
+    <script src="/style/pipeline.js"></script>
 </head>
 
 <body>

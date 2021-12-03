@@ -11,7 +11,7 @@ BODY {
 	padding-bottom: 0px !important;
 	overflow-x: hidden;
 	background-color: #FFFFFF !important;
-	background-image: url(/image/bg_pipeline.jpg) !important;
+	background-image: url(/style/bg_pipeline.jpg) !important;
 	background-size: none !important;
 	background-attachment: scroll !important;
 	background-repeat: repeat !important;
@@ -28,7 +28,7 @@ BODY {
 
 #menu_wrap {
 	background-color: #23185c;
-	background-image: url(/image/bgmenu_pipeline.jpg);
+	background-image: url(/style/bgmenu_pipeline.jpg);
 	background-repeat: repeat-x;
 	background-size: contain;
 	box-shadow: 0 0 44px 0px rgba(0, 0, 0, 0.1);
@@ -173,7 +173,7 @@ h5 { font-size: 1.1em; }
 #content A:focus  { -moz-outline-style: none; }	
 
 #content UL LI {
-    background: url(/image/bullet-1.png) no-repeat scroll 0 7px transparent !important;
+    background: url(/style/bullet-1.png) no-repeat scroll 0 7px transparent !important;
     margin-top: 0px;
 	padding-left: 30px;
 	list-style: none outside none;
