@@ -30,3 +30,56 @@ resources!</p>
 
 <p>Contact <a href="mailto:mark@overmeer.net">mark@overmeer.net</a>,
 Mark Overmeer (in English, Dutch, or German)</p>
+
+--left
+<h2>Sponsors</h2>
+
+<div class="sponsor">
+	<a href="https://nlnet.nl">
+		<img src="/image/nlnet.svg" width="200" /><br />
+		<img src="/image/NGI0-discovery.svg" width="150" /></a><br />
+</div>
+<p>The <a href="https://nlnet.nl">NLnet Foundation</a> supports hundreds
+of internet related development projects, currently especially search
+and security related.  They also help this project with a very generous
+donation.</p>
+
+<br clear="all" />
+
+<div class="sponsor">
+	<a href="https://procolix.com">
+		<img src="/image/procolix.png" width="200" /><br />
+	</a>
+</div>
+
+<p><a href="https://procolix.com">ProcoliX</a> is a non-nonsense hosting
+provider with its fundaments in the Open Source community.  It has its
+own data-centers in The Netherlands, and is not owned by any international
+conglomerate.  They provide the hardware and networking needs to run the
+pipeline.</p>
+
+<br clear="all">
+
+--right
+<h2>Cooperating</h2>
+
+<div class="sponsor">
+	<a href="https://opensearchfoundation.org">
+		<img src="/image/osf.png" width="200" /><br /></a>
+</div>
+<p>The <a href="https://opensearchfoundation.org">Open Search
+Foundation</a> targets to create a full <em>open</em> search engine
+(a competitor to Google and Bing) under European privacy law.  It's
+openess will facilitate cooperation and research.</p>
+
+<br clear="all" />
+<div class="sponsor">
+	<a href="https://commoncrawl.org">
+		<img src="/image/commoncrawl.png" width="200" /><br /></a>
+</div>
+<p>The American <a href="https://commoncrawl.org">Common Crawl</a>
+Foundation crawls web-pages since 2008.  At the moment, they produce
+an new data-set about 9 times per year.  Each set is about 350TB in
+size.  Our Pipeline current uses this data-set for all projects.</p>
+
+<br clear="all" />

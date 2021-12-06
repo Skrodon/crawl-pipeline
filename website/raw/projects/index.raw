@@ -1,6 +1,9 @@
 
 <h1>Projects</h1>
 
+<p>The Pipeline needs your project: the more projects, the more
+efficiënt our infrastructure becomes.</p>
+
 <ul>
 <li><a href="202104-warc-stats.html">2021-04 WARC statistics</a>,
     counting link types.</li>
@@ -23,3 +26,26 @@ Skrodon Project, there is link extractor Task.  For each HTML response,
 <code>&lt;meta&gt;</code>, <code>&lt;link&gt;</code>, and href/src link
 data is collected for further processing.  Links and data are nicely
 normalized.</p>
+
+--right
+
+<h2>Ideas for student projects</h2>
+
+<p>It is not hard to extract many useful facts from huge numbers of
+web-pages via the Crawl Pipeline, but it still has some challenges
+which make this into educational student projects.</p>
+
+<ul>
+<li>Count distribution of web-server software;</li>
+<li>Count distribution of authoring tools;</li>
+<li>Estimate the percentage of internet which CommonCrawl
+    collects monthly;</li>
+<li>Detector for pages which need headless crawling;</li>
+<li>Discover the languages available for certain page, from response
+    headers and OpenGraph;</li>
+<li>Build a simple searchable index based on OpenGraph and "classic"
+    meta fields only;</li>
+</ul>
+
+<p>You may ideas to add to this list.  We will help the students to
+collect the right raw data.</p>
