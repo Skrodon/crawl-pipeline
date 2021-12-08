@@ -2,7 +2,7 @@
 <h2>Writing Tasks</h2>
 
 <ol>
-<li><a href="/filter/index.html">Configure filters:</a>
+<li><a href="/filter/">Configure filters:</a>
 	<table>
 	<tr><td>
 		<a href="/filter/content-type.html">Content&nbsp;Type</a><br>
