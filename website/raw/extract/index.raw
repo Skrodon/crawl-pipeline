@@ -46,7 +46,9 @@ added in the future, we do not yet know what can be offered.</p>
 <li>Hits produced by the filter rules; JSON or other serialization</li>
 </ul>
 
-<p>HTML inspection (JSON or other serialization)</p>
+<p>HTML inspection, produces JSON or other serialization.  It is
+implemented via our perl module
+<a href="https://metacpan.org/pod/HTML::Inspect">HTML::Inspect</a></p>
 <ul>
 <li>all produced URLs are <a href="normalize.html">URL normalization rules</a>
     with respect to the page they were found in. You have various options
