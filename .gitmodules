@@ -1,3 +1,0 @@
-[submodule "Pipeline/perl5/OSF-HTML/t/data/open-graph-protocol-examples"]
-	path = Pipeline/perl5/HTML-Inspect/t/data/open-graph-protocol-examples
-	url = git@github.com:niallkennedy/open-graph-protocol-examples.git
