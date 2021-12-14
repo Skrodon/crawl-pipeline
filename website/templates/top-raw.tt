@@ -6,8 +6,6 @@
 	<meta name="viewport" content="initial-scale=1.0" />
 
 	<title>[% title %]</title>
-	<link href="/style/favicon.ico" rel="shortcut icon"
-		type="image/vnd.microsoft.icon" />
 
 	[%#- bootstrap 5 + Popper %]
 	<link href="/bootstrap-5.1.3-dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -22,6 +20,14 @@
 	[%#- My own %]
 	<link href="/style/pipeline.css" rel="stylesheet" />
     <script src="/style/pipeline.js"></script>
+
+	<link rel="icon" type="image/png" sizes="32x32" href="/style/favicon/32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/style/favicon/16x16.png">
+
+[% IF is_frontpage %]
+	<meta name="keywords" content="WARC, crawl, search engine" />
+    <meta name="description" content="Shared effort to extract useful data from search engine crawls." />
+[% END %]
 </head>
 
 <body>

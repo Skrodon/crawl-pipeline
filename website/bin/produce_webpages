@@ -165,7 +165,7 @@ sub process_raw($$$)
 	local $data->{title} = $title;
 
 	local $data->{is_frontpage} =
-		$t =~ m!^public_html/index.html$! ? 'yes' :undef;
+		$t =~ m!^$outtree/index.html$! ? 'yes' :undef;
 
 	# Add an HR before each H2
  	$raw =~ s!<h2>!<hr>\n<h2>!g;

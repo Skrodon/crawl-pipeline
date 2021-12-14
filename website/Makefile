@@ -7,4 +7,5 @@ webpages::
 
 publish:: webpages
 	rsync --archive --update --rsh=/usr/bin/ssh --delete \
-		 $(TEST_WEBSITE) $(PUBLIC_WEBSITE)
+	  $(TEST_WEBSITE) \
+	  $(PUBLIC_WEBSITE)

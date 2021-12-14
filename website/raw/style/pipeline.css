@@ -109,7 +109,8 @@ SECTION {
 }
 
 #footer_outer {
-	padding-bottom: 20px;
+	margin-top: 2rex;
+	padding-bottom: 1ex;
 	background: #f2f8fe;
 	font-size: .8em;
 }
@@ -128,9 +129,9 @@ h1 {
 	font-weight: 400;
 	margin-bottom:10px;
 	line-height:57px;
-    color: #37529b;
-    font-family: 'EB Garamond', serif;
-    font-size: 2.4em;
+	color: #37529b;
+	font-family: 'EB Garamond', serif;
+	font-size: 2.4em;
 }
 
 #s5_pos_custom_1 .s5_tab_show_slide_inner h1 {
@@ -139,10 +140,10 @@ h1 {
 
 H2 {
 	margin-bottom:10px;
-    font-family: 'EB Garamond', serif;
-    color: #0983c8 !important;
-    font-size: 1.6em !important;
-    margin-top: 14px;
+	font-family: 'EB Garamond', serif;
+	color: #0983c8 !important;
+	font-size: 1.6em !important;
+	margin-top: 14px;
 }
 
 H3 {
@@ -155,7 +156,7 @@ h4 { font-size: 1.5em; }
 h5 { font-size: 1.1em; }
 
 #content HR {
-    border-top: 2px solid #82ceeb;
+	border-top: 2px solid #82ceeb;
 	margin: 20px 0;
 }
 
@@ -173,8 +174,8 @@ h5 { font-size: 1.1em; }
 #content A:focus  { -moz-outline-style: none; }	
 
 #content UL LI {
-    background: url(/style/bullet-1.png) no-repeat scroll 0 7px transparent !important;
-    margin-top: 0px;
+	background: url(/style/bullet-1.png) no-repeat scroll 0 7px transparent !important;
+	margin-top: 0px;
 	padding-left: 30px;
 	list-style: none outside none;
 }
@@ -189,28 +190,29 @@ h5 { font-size: 1.1em; }
  */
 
 .codeblock_light_header {
-    background: none;
-    color: #6cb0e4;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 0px;
-    padding-right: 0px;
-    margin-top: 0px;
-    letter-spacing: 8px;
-    font-size: 0.8em;
-    margin-bottom: 0px;
+	background: none;
+	color: #6cb0e4;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left: 0px;
+	padding-right: 0px;
+	margin-top: 0px;
+	letter-spacing: 8px;
+	font-size: 0.8em;
+	margin-bottom: 0px;
 }
 
 .copybanner {
 	color: white;
-    width: 80px;
-    height: 30px;
-    background: #6cb0e4;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16% 50%);
-    float: right;
-    margin: 26px 0px !important;
-    letter-spacing: 2px;
-    font-size: 0.6em;
+	width: 80px;
+	height: 30px;
+	background: #6cb0e4;
+	clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16% 50%);
+	float: right;
+	margin: 26px 0px !important;
+	letter-spacing: 2px;
+	font-size: 0.6em;
+	border: 0px;
 }
 
 .copybanner:hover {
@@ -218,15 +220,15 @@ h5 { font-size: 1.1em; }
 }
 
 .incode {
-    background-color: #ebebeb;
-    padding-left: 8px;
-    padding-right: 8px;
+	background-color: #ebebeb;
+	padding-left: 8px;
+	padding-right: 8px;
 }
 
 .highlightcode {
-    background-color: #FFFFFF;
-    padding-left: 8px;
-    padding-right: 8px;
+	background-color: #FFFFFF;
+	padding-left: 8px;
+	padding-right: 8px;
 }
 
 .codeblock_light {
@@ -252,18 +254,18 @@ h5 { font-size: 1.1em; }
 }
 
 .codeblock_light OL LI::marker {
-    unicode-bidi: isolate;
-    font-variant-numeric: tabular-nums;
-    text-transform: none;
-    text-indent: 0px !important;
-    text-align: start !important;
-    text-align-last: start !important;
-    color: #399edc;
-    margin-right: 15px;
-    font-size: 0.8em;
-    border-radius: 15px;
-    opacity: 0.5;
-    background-color: #000000;
+	unicode-bidi: isolate;
+	font-variant-numeric: tabular-nums;
+	text-transform: none;
+	text-indent: 0px !important;
+	text-align: start !important;
+	text-align-last: start !important;
+	color: #399edc;
+	margin-right: 15px;
+	font-size: 0.8em;
+	border-radius: 15px;
+	opacity: 0.5;
+	background-color: #000000;
 	line-height: inherit;
 }
 

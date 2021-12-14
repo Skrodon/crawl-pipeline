@@ -4,8 +4,7 @@
 	<a href="#" onClick="$('body').scrollTop(0)" style="display:block"><i class="fas fa-caret-up"></i></a>
 			<div id="footer_copy">
 
-Copyright&nbsp;©&nbsp;2021. "Pipeline" designed by
-<a href="https://yeti-design.nl" title="Yeti Design">Yeti Design</a>
+The "Pipeline" is part of the Skrodon Project, to share infrastructure.
 
 			</div>
 		</div>
