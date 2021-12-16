@@ -27,6 +27,8 @@ then TEMPLATE="$REPO/install/crawl-profile.template"
      "
 
      cat <<__CONFIGURE
+Installed configuration template in $PROFILE
+
 *
 *** now configure $PROFILE
 *** then rerun 'make'
@@ -80,9 +82,13 @@ fi
 #
 
 # The "run" wrapper to be used for cron: it
-[ -f $BIN/run ] && chmod u+w $BIN/run
-cp $REPO/install/run $BIN/run
-chmod u=rx $BIN/run
+if [ -f $BIN/run ]
+then chmod u+w $BIN/run
+else
+    cp $REPO/install/run $BIN/run
+    chmod u=rx $BIN/run
+    echo "installed $BIN/run"
+fi
 
 if ! grep '^RUN=' "$TMP_CRON" >/dev/null
 then cat <<__HEAD >>"$TMP_CRON"
@@ -96,7 +102,8 @@ __HEAD
 fi
 
 for PROJECT in $(ls "$REPO")
-do  for CRON in $REPO/$PROJECT/bin/cron.*
+do
+    for CRON in $REPO/$PROJECT/bin/cron.*
     do  [ -f "$CRON" ] || continue
         grep "\$RUN '$PROJECT' '$CRON'" "$TMP_CRON" >/dev/null && continue
 
