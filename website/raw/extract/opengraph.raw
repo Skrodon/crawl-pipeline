@@ -29,10 +29,8 @@ please informm us when there are changes in the standard.</p>
     <em>Array</em>. Even when only found once, it will be returned as Array
     of length one.</li>
 </ul>
-
-[TODO: include examples for each of the <code>og.type</code> variations. In JSON format]
-
 --right
+
 <h2>Currently not supported</h2>
 
 <p>Extensions on OpenGraph may be included, when used by multiple
@@ -42,6 +40,10 @@ parties. We currently know about the following proposals:</p>
     WooCommerce SEO extensions</a>, uses own <code>product</code> and some
     <code>ya:ovs</code></li>
 <li><a href="https://yandex.com/support/video/partners/open-graph.html">Yandex
-    video extensions</a>. Their <code>ya:ovs:<code> metadata records
+    video extensions</a>. Their <code>ya:ovs:</code> metadata records
     need to be merged inside the preceding video structure.</li>
 </ul>
+
+--left
+<p>[TODO: include examples for each of the <code>og.type</code> variations. In JSON format]</p>
+
