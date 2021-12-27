@@ -256,13 +256,18 @@ my $x = qq{$pre"$link"$post\n};
 		return qq{$pre"$link"$post};
 	}
     elsif($fn =~ m/^\Q$outtree$link\E$/)
-    {   $pre  =~ s/\<a\b/<span/i;
-        $post =~ s!\</a\b.*$!</span>!i;
+    {   # We are producing the same file as where the link points to.
+        $post = ' aria-current="page" ' . $post;
+        if("$pre$post" !~ /nav\-link|dropdown\-item/)
+        {   # Change <a> is <span>
+            $pre  =~ s/\<a\b/<span/i;
+            $post =~ s!\</a\b.*$!</span>!i;
+        }
 
-		# No double class attributes allowed
+        # No two class attributes in one element allowed
            $pre  =~ s!\bclass="!class="myself !i
         or $post =~ s!\bclass="!class="myself !i
-        or $post =~ s!>!class="myself">!;
+        or $post =~ s!>! class="myself">!;
 
         return qq{$pre"$link"$post};
     }

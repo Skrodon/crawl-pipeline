@@ -1,7 +1,8 @@
 <li class="nav-item dropdown">
 	<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
-	    href="#" role="button" aria-expanded="false">Tasks</a>
-	<ul class="dropdown-menu">
+	    href="#" role="button" aria-expanded="false"
+		id="menu_tasks">Tasks</a>
+	<ul class="dropdown-menu" aria-labelledby="menu_tasks">
 	<li><a class="dropdown-item" href="/filter/">Filter</a></li>
 	<li><a class="dropdown-item" href="/filter/composing.html">Compose</a></li>
 	<li><a class="dropdown-item" href="/extract/">Extract</a></li>

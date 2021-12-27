@@ -1,7 +1,7 @@
 <li class="nav-item dropdown">
 	<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
-	    href="#" role="button" aria-expanded="false">Explain</a>
-	<ul class="dropdown-menu">
+	    href="#" role="button" aria-expanded="false" id="menu_explain">Explain</a>
+	<ul class="dropdown-menu" aria-labelledby="menu_explain">
 	<li><a class="dropdown-item" href="/explain/">The Pipeline</a></li>
 	<li><a class="dropdown-item" href="/explain/tasks.html">Pipeline Tasks</a></li>
 	<li><a class="dropdown-item" href="/explain/pages.html">Pipeline Pages</a></li>
