@@ -2,12 +2,12 @@
 
 [% FOR section IN sections %]
 	<section class="chapter row">
-		<div class="section_left col">
+		<div class="section_left col-lg">
 
 [% section.left %]
 
 		</div>
-		<div class="section_right col">
+		<div class="section_right col-lg">
 
 [% section.right %]
 
