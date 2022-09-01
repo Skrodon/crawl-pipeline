@@ -16,7 +16,8 @@
 
 ## Submodules
 
-The Pipeline/HTML-Inspect part contains a submodule with example files for the OpenGraph protocol.
+The Pipeline/HTML-Inspect part contains a submodule with example files
+for the OpenGraph protocol.
 https://github.com/niallkennedy/open-graph-protocol-examples
 
 How to work with submodules?

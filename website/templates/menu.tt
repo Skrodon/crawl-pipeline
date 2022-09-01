@@ -12,7 +12,7 @@
 				</div>
 				<div id="menu_inner">
 
-<ul id="menu_nav" class="menu nav">
+<ul id="menu_nav" class="menu nav" role="menu">
 <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home"></i></a></li>
 [% INCLUDE menu_explain.tt %]
 [% INCLUDE menu_tasks.tt %]
