@@ -27,6 +27,7 @@
 [% IF is_frontpage %]
 	<meta name="keywords" content="WARC, crawl, search engine" />
     <meta name="description" content="Shared effort to extract useful data from search engine crawls." />
+	<link rel="canonical" href="/" />
 [% END %]
 </head>
 
